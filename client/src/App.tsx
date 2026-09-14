@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext.js';
 import { Navbar } from './components/Navbar.js';
 import { ProtectedRoute } from './components/ProtectedRoute.js';
 
+import { LandingPage } from './pages/LandingPage.js';
 import { LoginPage } from './pages/LoginPage.js';
 import { RegisterPage } from './pages/RegisterPage.js';
 import { PatientDashboard } from './pages/PatientDashboard.js';
@@ -13,30 +14,23 @@ import { NewConsultationPage } from './pages/NewConsultationPage.js';
 import { PrescriptionViewPage } from './pages/PrescriptionViewPage.js';
 import { AdminDashboard } from './pages/AdminDashboard.js';
 
-const HomeRedirect: React.FC = () => {
-  const { user, isLoading } = useAuth();
-  if (isLoading) return null;
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'DOCTOR') return <Navigate to="/doctor" replace />;
-  if (user.role === 'PATIENT') return <Navigate to="/patient" replace />;
-  if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
-  return <Navigate to="/login" replace />;
-};
-
 export const App: React.FC = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="min-h-screen flex flex-col bg-slate-50">
+        <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
           <Navbar />
           <main className="flex-1">
             <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<HomeRedirect />} />
+              {/* Public Enterprise Landing Page */}
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/landing" element={<LandingPage />} />
+
+              {/* Public Auth Routes */}
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
 
-              {/* Shared Prescription View */}
+              {/* Shared Official Digital Prescription Sheet */}
               <Route path="/prescription/:id" element={<PrescriptionViewPage />} />
 
               {/* Patient Role Routes */}

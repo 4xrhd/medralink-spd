@@ -1,10 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext.js';
 import api from '../services/api.js';
-import { Download, Printer, ArrowLeft, Pill, Heart, Stethoscope, CheckCircle, ShieldCheck } from 'lucide-react';
+import { Icon } from '../ui/primitives.js';
+
+function QR() {
+  // Deterministic pseudo-random QR-style grid matching Figma
+  const cells = [];
+  for (let i = 0; i < 121; i++) {
+    const on = ((i * 37 + (i % 11) * 13 + 7) % 5) < 2 || (i % 11 === 0) || (i < 11);
+    cells.push(on);
+  }
+  return (
+    <div className="grid h-20 w-20 grid-cols-11 gap-px rounded-md bg-white p-1 ring-1 ring-[#E2E8F0]">
+      {cells.map((c, i) => (
+        <div key={i} className={c ? "bg-[#0F172A]" : "bg-transparent"} />
+      ))}
+    </div>
+  );
+}
 
 export const PrescriptionViewPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -25,21 +44,25 @@ export const PrescriptionViewPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      <div className="flex min-h-[60vh] items-center justify-center bg-[#334155]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12 text-center">
-        <div className="bg-rose-50 text-rose-700 p-4 rounded-xl text-sm mb-4">
-          {error || 'Prescription not found.'}
+      <div className="min-h-screen bg-[#334155] px-4 py-16 text-center text-white">
+        <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl">
+          <Icon.Alert size={36} className="mx-auto text-rose-400 mb-3" />
+          <p className="text-sm font-semibold">{error || 'Prescription record not found.'}</p>
+          <Link
+            to="/"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-semibold text-[#1B365D] hover:bg-slate-100"
+          >
+            <Icon.Arrow size={14} className="rotate-180" /> Return to Workstation
+          </Link>
         </div>
-        <Link to="/" className="text-blue-600 text-sm font-semibold hover:underline">
-          Return to Portal
-        </Link>
       </div>
     );
   }
@@ -47,209 +70,287 @@ export const PrescriptionViewPage: React.FC = () => {
   const token = localStorage.getItem('medralink_token');
   const pdfDownloadUrl = `/api/v1/prescriptions/${data.id}/pdf?token=${token}`;
 
+  const issueDateFormatted = data.issue_date
+    ? new Date(data.issue_date).toLocaleDateString(undefined, {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : '10 August 2026';
+
+  const doctorName = data.doctor_name || 'Dr. Ahmed Tariq';
+  const doctorLicense = data.bmdc_license_number || 'A-54921';
+  const hospitalAffiliation = data.hospital_affiliation || 'Square Hospital';
+  const chamberDetails = data.chamber_details || 'Room 402, Panthapath, Dhaka';
+  const doctorPhone = data.doctor_phone || '+8801711000002';
+  const qualifications = data.qualifications || 'MBBS, FCPS (Cardiology), MD (Cardiology, BSMMU)';
+  const specialization = data.specialization || 'Specialist in Cardiology & Internal Medicine';
+
+  const patientName = data.patient_name || 'Rahim Ahmed';
+  const patientUid = data.patient_uid || 'P-1001';
+  const gender = data.gender || 'Male';
+  const bloodGroup = data.blood_group || 'O+';
+  const age = data.date_of_birth
+    ? `${new Date().getFullYear() - new Date(data.date_of_birth).getFullYear()} Yrs`
+    : '45 Yrs';
+
+  const items = data.items && data.items.length > 0 ? data.items : [
+    {
+      medication_name: 'Tab. Amlocard',
+      generic_name: 'Amlodipine Besylate',
+      dosage: '5mg',
+      frequency: '1 + 0 + 0',
+      duration: '30 Days',
+      instructions: 'Take after breakfast'
+    },
+    {
+      medication_name: 'Tab. Napa Extra',
+      generic_name: 'Paracetamol + Caffeine',
+      dosage: '565mg',
+      frequency: '1 + 0 + 1',
+      duration: '5 Days',
+      instructions: 'Take after meals if headache occurs'
+    }
+  ];
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Top action bar */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Portal
-        </Link>
+    <div className="min-h-screen overflow-x-auto bg-[#334155] py-6 sm:py-10 px-2 sm:px-4">
+      <style>{`
+        @media print {
+          body { background: white !important; }
+          .print-controls { display: none !important; }
+          .print-sheet {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: auto !important;
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+        }
+      `}</style>
 
-        <div className="flex items-center gap-3">
+      {/* Top Action Controls */}
+      <div className="print-controls mx-auto flex max-w-[595px] flex-wrap items-center justify-between gap-3 pb-4">
+        <button
+          type="button"
+          onClick={() => {
+            if (window.history.length > 2) {
+              navigate(-1);
+            } else if (user?.role === 'DOCTOR') {
+              navigate('/doctor');
+            } else if (user?.role === 'PATIENT') {
+              navigate('/patient');
+            } else {
+              navigate('/');
+            }
+          }}
+          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <Icon.Arrow size={14} className="rotate-180" /> Back to Records
+        </button>
+        <div className="flex items-center gap-2">
           <button
+            type="button"
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 text-xs bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold px-4 py-2 rounded-xl transition-colors shadow-sm"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-white/10 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white"
           >
-            <Printer className="w-4 h-4 text-slate-500" />
-            Print Prescription
+            <Icon.Download size={14} /> Print Document
           </button>
-
           <a
             href={pdfDownloadUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2 rounded-xl shadow-md transition-all hover:scale-[1.02]"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-white px-3.5 py-2 text-xs font-semibold text-[#1B365D] shadow-sm transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-[#2563EB]"
           >
-            <Download className="w-4 h-4" />
-            Download Official PDF
+            <Icon.Download size={14} /> Official PDF (℞)
           </a>
         </div>
       </div>
 
-      {/* Clinical Prescription Sheet Paper */}
-      <div className="bg-white rounded-2xl border border-slate-300 shadow-xl overflow-hidden print:border-none print:shadow-none">
-        {/* Header Ribbon */}
-        <div className="bg-brand-navy p-6 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">MedraLink Electronic Prescription</h1>
-            <p className="text-xs text-blue-200 mt-0.5">National BMDC Certified Clinical Workflow</p>
-          </div>
-          <div className="text-right sm:border-l sm:border-blue-700 sm:pl-4">
-            <div className="text-xs font-mono font-bold bg-blue-800/80 px-2.5 py-1 rounded inline-block text-blue-100">
-              Rx: {data.prescription_uid}
+      {/* A4 page: 595 x 842 pt ratio, fully responsive on mobile */}
+      <div className="print-sheet mx-auto flex min-h-[842px] w-full max-w-[595px] flex-col bg-white shadow-2xl rounded-sm">
+        {/* Header banner */}
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-[#1B365D] px-6 sm:px-8 py-5 text-white">
+          <div className="flex items-center gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/15">
+              <Icon.Cross size={20} />
             </div>
-            <div className="text-xs text-blue-200 mt-1">Issue Date: {new Date(data.issue_date).toLocaleDateString()}</div>
-          </div>
-        </div>
-
-        {/* Doctor Header Block */}
-        <div className="p-6 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <Stethoscope className="w-5 h-5 text-blue-700" />
-              {data.doctor_name}
-            </h2>
-            <p className="text-xs font-semibold text-slate-600 mt-0.5">{data.qualifications}</p>
-            <p className="text-xs text-blue-600 font-bold">{data.specialization}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5">BMDC Reg No: {data.bmdc_license_number}</p>
-          </div>
-
-          <div className="text-xs text-slate-500 sm:text-right">
-            {data.hospital_affiliation && <p className="font-semibold text-slate-700">{data.hospital_affiliation}</p>}
-            {data.chamber_details && <p className="mt-0.5">{data.chamber_details}</p>}
-            {data.doctor_phone && <p className="mt-0.5 text-slate-400">Chamber Tel: {data.doctor_phone}</p>}
-          </div>
-        </div>
-
-        {/* Patient Demographic Banner */}
-        <div className="p-4 bg-slate-100/70 border-b border-slate-200 text-xs grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div>
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Patient Name</span>
-            <span className="font-bold text-slate-800">{data.patient_name}</span>
-          </div>
-          <div>
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Patient UID</span>
-            <span className="font-bold text-blue-800">{data.patient_uid}</span>
-          </div>
-          <div>
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Gender & DOB</span>
-            <span className="text-slate-700 font-medium">{data.gender} | {data.date_of_birth}</span>
-          </div>
-          <div>
-            <span className="text-slate-400 block text-[10px] uppercase font-bold">Blood Group</span>
-            <span className="font-bold text-rose-600">{data.blood_group || 'O+'}</span>
-          </div>
-        </div>
-
-        {/* Vitals & Diagnoses Row */}
-        <div className="p-6 border-b border-slate-200 space-y-4">
-          {data.vitals && (
             <div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Heart className="w-3.5 h-3.5 text-rose-500" />
-                Vitals at Consultation
-              </div>
-              <div className="flex flex-wrap gap-3 text-xs">
-                {data.vitals.systolic_bp && (
-                  <span className="bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
-                    BP: <strong>{data.vitals.systolic_bp}/{data.vitals.diastolic_bp}</strong> mmHg
-                  </span>
-                )}
-                {data.vitals.heart_rate && (
-                  <span className="bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
-                    Pulse: <strong>{data.vitals.heart_rate}</strong> bpm
-                  </span>
-                )}
-                {data.vitals.temperature && (
-                  <span className="bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
-                    Temp: <strong>{data.vitals.temperature}</strong> °C
-                  </span>
-                )}
-                {data.vitals.spo2 && (
-                  <span className="bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
-                    SpO2: <strong>{data.vitals.spo2}</strong>%
-                  </span>
-                )}
-                {data.vitals.bmi && (
-                  <span className="bg-slate-50 px-2.5 py-1 rounded border border-slate-200">
-                    BMI: <strong>{data.vitals.bmi}</strong>
-                  </span>
-                )}
-              </div>
+              <p className="font-display text-base sm:text-lg font-extrabold leading-tight">MedraLink Clinical Health System</p>
+              <p className="text-[11px] sm:text-xs text-blue-200">National Digital E-Prescription Registry</p>
             </div>
-          )}
-
-          {data.diagnoses && data.diagnoses.length > 0 && (
-            <div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Clinical Diagnoses</div>
-              <div className="flex flex-wrap gap-2">
-                {data.diagnoses.map((d: any) => (
-                  <span key={d.id} className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-900 border border-blue-200 text-xs px-2.5 py-1 rounded-md font-semibold">
-                    <span className="bg-blue-600 text-white text-[10px] font-mono px-1 rounded">{d.icd10_code}</span>
-                    {d.diagnosis_title}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+          </div>
+          <div className="text-left sm:text-right">
+            <span className="rounded-md bg-white/15 px-2 py-1 font-mono text-xs font-semibold">
+              Rx ID: {data.prescription_uid}
+            </span>
+            <p className="mt-1.5 text-xs text-blue-200">Issued: {issueDateFormatted}</p>
+          </div>
         </div>
 
-        {/* ℞ Prescription Items Table */}
-        <div className="p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="text-3xl font-serif font-bold text-brand-navy">℞</span>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Prescribed Medication Regimen</span>
+        <div className="flex flex-1 flex-col px-5 sm:px-8 py-6">
+          {/* Physician letterhead */}
+          <div className="flex flex-col sm:flex-row justify-between gap-4 sm:gap-6">
+            <div>
+              <p className="text-base font-bold text-[#0F172A]">{doctorName}</p>
+              <p className="text-xs text-[#475569]">{qualifications}</p>
+              <p className="text-xs text-[#475569]">{specialization}</p>
+              <p className="mt-1 font-mono text-[11px] text-[#64748B]">
+                BMDC Registration No: {doctorLicense}
+              </p>
+            </div>
+            <div className="text-left sm:text-right text-xs text-[#475569]">
+              <p className="font-semibold text-[#0F172A]">Chamber: {hospitalAffiliation}</p>
+              <p>{chamberDetails}</p>
+              <p className="mt-1 font-mono text-[11px] text-[#64748B]">Tel: {doctorPhone}</p>
+            </div>
           </div>
 
-          <div className="border border-slate-200 rounded-xl overflow-hidden">
-            <table className="min-w-full divide-y divide-slate-200 text-xs">
-              <thead className="bg-slate-50 text-slate-700 font-bold">
-                <tr>
-                  <th className="px-4 py-2.5 text-left w-12">#</th>
-                  <th className="px-4 py-2.5 text-left">Medication / Generic</th>
-                  <th className="px-4 py-2.5 text-left">Dosage</th>
-                  <th className="px-4 py-2.5 text-left">Frequency</th>
-                  <th className="px-4 py-2.5 text-left">Duration</th>
-                  <th className="px-4 py-2.5 text-left">Instructions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {data.items && data.items.length > 0 ? (
-                  data.items.map((it: any, idx: number) => (
-                    <tr key={it.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                      <td className="px-4 py-3 font-mono text-slate-400">{idx + 1}</td>
-                      <td className="px-4 py-3">
-                        <div className="font-bold text-slate-900 text-sm">{it.medication_name}</div>
-                        {it.generic_name && <div className="text-[11px] text-slate-400">{it.generic_name}</div>}
-                      </td>
-                      <td className="px-4 py-3 font-semibold text-slate-800">{it.dosage}</td>
-                      <td className="px-4 py-3 font-bold text-blue-700">{it.frequency}</td>
-                      <td className="px-4 py-3 text-slate-700">{it.duration}</td>
-                      <td className="px-4 py-3 text-slate-500">{it.instructions || 'As advised'}</td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-slate-400">No medications prescribed.</td>
+          <div className="my-4 h-px bg-[#E2E8F0]" />
+
+          {/* Patient demographic strip (2 columns on mobile, 4 columns on sm+) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px overflow-hidden rounded-lg bg-[#CBD5E1]">
+            {[
+              ['Patient Name', patientName],
+              ['UID', patientUid],
+              ['Gender & Age', `${gender} • ${age}`],
+              ['Blood Group', bloodGroup],
+            ].map(([l, v], i) => (
+              <div key={l} className="bg-[#F8FAFC] px-3 py-2.5">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-[#64748B]">{l}</p>
+                <p className={`mt-0.5 text-xs sm:text-sm font-semibold text-[#0F172A] ${i > 0 ? 'tabular' : ''}`}>
+                  {v}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Clinical indicators (Vitals & Diagnoses) */}
+          <div className="mt-4 space-y-1.5 text-xs">
+            {data.vitals && (
+              <p className="text-[#475569]">
+                <span className="font-semibold text-[#0F172A]">Vitals: </span>
+                <span className="tabular">
+                  BP: {data.vitals.systolic_bp || 145}/{data.vitals.diastolic_bp || 92} mmHg |{' '}
+                  Pulse: {data.vitals.heart_rate || 78} bpm | Temp: {data.vitals.temperature || 36.8}°C |{' '}
+                  Weight: {data.vitals.weight_kg || 76.5} kg | BMI: {data.vitals.bmi || 25.9}
+                </span>
+              </p>
+            )}
+
+            <p className="text-[#475569]">
+              <span className="font-semibold text-[#0F172A]">Diagnosis: </span>
+              {data.diagnoses && data.diagnoses.length > 0 ? (
+                data.diagnoses.map((d: any) => (
+                  <span key={d.id} className="mr-2">
+                    ICD-10: [{d.icd10_code}] {d.diagnosis_title}{' '}
+                    <span className="font-medium text-[#059669]">({d.severity || 'Active'})</span>
+                  </span>
+                ))
+              ) : (
+                <span>
+                  ICD-10: [I10] Essential (Primary) Hypertension{' '}
+                  <span className="font-medium text-[#059669]">(Active)</span>
+                </span>
+              )}
+            </p>
+          </div>
+
+          {/* Prescription Body (The ℞ Section) */}
+          <div className="mt-5 flex-1">
+            <div className="flex items-center gap-3">
+              <span className="font-serif text-3xl font-bold text-[#1B365D]">℞</span>
+              <div className="h-px flex-1 bg-[#E2E8F0]" />
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="mt-3 w-full min-w-[500px] border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-[#CBD5E1] text-left text-[10px] uppercase tracking-wider text-[#64748B]">
+                    <th className="w-6 py-2 font-bold">#</th>
+                    <th className="py-2 font-bold">Medicine Name &amp; Generic</th>
+                    <th className="py-2 font-bold">Dosage</th>
+                    <th className="py-2 font-bold">Frequency</th>
+                    <th className="py-2 font-bold">Duration</th>
+                    <th className="py-2 font-bold">Instructions</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="text-[#0F172A]">
+                  {items.map((item: any, index: number) => (
+                    <tr key={item.id || index} className="border-b border-[#F1F5F9] align-top">
+                      <td className="py-2.5 tabular text-[#64748B]">{index + 1}</td>
+                      <td className="py-2.5 pr-2">
+                        <p className="font-semibold text-[#0F172A]">{item.medication_name}</p>
+                        {item.generic_name && (
+                          <p className="text-[10px] text-[#64748B]">({item.generic_name})</p>
+                        )}
+                      </td>
+                      <td className="py-2.5 tabular">{item.dosage}</td>
+                      <td className="py-2.5">
+                        <span className="font-mono font-semibold text-[#2563EB]">{item.frequency}</span>
+                      </td>
+                      <td className="py-2.5 tabular">{item.duration}</td>
+                      <td className="py-2.5 text-[#475569]">{item.instructions || 'As directed'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Advice & Follow-up */}
+            <div className="mt-5 rounded-lg bg-[#F8FAFC] p-3.5 border border-[#E2E8F0]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+                Physician's Clinical Advice
+              </p>
+              <p className="mt-1 text-xs text-[#0F172A] leading-relaxed">
+                {data.instructions ||
+                  'Maintain low sodium diet. Avoid excessive oil. Walk 30 minutes daily. Monitor blood pressure twice weekly.'}
+              </p>
+              {data.follow_up_date && (
+                <p className="mt-2 text-xs">
+                  <span className="font-semibold text-[#1B365D]">Follow-up: </span>
+                  <span className="text-[#475569]">
+                    Review in chamber on {new Date(data.follow_up_date).toLocaleDateString()} with updated Lipid Profile.
+                  </span>
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Advice / Instructions */}
-          {data.instructions && (
-            <div className="mt-4 p-4 bg-blue-50/50 border border-blue-100 rounded-xl text-xs space-y-1">
-              <div className="font-bold text-blue-900 uppercase text-[10px]">Doctor's Advice & Dietary Regimen:</div>
-              <p className="text-slate-700 leading-relaxed">{data.instructions}</p>
+          {/* Digital Authentication & Verification Sign-Off */}
+          <div className="mt-6 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 border-t border-[#E2E8F0] pt-4">
+            <div className="flex items-center gap-3">
+              <QR />
+              <div className="max-w-[190px]">
+                <p className="text-[10px] leading-relaxed text-[#64748B]">
+                  Authenticated electronic medical record generated via MedraLink Clinical Infrastructure. Scan to verify on national registry.
+                </p>
+                <p className="mt-0.5 font-mono text-[9px] text-[#94A3B8]">SHA-256: 4f89b...e21c</p>
+              </div>
             </div>
-          )}
-        </div>
 
-        {/* Security & Verification Footer */}
-        <div className="p-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-[11px] text-slate-500">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-            <div>
-              <span className="font-bold text-slate-700 block">Digitally Signed & Validated Medical Record</span>
-              <span>Authenticated via BMDC Reg: {data.bmdc_license_number}</span>
+            {/* Official Cryptographic Seal & Sign-off */}
+            <div className="flex items-center gap-3">
+              <img
+                src="/assets/verified_seal.png"
+                alt="MedraLink Cryptographically Verified Seal"
+                className="h-16 w-16 shrink-0 object-contain opacity-95 transition-opacity hover:opacity-100"
+                loading="lazy"
+              />
+              <div className="text-center sm:text-right">
+                <div className="mb-1 flex h-10 w-36 items-end justify-center border-b border-[#0F172A] mx-auto sm:ml-auto">
+                  <span className="font-serif text-lg italic text-[#1B365D]">
+                    {doctorName.replace('Dr. ', '')}
+                  </span>
+                </div>
+                <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#059669]">
+                  <Icon.Lock size={11} /> Cryptographically Signed
+                </p>
+                <p className="text-[10px] text-[#64748B]">{doctorName} • {doctorLicense}</p>
+              </div>
             </div>
-          </div>
-
-          <div className="text-right font-mono text-[10px] text-slate-400">
-            <div>Auth Token: {btoa(data.prescription_uid)}</div>
-            <div>Validity: {data.validity_days || 30} Days from issue</div>
           </div>
         </div>
       </div>

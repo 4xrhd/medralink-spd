@@ -10,6 +10,12 @@ export interface User {
   patientUid?: string;
   doctorId?: string;
   doctorUid?: string;
+  doctorProfile?: {
+    bmdcLicenseNumber?: string;
+    hospitalAffiliation?: string;
+    specialization?: string;
+    qualifications?: string;
+  };
 }
 
 export interface Patient {
