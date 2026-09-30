@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
+import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
 import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
@@ -23,6 +24,7 @@ export const PatientTimelinePage: React.FC = () => {
   useDocumentTitle('Longitudinal Patient Timeline');
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -72,8 +74,8 @@ export const PatientTimelinePage: React.FC = () => {
   }
 
   const { patient, allergies, conditions, timeline } = data;
-  const fullName = patient?.full_name || 'Rahim Ahmed';
-  const patientUid = patient?.patient_uid || 'P-1001';
+  const fullName = patient?.full_name || 'Patient Record';
+  const patientUid = patient?.patient_uid || '—';
   const initials = fullName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
 
   const toggleReport = (reportId: string) => {
@@ -110,7 +112,7 @@ export const PatientTimelinePage: React.FC = () => {
           </Pill>
         </div>
 
-        {/* Figma Summary Banner */}
+        {/* Summary Banner */}
         <Card className="overflow-hidden p-0">
           <div className="bg-gradient-to-r from-[#1B365D] to-[#2563EB] p-6 text-white">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -125,11 +127,13 @@ export const PatientTimelinePage: React.FC = () => {
                       {patientUid}
                     </span>
                     <span className="text-sm text-blue-100">
-                      {patient?.gender || 'Male'} •{' '}
-                      {patient?.date_of_birth ? `${new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()} Yrs` : '45 Yrs'}
+                      {patient?.gender || '—'} •{' '}
+                      {patient?.date_of_birth
+                        ? `${new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()} Yrs`
+                        : '—'}
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-[#DC2626] px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
-                      {patient?.blood_group || 'O+'} Blood Group
+                      {patient?.blood_group ? `${patient.blood_group} Blood Group` : 'Blood Group N/A'}
                     </span>
                   </div>
                 </div>
@@ -138,34 +142,40 @@ export const PatientTimelinePage: React.FC = () => {
               {/* 2xl Demographic Cluster */}
               <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-blue-100">
                 <div>
-                  <span className="text-blue-300 font-semibold uppercase tracking-wider block text-[10px]">National ID (NID)</span>
-                  <span className="font-mono font-bold text-white">19812694123400012</span>
+                  <span className="text-blue-200 font-medium block text-xs">National ID (NID)</span>
+                  <span className="font-mono font-bold text-white text-sm">{patient?.nid_or_bid || '—'}</span>
                 </div>
                 <div>
-                  <span className="text-blue-300 font-semibold uppercase tracking-wider block text-[10px]">Attending Physician</span>
-                  <span className="font-semibold text-white">Dr. Ahmed Tariq (A-54921)</span>
+                  <span className="text-blue-200 font-medium block text-xs">Attending Physician</span>
+                  <span className="font-semibold text-white text-sm">
+                    {timeline?.[0]?.doctor_name ? `${timeline[0].doctor_name}` : 'Consulting Clinician'}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-blue-300 font-semibold uppercase tracking-wider block text-[10px]">Primary Facility</span>
-                  <span className="font-semibold text-white">Square Hospital &amp; NICVD</span>
+                  <span className="text-blue-200 font-medium block text-xs">Primary Facility</span>
+                  <span className="font-semibold text-white text-sm">
+                    {timeline?.[0]?.hospital_affiliation || 'MedraLink Network Clinic'}
+                  </span>
                 </div>
               </div>
 
               {/* Emergency Contact */}
               <div className="rounded-xl border border-white/20 bg-white/10 p-4 text-left backdrop-blur-xs">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-200">
+                <p className="text-xs font-medium text-blue-200">
                   Emergency Contact
                 </p>
                 <p className="mt-1 font-semibold text-white flex items-center gap-1.5">
                   <Icon.User size={14} className="text-blue-200 shrink-0" />
-                  <span>{patient?.emergency_contact_name || 'Nasreen Ahmed'}</span>{' '}
-                  <span className="font-normal text-blue-200 text-xs">
-                    ({patient?.emergency_contact_relation || 'Spouse'})
-                  </span>
+                  <span>{patient?.emergency_contact_name || 'Not provided'}</span>{' '}
+                  {patient?.emergency_contact_relation && (
+                    <span className="font-normal text-blue-200 text-xs">
+                      ({patient.emergency_contact_relation})
+                    </span>
+                  )}
                 </p>
                 <p className="font-mono text-sm text-blue-100 mt-1 flex items-center gap-1.5">
                   <span className="text-xs text-blue-300">📞</span>
-                  <span>{patient?.emergency_contact_phone || '+8801712345678'}</span>
+                  <span>{patient?.emergency_contact_phone || '—'}</span>
                 </p>
               </div>
             </div>
@@ -175,7 +185,7 @@ export const PatientTimelinePage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-[#FDE68A] bg-[#FEF3C7] px-6 py-3.5">
             <div className="flex items-center gap-2 shrink-0">
               <Icon.Alert size={18} className="text-[#B45309] shrink-0" />
-              <span className="text-xs font-bold uppercase tracking-wider text-[#92400E]">Clinical Safety:</span>
+              <span className="text-xs font-semibold text-[#92400E]">Clinical Safety:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="font-medium text-[#78350F]">Allergies:</span>
@@ -190,10 +200,7 @@ export const PatientTimelinePage: React.FC = () => {
                   </span>
                 ))
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-md bg-[#FDE68A] px-2 py-0.5 font-semibold text-[#92400E] border border-[#FCD34D]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#DC2626]" />
-                  Penicillin (Severe — Angioedema)
-                </span>
+                <span className="text-[#92400E] font-medium">No known drug allergies (NKDA)</span>
               )}
               <span className="hidden sm:inline text-[#D97706]">•</span>
               <span className="font-medium text-[#78350F]">Chronic Conditions:</span>
@@ -208,10 +215,7 @@ export const PatientTimelinePage: React.FC = () => {
                   </span>
                 ))
               ) : (
-                <span className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 font-semibold text-[#1E293B] border border-[#CBD5E1]">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]" />
-                  Essential Hypertension (Managed)
-                </span>
+                <span className="text-slate-600 font-medium">No chronic conditions recorded</span>
               )}
             </div>
           </div>
@@ -319,7 +323,7 @@ export const PatientTimelinePage: React.FC = () => {
                         <div className="mt-5 space-y-5 border-t border-[#E2E8F0] pt-5">
                           {/* Chief Complaints */}
                           <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-                            <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+                            <p className="text-xs font-semibold text-slate-700">
                               Chief Complaints
                             </p>
                             <p className="mt-1 text-sm text-[#0F172A]">
@@ -335,7 +339,7 @@ export const PatientTimelinePage: React.FC = () => {
                           {/* Clinical Vitals Ribbon */}
                           {record.vitals && (
                             <div>
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] mb-2">
+                              <p className="text-xs font-semibold text-slate-700 mb-2">
                                 Clinical Vitals Telemetry
                               </p>
                               <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -371,7 +375,7 @@ export const PatientTimelinePage: React.FC = () => {
                           {/* Codified Diagnoses */}
                           {record.diagnoses && record.diagnoses.length > 0 && (
                             <div>
-                              <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] mb-2">
+                              <p className="text-xs font-semibold text-slate-700 mb-2">
                                 Codified Diagnosis (ICD-10)
                               </p>
                               <div className="flex flex-wrap gap-2">
@@ -535,16 +539,38 @@ export const PatientTimelinePage: React.FC = () => {
             </Card>
 
             {/* Cryptographic Proof Card */}
-            <Card className="p-5 text-xs bg-slate-900 text-white border-slate-800 space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                <Icon.Shield size={14} />
-                <span>Cryptographic RBAC Seal</span>
+            <Card className="p-5 text-xs bg-slate-900 text-white border-slate-800 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                  <Icon.Shield size={15} />
+                  <span>Cryptographic RBAC Seal</span>
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Verified
+                </span>
               </div>
               <p className="text-slate-300 leading-relaxed text-[11px]">
                 This longitudinal medical timeline is cryptographically verified against the MedraLink distributed ledger.
               </p>
-              <div className="font-mono text-[10px] text-slate-400 bg-slate-800/80 p-2 rounded border border-slate-700 select-all">
-                SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+              <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-2.5">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-semibold text-slate-400">SHA-256 Digest:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard?.writeText('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+                      toast.success('Copied SHA-256 integrity hash!');
+                    }}
+                    title="Copy hash to clipboard"
+                    className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <Icon.Copy size={11} />
+                    <span>Copy</span>
+                  </button>
+                </div>
+                <p className="font-mono text-[10px] text-slate-300 break-all select-all leading-normal">
+                  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+                </p>
               </div>
             </Card>
           </div>

@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import { Card, Icon, Button, FormField, Input, Badge } from '../ui/primitives.js';
+import { Card, Icon, Button, FormField, Input } from '../ui/primitives.js';
 
 export const LoginPage: React.FC = () => {
   useDocumentTitle('Sign In');
@@ -13,7 +13,7 @@ export const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, quickLogin, user } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
 
   // If already logged in, navigate based on role
@@ -41,21 +41,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleRoleQuickSelect = async (role: 'DOCTOR' | 'PATIENT' | 'ADMIN') => {
-    setError('');
-    setIsSubmitting(true);
-    try {
-      await quickLogin(role);
-      toast.success(`Authenticated as ${role}`);
-    } catch (err: any) {
-      const msg = 'Failed to authenticate role. Ensure database service is operational.';
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <div className="min-h-[calc(100vh-5rem)] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#F8FAFC]">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
@@ -70,52 +55,7 @@ export const LoginPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-lg">
-        {/* Enterprise Role Quick Sign-In */}
-        <div className="rounded-2xl bg-[#1B365D] p-5 text-white shadow-card mb-6 border border-white/10">
-          <div className="flex items-center justify-between mb-3.5">
-            <span className="text-xs font-semibold text-blue-100">
-              Fast Clinical Role Sign-In
-            </span>
-            <Badge tone="blue" size="sm">
-              BMDC Authenticated
-            </Badge>
-          </div>
-          <div className="grid grid-cols-3 gap-2.5">
-            <button
-              type="button"
-              onClick={() => handleRoleQuickSelect('DOCTOR')}
-              disabled={isSubmitting}
-              className="rounded-xl border border-white/15 bg-white/10 hover:bg-white/20 p-3 flex flex-col items-center text-center transition-all group focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 cursor-pointer"
-            >
-              <Icon.Stethoscope size={20} className="text-blue-300 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="font-semibold text-xs text-white">Attending Doctor</span>
-              <span className="text-[11px] text-blue-200 mt-0.5">Dr. Ahmed Tariq</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleRoleQuickSelect('PATIENT')}
-              disabled={isSubmitting}
-              className="rounded-xl border border-white/15 bg-white/10 hover:bg-white/20 p-3 flex flex-col items-center text-center transition-all group focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 cursor-pointer"
-            >
-              <Icon.User size={20} className="text-emerald-300 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="font-semibold text-xs text-white">Verified Patient</span>
-              <span className="text-[11px] text-emerald-200 mt-0.5">Rahim Ahmed</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleRoleQuickSelect('ADMIN')}
-              disabled={isSubmitting}
-              className="rounded-xl border border-white/15 bg-white/10 hover:bg-white/20 p-3 flex flex-col items-center text-center transition-all group focus-visible:ring-2 focus-visible:ring-white disabled:opacity-50 cursor-pointer"
-            >
-              <Icon.Shield size={20} className="text-purple-300 group-hover:scale-110 transition-transform mb-1.5" />
-              <span className="font-semibold text-xs text-white">Security Officer</span>
-              <span className="text-[11px] text-purple-200 mt-0.5">Audit Admin</span>
-            </button>
-          </div>
-        </div>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
 
         {/* Regular Login Card */}
         <Card className="p-6 sm:p-8">

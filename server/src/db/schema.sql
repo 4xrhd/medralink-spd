@@ -190,8 +190,22 @@ CREATE TABLE IF NOT EXISTS notifications (
     title TEXT NOT NULL,
     message TEXT NOT NULL,
     type TEXT NOT NULL DEFAULT 'INFO' CHECK (type IN ('INFO', 'SUCCESS', 'WARNING', 'ALERT')),
+    category TEXT NOT NULL DEFAULT 'GENERAL' CHECK (category IN ('CRITICAL_ALERT', 'PRESCRIPTION', 'LAB_RESULT', 'SECURITY_AUDIT', 'GENERAL')),
+    link TEXT,
     is_read INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 14b. NOTIFICATION_SETTINGS: User alert preferences and delivery channels
+CREATE TABLE IF NOT EXISTS notification_settings (
+    user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    critical_alerts INTEGER DEFAULT 1,
+    prescription_updates INTEGER DEFAULT 1,
+    lab_results INTEGER DEFAULT 1,
+    security_audits INTEGER DEFAULT 1,
+    sound_enabled INTEGER DEFAULT 1,
+    email_digest INTEGER DEFAULT 0,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 15. AUDIT_LOGS: Immutable append-only audit trail
@@ -219,3 +233,5 @@ CREATE INDEX IF NOT EXISTS idx_prescriptions_patient ON prescriptions(patient_id
 CREATE INDEX IF NOT EXISTS idx_lab_reports_patient ON lab_reports(patient_id);
 CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);
 CREATE INDEX IF NOT EXISTS idx_audit_actor ON audit_logs(actor_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at);

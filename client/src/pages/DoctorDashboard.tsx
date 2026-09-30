@@ -98,9 +98,10 @@ export const DoctorDashboard: React.FC = () => {
     }
   };
 
-  const doctorName = user?.fullName || 'Dr. Ahmed Tariq, MBBS, FCPS';
-  const doctorLicense = user?.doctorProfile?.bmdcLicenseNumber || 'A-54921';
-  const hospitalName = user?.doctorProfile?.hospitalAffiliation || 'Square Hospital / NICVD';
+  const doctorName = user?.fullName || 'Physician';
+  const doctorLicense = user?.doctorProfile?.bmdcLicenseNumber || '—';
+  const hospitalName = user?.doctorProfile?.hospitalAffiliation || 'MedraLink Clinical Network';
+  const departmentName = user?.doctorProfile?.specialization || 'Clinical Medicine';
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-16">
@@ -122,11 +123,11 @@ export const DoctorDashboard: React.FC = () => {
           <div className="hidden 2xl:flex items-center gap-6 border-l border-slate-200 pl-6 text-xs text-[#475569]">
             <div>
               <span className="text-[11px] font-medium text-slate-500 block">Department</span>
-              <span className="font-semibold text-slate-900">Cardiovascular &amp; Internal Medicine</span>
+              <span className="font-semibold text-slate-900">{departmentName}</span>
             </div>
             <div>
               <span className="text-[11px] font-medium text-slate-500 block">Shift Schedule</span>
-              <span className="font-semibold text-slate-900">Morning Rounds • 08:00 – 16:00</span>
+              <span className="font-semibold text-slate-900">Clinical Rounds • Active</span>
             </div>
             <div>
               <span className="text-[11px] font-medium text-slate-500 block">Station Protocol</span>
@@ -136,7 +137,7 @@ export const DoctorDashboard: React.FC = () => {
 
           <div className="flex items-center gap-3">
             <Badge tone="emerald" dot pulse>
-              Active Clinical Session • Room 402
+              Active Clinical Session
             </Badge>
           </div>
         </div>
@@ -156,7 +157,7 @@ export const DoctorDashboard: React.FC = () => {
               value={searchQuery}
               onChange={(e) => handleSearchInput(e.target.value)}
               onFocus={() => setSearchFocused(true)}
-              placeholder="Search Patient by Medra-UID (e.g. P-1001), National ID, Name, or Mobile Number..."
+              placeholder="Search Patient by Medra-UID, National ID, Name, or Mobile Number..."
               className="w-full bg-transparent text-sm text-[#0F172A] outline-none placeholder:text-[#94A3B8]"
             />
             {searchQuery && (
@@ -177,7 +178,7 @@ export const DoctorDashboard: React.FC = () => {
           {(searchResults.length > 0 || (searchFocused && searchQuery.length > 1)) && (
             <Card className="absolute left-0 right-0 z-20 mt-2 overflow-hidden p-0 shadow-xl border-[#BFDBFE]">
               <div className="flex items-center justify-between border-b border-[#E2E8F0] bg-[#F8FAFC] px-5 py-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-[#64748B]">
+                <p className="text-xs font-semibold text-slate-700">
                   {isSearching
                     ? 'Searching database...'
                     : searchResults.length > 0
@@ -242,7 +243,7 @@ export const DoctorDashboard: React.FC = () => {
                   <EmptyState
                     icon={<Icon.Search size={22} />}
                     title={`No patient records matching "${searchQuery}"`}
-                    description="Try searching by full Medra-UID (e.g. P-1001), mobile phone number, or national identification."
+                    description="Try searching by full Medra-UID, mobile phone number, or national identification."
                   />
                 </div>
               ) : null}

@@ -35,23 +35,19 @@ export const PatientDashboard: React.FC = () => {
     );
   }
 
-  const patientId = user?.patientId || 'pat-1';
-  const fullName = user?.fullName || 'Rahim Ahmed';
-  const patientUid = user?.patientUid || data?.patient?.patient_uid || 'P-1001';
-  const bloodGroup = data?.patient?.blood_group || 'O+';
+  const patientId = user?.patientId || data?.patient?.id;
+  const fullName = user?.fullName || data?.patient?.full_name || 'Patient';
+  const patientUid = user?.patientUid || data?.patient?.patient_uid || '—';
+  const bloodGroup = data?.patient?.blood_group || '—';
   const initials = fullName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
 
-  const allergies = data?.allergies || [
-    { allergen: 'Penicillin', severity: 'Severe — Angioedema' }
-  ];
-  const conditions = data?.conditions || [
-    { condition_name: 'Essential Hypertension', status: 'Managed' }
-  ];
+  const allergies = data?.allergies || [];
+  const conditions = data?.conditions || [];
 
   const stats = [
     {
       label: 'Total Consultations',
-      value: data?.stats?.totalVisits ?? '3',
+      value: data?.stats?.totalVisits ?? 0,
       unit: 'Visits',
       icon: <Icon.Stethoscope size={20} />,
       bg: '#EFF6FF',
@@ -59,7 +55,7 @@ export const PatientDashboard: React.FC = () => {
     },
     {
       label: 'Active Prescriptions',
-      value: data?.stats?.activePrescriptionsCount ?? '2',
+      value: data?.stats?.activePrescriptionsCount ?? 0,
       unit: 'Regimens',
       icon: <Icon.Pill size={20} />,
       bg: '#ECFDF5',
@@ -67,7 +63,7 @@ export const PatientDashboard: React.FC = () => {
     },
     {
       label: 'Diagnostic Lab Reports',
-      value: data?.stats?.labReportsCount ?? '2',
+      value: data?.stats?.labReportsCount ?? 0,
       unit: 'Available',
       icon: <Icon.Flask size={20} />,
       bg: '#F5F3FF',
@@ -102,11 +98,13 @@ export const PatientDashboard: React.FC = () => {
                       <Icon.Copy size={11} className="opacity-70" />
                     </button>
                     <span className="text-sm text-blue-100">
-                      {data?.patient?.gender || 'Male'} •{' '}
-                      {data?.patient?.date_of_birth ? `${new Date().getFullYear() - new Date(data.patient.date_of_birth).getFullYear()} Yrs` : '45 Yrs'}
+                      {data?.patient?.gender || '—'} •{' '}
+                      {data?.patient?.date_of_birth
+                        ? `${new Date().getFullYear() - new Date(data.patient.date_of_birth).getFullYear()} Yrs`
+                        : '—'}
                     </span>
                     <Badge tone="crimson" size="sm" className="font-bold">
-                      {bloodGroup} Blood Group
+                      {bloodGroup !== '—' ? `${bloodGroup} Blood Group` : 'Blood Group N/A'}
                     </Badge>
                   </div>
                 </div>
@@ -116,15 +114,19 @@ export const PatientDashboard: React.FC = () => {
               <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-blue-100">
                 <div>
                   <span className="text-blue-200 font-medium block text-xs">National ID (NID)</span>
-                  <span className="font-mono font-bold text-white text-sm">19812694123400012</span>
+                  <span className="font-mono font-bold text-white text-sm">{data?.patient?.nid_or_bid || '—'}</span>
                 </div>
                 <div>
                   <span className="text-blue-200 font-medium block text-xs">Attending Physician</span>
-                  <span className="font-semibold text-white text-sm">Dr. Ahmed Tariq (A-54921)</span>
+                  <span className="font-semibold text-white text-sm">
+                    {data?.recentPrescriptions?.[0]?.doctor_name || 'Primary Care Physician'}
+                  </span>
                 </div>
                 <div>
                   <span className="text-blue-200 font-medium block text-xs">Primary Facility</span>
-                  <span className="font-semibold text-white text-sm">Square Hospital &amp; NICVD</span>
+                  <span className="font-semibold text-white text-sm">
+                    {data?.recentPrescriptions?.[0]?.hospital_affiliation || 'MedraLink Network Clinic'}
+                  </span>
                 </div>
               </div>
 
@@ -135,14 +137,16 @@ export const PatientDashboard: React.FC = () => {
                 </p>
                 <p className="mt-1 font-semibold text-white flex items-center gap-1.5">
                   <Icon.User size={14} className="text-blue-200 shrink-0" />
-                  <span>{data?.patient?.emergency_contact_name || 'Nasreen Ahmed'}</span>{' '}
-                  <span className="font-normal text-blue-200 text-xs">
-                    ({data?.patient?.emergency_contact_relation || 'Spouse'})
-                  </span>
+                  <span>{data?.patient?.emergency_contact_name || 'Not provided'}</span>{' '}
+                  {data?.patient?.emergency_contact_relation && (
+                    <span className="font-normal text-blue-200 text-xs">
+                      ({data.patient.emergency_contact_relation})
+                    </span>
+                  )}
                 </p>
                 <p className="font-mono text-sm text-blue-100 mt-1 flex items-center gap-1.5">
                   <span className="text-xs text-blue-300">📞</span>
-                  <span>{data?.patient?.emergency_contact_phone || '+8801712345678'}</span>
+                  <span>{data?.patient?.emergency_contact_phone || '—'}</span>
                 </p>
               </div>
             </div>
@@ -206,18 +210,25 @@ export const PatientDashboard: React.FC = () => {
           />
           <MetricCard
             title="Diagnostic Lab Reports"
-            value={data?.stats?.labReportsCount ?? '2'}
+            value={data?.stats?.labReportsCount ?? 0}
             subtext="Reports available"
             icon={<Icon.Flask size={20} />}
             iconTone="purple"
           />
           <MetricCard
             title="Next Scheduled Review"
-            value="Aug 24, 2026"
-            subtext="In 14 Days"
+            value={
+              data?.recentPrescriptions?.[0]?.follow_up_date
+                ? new Date(data.recentPrescriptions[0].follow_up_date).toLocaleDateString()
+                : 'Routine Review'
+            }
+            subtext={
+              data?.recentPrescriptions?.[0]?.follow_up_date
+                ? 'Follow-up Consultation'
+                : 'As advised by doctor'
+            }
             icon={<Icon.Calendar size={20} />}
             iconTone="amber"
-            status={{ label: "In 14 Days", tone: "blue" }}
           />
         </div>
 
@@ -227,14 +238,16 @@ export const PatientDashboard: React.FC = () => {
             <h2 className="font-display text-xl font-bold text-[#0F172A]">Clinical Biometrics &amp; Regimens</h2>
             <p className="text-sm text-[#475569]">Summary of latest vital signs and current active prescriptions.</p>
           </div>
-          <Link
-            to={`/patient/timeline/${patientId}`}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#1B365D] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16294a]"
-          >
-            <Icon.Clock size={16} />
-            <span>Open Longitudinal Timeline</span>
-            <Icon.Arrow size={14} />
-          </Link>
+          {patientId && (
+            <Link
+              to={`/patient/timeline/${patientId}`}
+              className="inline-flex items-center gap-2 rounded-xl bg-[#1B365D] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16294a]"
+            >
+              <Icon.Clock size={16} />
+              <span>Open Longitudinal Timeline</span>
+              <Icon.Arrow size={14} />
+            </Link>
+          )}
         </div>
 
         {/* Clinical Workspace: 3 Columns on 2xl */}
@@ -258,33 +271,37 @@ export const PatientDashboard: React.FC = () => {
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
               <VitalPill
                 label="Blood Pressure"
-                value={data?.latestVitals ? `${data.latestVitals.systolic_bp}/${data.latestVitals.diastolic_bp}` : '145/92'}
-                tone="amber"
+                value={
+                  data?.latestVitals?.systolic_bp && data?.latestVitals?.diastolic_bp
+                    ? `${data.latestVitals.systolic_bp}/${data.latestVitals.diastolic_bp}`
+                    : '—'
+                }
+                tone={data?.latestVitals?.systolic_bp ? 'amber' : 'slate'}
               />
               <VitalPill
                 label="Heart Rate"
-                value={data?.latestVitals?.heart_rate ? `${data.latestVitals.heart_rate} bpm` : '78 bpm'}
+                value={data?.latestVitals?.heart_rate ? `${data.latestVitals.heart_rate} bpm` : '—'}
                 tone="slate"
               />
               <VitalPill
                 label="Body Temp"
-                value={data?.latestVitals?.temperature ? `${data.latestVitals.temperature}°C` : '36.8°C'}
+                value={data?.latestVitals?.temperature ? `${data.latestVitals.temperature}°C` : '—'}
                 tone="slate"
               />
               <VitalPill
                 label="Oxygen (SpO₂)"
-                value={data?.latestVitals?.spo2 ? `${data.latestVitals.spo2}%` : '98%'}
-                tone="emerald"
+                value={data?.latestVitals?.spo2 ? `${data.latestVitals.spo2}%` : '—'}
+                tone={data?.latestVitals?.spo2 ? 'emerald' : 'slate'}
               />
               <VitalPill
                 label="Body Weight"
-                value={data?.latestVitals?.weight_kg ? `${data.latestVitals.weight_kg} kg` : '76.5 kg'}
+                value={data?.latestVitals?.weight_kg ? `${data.latestVitals.weight_kg} kg` : '—'}
                 tone="slate"
               />
               <VitalPill
                 label="BMI Index"
-                value={data?.latestVitals?.bmi ? `${data.latestVitals.bmi}` : '25.9'}
-                tone="amber"
+                value={data?.latestVitals?.bmi ? `${data.latestVitals.bmi}` : '—'}
+                tone={data?.latestVitals?.bmi ? 'amber' : 'slate'}
               />
             </div>
           </Card>
@@ -399,7 +416,7 @@ export const PatientDashboard: React.FC = () => {
                 </div>
 
                 <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">Emergency Ambulance</p>
+                  <p className="text-xs font-semibold text-slate-700">Emergency Ambulance</p>
                   <p className="mt-1 font-mono font-bold text-[#DC2626] text-sm">Call 16263 (National Health Line)</p>
                   <p className="mt-0.5 text-[#64748B]">Toll-free 24/7 emergency medical triage</p>
                 </div>

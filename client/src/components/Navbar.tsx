@@ -233,7 +233,7 @@ export const Navbar: React.FC = () => {
                   My Health Record
                 </Link>
                 <Link
-                  to={`/patient/timeline/${user.patientId || 'pat-1'}`}
+                  to={user.patientId ? `/patient/timeline/${user.patientId}` : '/patient'}
                   className={`whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
                     location.pathname.startsWith('/patient/timeline')
                       ? 'bg-[#ECFDF5] text-[#059669] ring-1 ring-[#A7F3D0]'
@@ -329,7 +329,7 @@ export const Navbar: React.FC = () => {
                   <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-[#E2E8F0] bg-white p-3 shadow-xl z-50">
                     <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5 px-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-display text-xs font-bold uppercase tracking-wider text-[#0F172A]">
+                        <span className="font-display text-sm font-bold text-[#0F172A]">
                           Clinical Alerts
                         </span>
                         {unreadCount > 0 && (
@@ -396,9 +396,9 @@ export const Navbar: React.FC = () => {
                     <p className="text-xs font-semibold text-[#0F172A]">{user.fullName}</p>
                     <p className="font-mono text-[10px] text-[#94A3B8]">
                       {user.role === 'DOCTOR'
-                        ? user.doctorUid || 'BMDC: A-54921'
+                        ? user.doctorProfile?.bmdcLicenseNumber || user.doctorUid || 'BMDC Verified'
                         : user.role === 'PATIENT'
-                        ? user.patientUid || 'UID: P-1001'
+                        ? user.patientUid || 'Verified Patient'
                         : 'SECURITY OFFICER'}
                     </p>
                   </div>
@@ -417,9 +417,9 @@ export const Navbar: React.FC = () => {
                         </Pill>
                         <span className="text-[10px] font-mono text-[#94A3B8]">
                           {user.role === 'DOCTOR'
-                            ? user.doctorProfile?.bmdcLicenseNumber || 'A-54921'
+                            ? user.doctorProfile?.bmdcLicenseNumber || user.doctorUid || 'BMDC Verified'
                             : user.role === 'PATIENT'
-                            ? user.patientUid || 'P-1001'
+                            ? user.patientUid || 'Patient Record'
                             : 'ADMIN'}
                         </span>
                       </div>
@@ -452,7 +452,7 @@ export const Navbar: React.FC = () => {
                             <Icon.User size={15} /> My Health Record
                           </Link>
                           <Link
-                            to={`/patient/timeline/${user.patientId || 'pat-1'}`}
+                            to={user.patientId ? `/patient/timeline/${user.patientId}` : '/patient'}
                             className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
                           >
                             <Icon.Clock size={15} /> Medical Timeline
@@ -604,7 +604,7 @@ export const Navbar: React.FC = () => {
                       My Health Record
                     </Link>
                     <Link
-                      to={`/patient/timeline/${user.patientId || 'pat-1'}`}
+                      to={user.patientId ? `/patient/timeline/${user.patientId}` : '/patient'}
                       className="flex items-center gap-2 rounded-xl bg-[#EFF6FF] px-3.5 py-2.5 text-sm font-semibold text-[#1D4ED8]"
                     >
                       <Icon.Clock size={16} /> Medical Timeline

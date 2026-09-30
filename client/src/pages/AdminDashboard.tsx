@@ -161,7 +161,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Registered Patient Records"
-            value={stats?.totalPatients || '24,800'}
+            value={stats?.totalPatients ?? 0}
             subtext="National health registry index"
             icon={<Icon.User size={20} />}
             iconTone="blue"
@@ -170,7 +170,7 @@ export const AdminDashboard: React.FC = () => {
 
           <MetricCard
             title="Accredited Physicians"
-            value={stats?.totalDoctors || '1,240'}
+            value={stats?.totalDoctors ?? 0}
             subtext="BMDC Form-C certified"
             icon={<Icon.Stethoscope size={20} />}
             iconTone="emerald"
@@ -179,7 +179,7 @@ export const AdminDashboard: React.FC = () => {
 
           <MetricCard
             title="Consultations Processed"
-            value={stats?.totalConsultations || '142,600'}
+            value={stats?.totalConsultations ?? 0}
             subtext="Unified clinical records"
             icon={<Icon.File size={20} />}
             iconTone="navy"
@@ -188,7 +188,7 @@ export const AdminDashboard: React.FC = () => {
 
           <MetricCard
             title="Cryptographic Audit Entries"
-            value={stats?.auditEntriesCount || '489,120'}
+            value={stats?.auditEntriesCount ?? 0}
             subtext="SHA-256 validated ledger"
             icon={<Icon.Shield size={20} />}
             iconTone="purple"
@@ -215,13 +215,13 @@ export const AdminDashboard: React.FC = () => {
           <div className="overflow-x-auto" aria-label="Physician credential table">
             <table className="min-w-[900px] w-full text-sm">
               <thead>
-                <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-left text-[10px] uppercase tracking-wider text-[#64748B]">
-                  <th className="px-6 py-3 font-bold">Doctor Name &amp; UID</th>
-                  <th className="px-4 py-3 font-bold">BMDC License</th>
-                  <th className="px-4 py-3 font-bold">Specialization</th>
-                  <th className="px-4 py-3 font-bold">Hospital Affiliation</th>
-                  <th className="px-4 py-3 font-bold">Status</th>
-                  <th className="px-6 py-3 text-right font-bold">Action</th>
+                <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-left text-xs font-semibold text-slate-600">
+                  <th className="px-6 py-3 font-semibold">Doctor Name &amp; UID</th>
+                  <th className="px-4 py-3 font-semibold">BMDC License</th>
+                  <th className="px-4 py-3 font-semibold">Specialization</th>
+                  <th className="px-4 py-3 font-semibold">Hospital Affiliation</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
+                  <th className="px-6 py-3 text-right font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F1F5F9]">
@@ -340,23 +340,23 @@ export const AdminDashboard: React.FC = () => {
           <div className="overflow-x-auto" aria-label="Cryptographic audit entries">
             <table className="min-w-[1050px] w-full font-mono text-xs">
               <thead>
-                <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-left text-[10px] uppercase tracking-wider text-[#64748B]">
-                  <th className="px-6 py-2.5 font-bold">Timestamp</th>
-                  <th className="px-3 py-2.5 font-bold">Actor Role</th>
-                  <th className="px-3 py-2.5 font-bold">Action</th>
-                  <th className="px-3 py-2.5 font-bold">Target Resource</th>
-                  <th className="px-3 py-2.5 font-bold">Transaction Context</th>
-                  <th className="px-6 py-2.5 font-bold">SHA-256 Integrity Hash</th>
+                <tr className="border-b border-[#E2E8F0] bg-[#F8FAFC] text-left font-sans text-xs font-semibold text-slate-600">
+                  <th className="px-6 py-2.5 font-semibold">Timestamp</th>
+                  <th className="px-3 py-2.5 font-semibold">Actor Role</th>
+                  <th className="px-3 py-2.5 font-semibold">Action</th>
+                  <th className="px-3 py-2.5 font-semibold">Target Resource</th>
+                  <th className="px-3 py-2.5 font-semibold">Transaction Context</th>
+                  <th className="px-6 py-2.5 font-semibold">SHA-256 Integrity Hash</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F1F5F9]">
                 {filteredAuditLogs.map((l, i) => {
-                  const hash = l.integrity_hash || l.hash || `8f7e2a9b3d${i}4c1a...`;
-                  const isCopied = copiedHash === hash;
+                  const hash = l.integrity_hash || l.hash || '—';
+                  const isCopied = copiedHash === hash && hash !== '—';
                   return (
                     <tr key={l.id || i} className="hover:bg-[#F8FAFC] transition-colors">
                       <td className="tabular whitespace-nowrap px-6 py-3 text-[#475569]">
-                        {l.created_at ? new Date(l.created_at).toLocaleString() : '2026-08-10 10:45:00'}
+                        {l.created_at ? new Date(l.created_at).toLocaleString() : '—'}
                       </td>
                       <td className="px-3 py-3">
                         <span className="font-sans">
@@ -368,27 +368,29 @@ export const AdminDashboard: React.FC = () => {
                       </td>
                       <td className="px-3 py-3 font-semibold text-[#1B365D]">{l.action}</td>
                       <td className="px-3 py-3 text-[#7C3AED] font-semibold">{l.resource}</td>
-                      <td className="px-3 py-3 font-sans text-[#475569]">{l.details || l.context || 'Clinical event logged'}</td>
+                      <td className="px-3 py-3 font-sans text-[#475569]">{l.details || l.context || '—'}</td>
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-2">
                           <span className="text-[#0F172A] select-all">{hash}</span>
-                          <button
-                            onClick={() => copy(hash)}
-                            type="button"
-                            aria-label={`Copy integrity hash for ${l.action}`}
-                            className={`grid h-6 w-6 place-items-center rounded border transition-all ${
-                              isCopied
-                                ? 'border-[#A7F3D0] bg-[#ECFDF5] text-[#059669]'
-                                : 'border-[#E2E8F0] text-[#64748B] hover:bg-slate-100 hover:text-[#2563EB]'
-                            }`}
-                            title={isCopied ? 'Copied!' : 'Copy hash'}
-                          >
-                            {isCopied ? (
-                              <Icon.Check size={12} className="text-[#059669]" />
-                            ) : (
-                              <Icon.Copy size={12} />
-                            )}
-                          </button>
+                          {hash !== '—' && (
+                            <button
+                              onClick={() => copy(hash)}
+                              type="button"
+                              aria-label={`Copy integrity hash for ${l.action}`}
+                              className={`grid h-6 w-6 place-items-center rounded border transition-all ${
+                                isCopied
+                                  ? 'border-[#A7F3D0] bg-[#ECFDF5] text-[#059669]'
+                                  : 'border-[#E2E8F0] text-[#64748B] hover:bg-slate-100 hover:text-[#2563EB]'
+                              }`}
+                              title={isCopied ? 'Copied!' : 'Copy hash'}
+                            >
+                              {isCopied ? (
+                                <Icon.Check size={12} className="text-[#059669]" />
+                              ) : (
+                                <Icon.Copy size={12} />
+                              )}
+                            </button>
+                          )}
                           {isCopied && (
                             <span className="font-sans text-[10px] font-bold text-[#059669]">Copied!</span>
                           )}

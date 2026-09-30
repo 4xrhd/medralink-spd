@@ -7,7 +7,6 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  quickLogin: (role: 'DOCTOR' | 'PATIENT' | 'ADMIN') => Promise<void>;
   register: (data: any) => Promise<void>;
   logout: () => void;
 }
@@ -40,22 +39,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(receivedUser);
   };
 
-  const quickLogin = async (role: 'DOCTOR' | 'PATIENT' | 'ADMIN') => {
-    let email = '';
-    let password = '';
-    if (role === 'DOCTOR') {
-      email = 'dr.ahmed@medralink.com';
-      password = 'doctor123';
-    } else if (role === 'PATIENT') {
-      email = 'rahim@gmail.com';
-      password = 'patient123';
-    } else if (role === 'ADMIN') {
-      email = 'admin@medralink.com';
-      password = 'admin123';
-    }
-    await login(email, password);
-  };
-
   const register = async (data: any) => {
     const response = await api.post('/auth/register', data);
     const { token: receivedToken, user: receivedUser } = response.data.data;
@@ -73,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, quickLogin, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

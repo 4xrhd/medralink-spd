@@ -8,6 +8,7 @@ import labReportRoutes from './labReportRoutes.js';
 import appointmentRoutes from './appointmentRoutes.js';
 import auditRoutes from './auditRoutes.js';
 import dashboardRoutes from './dashboardRoutes.js';
+import notificationRoutes from './notificationRoutes.js';
 
 const apiRouter = Router();
 
@@ -20,5 +21,6 @@ apiRouter.use('/lab-reports', labReportRoutes);
 apiRouter.use('/appointments', appointmentRoutes);
 apiRouter.use('/audit-logs', auditRoutes);
 apiRouter.use('/dashboard', dashboardRoutes);
+apiRouter.use('/notifications', notificationRoutes);
 
 export default apiRouter;

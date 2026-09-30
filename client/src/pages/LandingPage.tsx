@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
+import { Card, Icon, Pill, Badge, Button, VitalPill } from '../ui/primitives.js';
 
 export const LandingPage: React.FC = () => {
   useDocumentTitle('Unified Prescription & Health Network');
   const navigate = useNavigate();
-  const { user, quickLogin } = useAuth();
+  const { user } = useAuth();
   const [tab, setTab] = useState(0);
 
   const tabs = ["Physician Workstation", "Patient Health Portal", "Clinical Administration"];
@@ -41,21 +41,19 @@ export const LandingPage: React.FC = () => {
     },
   ];
 
-  const handleLaunchDoctor = async () => {
+  const handleLaunchDoctor = () => {
     if (user?.role === 'DOCTOR') {
       navigate('/doctor');
     } else {
-      await quickLogin('DOCTOR');
-      navigate('/doctor');
+      navigate('/login');
     }
   };
 
-  const handleLaunchPatient = async () => {
+  const handleLaunchPatient = () => {
     if (user?.role === 'PATIENT') {
       navigate('/patient');
     } else {
-      await quickLogin('PATIENT');
-      navigate('/patient');
+      navigate('/login');
     }
   };
 
@@ -64,9 +62,10 @@ export const LandingPage: React.FC = () => {
       {/* Hero Section */}
       <section id="clinical-architecture" className="mx-auto grid max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 items-center gap-12 2xl:gap-16 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] 2xl:grid-cols-[1.15fr_0.85fr] lg:py-20">
         <div>
-          <Pill tone="blue" className="mb-6 max-w-full whitespace-normal leading-relaxed">
-            <Icon.Shield size={13} /> Next-Gen EMR Infrastructure • BMDC &amp; Clinical Standards Compliant
-          </Pill>
+          <Badge tone="blue" size="md" className="mb-6 inline-flex items-center gap-2">
+            <Icon.Shield size={14} className="shrink-0" />
+            <span>Next-Gen EMR Infrastructure • BMDC &amp; Clinical Standards Compliant</span>
+          </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#0F172A] sm:text-5xl lg:text-[56px]">
             One Unified Record.<br />
             Seamless Clinical Continuity.
@@ -77,20 +76,22 @@ export const LandingPage: React.FC = () => {
             health timelines.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
+            <Button
+              size="lg"
+              variant="primary"
               onClick={handleLaunchDoctor}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#1B365D] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16294a]"
+              icon={<Icon.Arrow size={16} />}
+              iconPosition="right"
             >
-              Launch Doctor Workstation <Icon.Arrow size={16} />
-            </button>
-            <button
-              type="button"
+              Launch Doctor Workstation
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
               onClick={handleLaunchPatient}
-              className="rounded-xl border border-[#E2E8F0] bg-white px-5 py-3 text-sm font-semibold text-[#1B365D] transition-colors hover:border-[#cbd5e1]"
             >
               Explore Patient Timeline
-            </button>
+            </Button>
           </div>
           <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm">
             {[
@@ -130,7 +131,7 @@ export const LandingPage: React.FC = () => {
               <VitalPill label="SpO₂" value="99%" tone="emerald" />
             </div>
             <div className="mt-4">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-[#94A3B8]">
+              <p className="text-xs font-semibold text-slate-500">
                 Codified Diagnosis
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
@@ -177,7 +178,7 @@ export const LandingPage: React.FC = () => {
       {/* Problem vs MedraLink Grid */}
       <section id="solutions" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <div className="max-w-2xl">
-          <p className="text-sm font-semibold uppercase tracking-wider text-[#2563EB]">The Healthcare Problem</p>
+          <Badge tone="blue" size="sm" className="mb-2">The Healthcare Challenge</Badge>
           <h2 className="mt-2 font-display text-4xl font-bold tracking-tight text-[#0F172A]">
             From fragmented records to one continuous timeline
           </h2>
@@ -226,9 +227,9 @@ export const LandingPage: React.FC = () => {
                 />
               </div>
               <div className="flex flex-1 flex-col p-6">
-                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.accent }}>
+                <span className="text-xs font-semibold" style={{ color: c.accent }}>
                   {c.tag}
-                </p>
+                </span>
                 <h3 className="mt-1.5 font-display text-xl font-bold text-[#0F172A]">{c.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-[#475569]">{c.body}</p>
               </div>
@@ -280,7 +281,7 @@ export const LandingPage: React.FC = () => {
       {/* Security & Compliance Banner */}
       <section id="governance" className="scroll-mt-24 bg-[#1B365D] py-16 text-white">
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <p className="text-sm font-semibold uppercase tracking-wider text-[#93C5FD]">
+          <p className="text-xs font-semibold text-blue-200">
             Enterprise Security &amp; Compliance
           </p>
           <h2 className="mt-2 max-w-2xl font-display text-4xl font-bold tracking-tight">

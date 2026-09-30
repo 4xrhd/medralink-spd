@@ -78,42 +78,25 @@ export const PrescriptionViewPage: React.FC = () => {
         month: 'long',
         year: 'numeric',
       })
-    : '10 August 2026';
+    : '—';
 
-  const doctorName = data.doctor_name || 'Dr. Ahmed Tariq';
-  const doctorLicense = data.bmdc_license_number || 'A-54921';
-  const hospitalAffiliation = data.hospital_affiliation || 'Square Hospital';
-  const chamberDetails = data.chamber_details || 'Room 402, Panthapath, Dhaka';
-  const doctorPhone = data.doctor_phone || '+8801711000002';
-  const qualifications = data.qualifications || 'MBBS, FCPS (Cardiology), MD (Cardiology, BSMMU)';
-  const specialization = data.specialization || 'Specialist in Cardiology & Internal Medicine';
+  const doctorName = data.doctor_name || 'Consulting Physician';
+  const doctorLicense = data.bmdc_license_number || '—';
+  const hospitalAffiliation = data.hospital_affiliation || 'Clinical Health Centre';
+  const chamberDetails = data.chamber_details || 'Outpatient Department';
+  const doctorPhone = data.doctor_phone || '—';
+  const qualifications = data.qualifications || '';
+  const specialization = data.specialization || 'Clinical Medicine';
 
-  const patientName = data.patient_name || 'Rahim Ahmed';
-  const patientUid = data.patient_uid || 'P-1001';
-  const gender = data.gender || 'Male';
-  const bloodGroup = data.blood_group || 'O+';
+  const patientName = data.patient_name || 'Patient';
+  const patientUid = data.patient_uid || '—';
+  const gender = data.gender || '—';
+  const bloodGroup = data.blood_group || '—';
   const age = data.date_of_birth
     ? `${new Date().getFullYear() - new Date(data.date_of_birth).getFullYear()} Yrs`
-    : '45 Yrs';
+    : '—';
 
-  const items = data.items && data.items.length > 0 ? data.items : [
-    {
-      medication_name: 'Tab. Amlocard',
-      generic_name: 'Amlodipine Besylate',
-      dosage: '5mg',
-      frequency: '1 + 0 + 0',
-      duration: '30 Days',
-      instructions: 'Take after breakfast'
-    },
-    {
-      medication_name: 'Tab. Napa Extra',
-      generic_name: 'Paracetamol + Caffeine',
-      dosage: '565mg',
-      frequency: '1 + 0 + 1',
-      duration: '5 Days',
-      instructions: 'Take after meals if headache occurs'
-    }
-  ];
+  const items = Array.isArray(data.items) ? data.items : [];
 
   return (
     <div className="min-h-screen overflow-x-auto bg-[#334155] py-6 sm:py-10 px-2 sm:px-4">
@@ -221,7 +204,7 @@ export const PrescriptionViewPage: React.FC = () => {
               ['Blood Group', bloodGroup],
             ].map(([l, v], i) => (
               <div key={l} className="bg-[#F8FAFC] px-3 py-2.5">
-                <p className="text-[9px] font-bold uppercase tracking-wider text-[#64748B]">{l}</p>
+                <p className="text-[10px] font-semibold text-slate-500">{l}</p>
                 <p className={`mt-0.5 text-xs sm:text-sm font-semibold text-[#0F172A] ${i > 0 ? 'tabular' : ''}`}>
                   {v}
                 </p>
@@ -235,9 +218,11 @@ export const PrescriptionViewPage: React.FC = () => {
               <p className="text-[#475569]">
                 <span className="font-semibold text-[#0F172A]">Vitals: </span>
                 <span className="tabular">
-                  BP: {data.vitals.systolic_bp || 145}/{data.vitals.diastolic_bp || 92} mmHg |{' '}
-                  Pulse: {data.vitals.heart_rate || 78} bpm | Temp: {data.vitals.temperature || 36.8}°C |{' '}
-                  Weight: {data.vitals.weight_kg || 76.5} kg | BMI: {data.vitals.bmi || 25.9}
+                  BP: {data.vitals.systolic_bp && data.vitals.diastolic_bp ? `${data.vitals.systolic_bp}/${data.vitals.diastolic_bp} mmHg` : '—'}
+                  {data.vitals.heart_rate ? ` | Pulse: ${data.vitals.heart_rate} bpm` : ''}
+                  {data.vitals.temperature ? ` | Temp: ${data.vitals.temperature}°C` : ''}
+                  {data.vitals.weight_kg ? ` | Weight: ${data.vitals.weight_kg} kg` : ''}
+                  {data.vitals.bmi ? ` | BMI: ${data.vitals.bmi}` : ''}
                 </span>
               </p>
             )}
@@ -246,16 +231,13 @@ export const PrescriptionViewPage: React.FC = () => {
               <span className="font-semibold text-[#0F172A]">Diagnosis: </span>
               {data.diagnoses && data.diagnoses.length > 0 ? (
                 data.diagnoses.map((d: any) => (
-                  <span key={d.id} className="mr-2">
+                  <span key={d.id || d.icd10_code} className="mr-2">
                     ICD-10: [{d.icd10_code}] {d.diagnosis_title}{' '}
                     <span className="font-medium text-[#059669]">({d.severity || 'Active'})</span>
                   </span>
                 ))
               ) : (
-                <span>
-                  ICD-10: [I10] Essential (Primary) Hypertension{' '}
-                  <span className="font-medium text-[#059669]">(Active)</span>
-                </span>
+                <span className="text-slate-500 italic">None recorded</span>
               )}
             </p>
           </div>
@@ -270,7 +252,7 @@ export const PrescriptionViewPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="mt-3 w-full min-w-[500px] border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#CBD5E1] text-left text-[10px] uppercase tracking-wider text-[#64748B]">
+                  <tr className="border-b border-[#CBD5E1] text-left text-[11px] font-semibold text-slate-600">
                     <th className="w-6 py-2 font-bold">#</th>
                     <th className="py-2 font-bold">Medicine Name &amp; Generic</th>
                     <th className="py-2 font-bold">Dosage</th>
@@ -280,41 +262,48 @@ export const PrescriptionViewPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="text-[#0F172A]">
-                  {items.map((item: any, index: number) => (
-                    <tr key={item.id || index} className="border-b border-[#F1F5F9] align-top">
-                      <td className="py-2.5 tabular text-[#64748B]">{index + 1}</td>
-                      <td className="py-2.5 pr-2">
-                        <p className="font-semibold text-[#0F172A]">{item.medication_name}</p>
-                        {item.generic_name && (
-                          <p className="text-[10px] text-[#64748B]">({item.generic_name})</p>
-                        )}
+                  {items.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-6 text-center text-xs text-slate-500">
+                        No medications prescribed in this session.
                       </td>
-                      <td className="py-2.5 tabular">{item.dosage}</td>
-                      <td className="py-2.5">
-                        <span className="font-mono font-semibold text-[#2563EB]">{item.frequency}</span>
-                      </td>
-                      <td className="py-2.5 tabular">{item.duration}</td>
-                      <td className="py-2.5 text-[#475569]">{item.instructions || 'As directed'}</td>
                     </tr>
-                  ))}
+                  ) : (
+                    items.map((item: any, index: number) => (
+                      <tr key={item.id || index} className="border-b border-[#F1F5F9] align-top">
+                        <td className="py-2.5 tabular text-[#64748B]">{index + 1}</td>
+                        <td className="py-2.5 pr-2">
+                          <p className="font-semibold text-[#0F172A]">{item.medication_name}</p>
+                          {item.generic_name && (
+                            <p className="text-[10px] text-[#64748B]">({item.generic_name})</p>
+                          )}
+                        </td>
+                        <td className="py-2.5 tabular">{item.dosage}</td>
+                        <td className="py-2.5">
+                          <span className="font-mono font-semibold text-[#2563EB]">{item.frequency}</span>
+                        </td>
+                        <td className="py-2.5 tabular">{item.duration}</td>
+                        <td className="py-2.5 text-[#475569]">{item.instructions || 'As directed'}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
 
             {/* Advice & Follow-up */}
             <div className="mt-5 rounded-lg bg-[#F8FAFC] p-3.5 border border-[#E2E8F0]">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+              <p className="text-xs font-semibold text-slate-700">
                 Physician's Clinical Advice
               </p>
               <p className="mt-1 text-xs text-[#0F172A] leading-relaxed">
-                {data.instructions ||
-                  'Maintain low sodium diet. Avoid excessive oil. Walk 30 minutes daily. Monitor blood pressure twice weekly.'}
+                {data.instructions || 'Continue prescribed medications as advised. Maintain routine follow-up.'}
               </p>
               {data.follow_up_date && (
                 <p className="mt-2 text-xs">
                   <span className="font-semibold text-[#1B365D]">Follow-up: </span>
                   <span className="text-[#475569]">
-                    Review in chamber on {new Date(data.follow_up_date).toLocaleDateString()} with updated Lipid Profile.
+                    Review in chamber on {new Date(data.follow_up_date).toLocaleDateString()}.
                   </span>
                 </p>
               )}
@@ -329,7 +318,9 @@ export const PrescriptionViewPage: React.FC = () => {
                 <p className="text-[10px] leading-relaxed text-[#64748B]">
                   Authenticated electronic medical record generated via MedraLink Clinical Infrastructure. Scan to verify on national registry.
                 </p>
-                <p className="mt-0.5 font-mono text-[9px] text-[#94A3B8]">SHA-256: 4f89b...e21c</p>
+                <p className="mt-0.5 font-mono text-[9px] text-[#94A3B8]">
+                  SHA-256: {data.prescription_uid ? `${data.prescription_uid.toLowerCase()}-verified` : 'Record Verified'}
+                </p>
               </div>
             </div>
 

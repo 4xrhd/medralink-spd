@@ -171,3 +171,30 @@ export interface Appointment {
   doctor_name?: string;
   doctor_specialization?: string;
 }
+
+export type NotificationType = 'INFO' | 'SUCCESS' | 'WARNING' | 'ALERT';
+export type NotificationCategory = 'CRITICAL_ALERT' | 'PRESCRIPTION' | 'LAB_RESULT' | 'SECURITY_AUDIT' | 'GENERAL';
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  category: NotificationCategory;
+  link?: string;
+  is_read: number;
+  created_at: string;
+}
+
+export interface NotificationSettings {
+  user_id: string;
+  critical_alerts: number;
+  prescription_updates: number;
+  lab_results: number;
+  security_audits: number;
+  sound_enabled: number;
+  email_digest: number;
+  updated_at?: string;
+}
+

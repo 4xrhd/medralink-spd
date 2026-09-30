@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.js';
 import { ToastProvider } from './context/ToastContext.js';
+import { NotificationProvider } from './context/NotificationContext.js';
 import { Navbar } from './components/Navbar.js';
 import { ProtectedRoute } from './components/ProtectedRoute.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
@@ -41,7 +42,8 @@ export const App: React.FC = () => {
     <ErrorBoundary>
       <AuthProvider>
         <ToastProvider>
-          <BrowserRouter>
+          <NotificationProvider>
+            <BrowserRouter>
             {/* Skip-to-content accessibility link */}
             <a
               href="#main-content"
@@ -91,9 +93,10 @@ export const App: React.FC = () => {
               </main>
             </div>
           </BrowserRouter>
-        </ToastProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+        </NotificationProvider>
+      </ToastProvider>
+    </AuthProvider>
+  </ErrorBoundary>
   );
 };
 

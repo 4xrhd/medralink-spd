@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
-import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
+import { Card, Icon, Pill, Badge, Button, VitalPill } from '../ui/primitives.js';
 
 const COMMON_ICD10 = [
   { code: 'I10', title: 'Essential (Primary) Hypertension' },
@@ -27,7 +27,7 @@ export const NewConsultationPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const preselectedPatientId = searchParams.get('patientId') || 'pat-1';
+  const preselectedPatientId = searchParams.get('patientId') || '';
   const appointmentId = searchParams.get('appointmentId') || '';
 
   // Patient Selection
@@ -36,19 +36,19 @@ export const NewConsultationPage: React.FC = () => {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
 
   // Clinical Consultation Inputs
-  const [chiefComplaint, setChiefComplaint] = useState('Mild exertional chest tightness and occipital headaches for 2 weeks.');
-  const [clinicalNotes, setClinicalNotes] = useState('Alert, oriented. S1S2 normal, no murmurs. Elevated BP on repeat measurement. Advise antihypertensive initiation and lifestyle modification.');
-  const [followUpDate, setFollowUpDate] = useState('2026-09-18');
+  const [chiefComplaint, setChiefComplaint] = useState('');
+  const [clinicalNotes, setClinicalNotes] = useState('');
+  const [followUpDate, setFollowUpDate] = useState('');
 
   // Vitals
-  const [systolicBp, setSystolicBp] = useState<number | string>(145);
-  const [diastolicBp, setDiastolicBp] = useState<number | string>(92);
-  const [heartRate, setHeartRate] = useState<number | string>(78);
-  const [temperature, setTemperature] = useState<number | string>(36.8);
-  const [respiratoryRate, setRespiratoryRate] = useState<number | string>(16);
-  const [spo2, setSpo2] = useState<number | string>(98);
-  const [weightKg, setWeightKg] = useState<number | string>(76.5);
-  const [heightCm, setHeightCm] = useState<number | string>(172);
+  const [systolicBp, setSystolicBp] = useState<number | string>('');
+  const [diastolicBp, setDiastolicBp] = useState<number | string>('');
+  const [heartRate, setHeartRate] = useState<number | string>('');
+  const [temperature, setTemperature] = useState<number | string>('');
+  const [respiratoryRate, setRespiratoryRate] = useState<number | string>('');
+  const [spo2, setSpo2] = useState<number | string>('');
+  const [weightKg, setWeightKg] = useState<number | string>('');
+  const [heightCm, setHeightCm] = useState<number | string>('');
 
   // Real-time BMI calculation matching Figma
   const bmi = useMemo(() => {
@@ -83,9 +83,7 @@ export const NewConsultationPage: React.FC = () => {
   };
 
   // Diagnoses
-  const [diagnoses, setDiagnoses] = useState<Array<{ icd10Code: string; diagnosisTitle: string; severity: string }>>([
-    { icd10Code: 'I10', diagnosisTitle: 'Essential (Primary) Hypertension', severity: 'MODERATE' }
-  ]);
+  const [diagnoses, setDiagnoses] = useState<Array<{ icd10Code: string; diagnosisTitle: string; severity: string }>>([]);
   const [customIcd, setCustomIcd] = useState('');
 
   // Prescription Items
@@ -98,32 +96,11 @@ export const NewConsultationPage: React.FC = () => {
     duration: string;
     route: string;
     instructions: string;
-  }>>([
-    {
-      id: 1,
-      medicationName: 'Tab. Amlocard',
-      genericName: 'Amlodipine Besylate',
-      dosage: '5mg',
-      frequency: '1+0+0',
-      duration: '30 Days',
-      route: 'Oral',
-      instructions: 'Take after breakfast'
-    },
-    {
-      id: 2,
-      medicationName: 'Tab. Napa Extra',
-      genericName: 'Paracetamol + Caffeine',
-      dosage: '565mg',
-      frequency: '1+0+1',
-      duration: '5 Days',
-      route: 'Oral',
-      instructions: 'Take after meals PRN'
-    }
-  ]);
-  const [rxInstructions, setRxInstructions] = useState('Maintain low sodium diet, brisk walking 30 minutes daily, monitor BP twice weekly.');
+  }>>([]);
+  const [rxInstructions, setRxInstructions] = useState('');
 
   // Lab Orders
-  const [selectedLabs, setSelectedLabs] = useState<string[]>(['Lipid Profile', 'ECG']);
+  const [selectedLabs, setSelectedLabs] = useState<string[]>([]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -133,13 +110,17 @@ export const NewConsultationPage: React.FC = () => {
     const loadPatients = async () => {
       try {
         const res = await api.get('/patients');
-        setPatients(res.data.data || []);
+        const list = res.data.data || [];
+        setPatients(list);
+        if (!selectedPatientId && list.length > 0) {
+          setSelectedPatientId(list[0].id);
+        }
       } catch (err) {
         console.error('Error fetching patients:', err);
       }
     };
     loadPatients();
-  }, []);
+  }, [selectedPatientId]);
 
   // Fetch selected patient details
   useEffect(() => {
@@ -180,12 +161,12 @@ export const NewConsultationPage: React.FC = () => {
         id: Date.now(),
         medicationName: '',
         genericName: '',
-        dosage: '5mg',
-        frequency: '1+0+0',
-        duration: '14 Days',
+        dosage: '',
+        frequency: '1+0+1',
+        duration: '7 Days',
         route: 'Oral',
-        instructions: 'Take after food'
-      }
+        instructions: 'Take after meals',
+      },
     ]);
   };
 
@@ -236,18 +217,20 @@ export const NewConsultationPage: React.FC = () => {
           heightCm: heightCm ? Number(heightCm) : undefined,
         },
         diagnoses,
-        prescription: prescriptionItems.length > 0 ? {
+        prescription: prescriptionItems.some((i) => i.medicationName.trim()) ? {
           instructions: rxInstructions,
           validityDays: 30,
-          items: prescriptionItems.map(({ medicationName, genericName, dosage, frequency, duration, route, instructions }) => ({
-            medicationName: medicationName || 'Prescribed Drug',
-            genericName: genericName || 'Generic Form',
-            dosage,
-            frequency,
-            duration,
-            route: route || 'Oral',
-            instructions
-          }))
+          items: prescriptionItems
+            .filter((i) => i.medicationName.trim())
+            .map(({ medicationName, genericName, dosage, frequency, duration, route, instructions }) => ({
+              medicationName: medicationName.trim(),
+              genericName: genericName?.trim() || '',
+              dosage: dosage?.trim() || '',
+              frequency: frequency?.trim() || '1+0+1',
+              duration: duration?.trim() || '7 Days',
+              route: route || 'Oral',
+              instructions: instructions?.trim() || '',
+            }))
         } : undefined,
         labOrders: selectedLabs.length > 0 ? selectedLabs.map((testName) => ({
           testName,
@@ -353,7 +336,7 @@ export const NewConsultationPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-3">
-              <label className="text-xs font-semibold uppercase tracking-wider text-[#94A3B8]">
+              <label className="text-xs font-semibold text-slate-600">
                 Switch Patient:
               </label>
               <select
@@ -381,7 +364,6 @@ export const NewConsultationPage: React.FC = () => {
         {/* Figma Two-Column Clinical Layout */}
         <div className="grid gap-6 xl:grid-cols-[1fr_1fr] 2xl:grid-cols-[560px_1fr]">
           {/* Left Column: Clinical Observations & Telemetry */}
-          {/* Left Column: Clinical Observations & Telemetry */}
           <Card className="space-y-6 p-6">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3">
               <div>
@@ -396,7 +378,7 @@ export const NewConsultationPage: React.FC = () => {
             {/* Chief Complaints */}
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#475569]">
+                <label className="block text-xs font-semibold text-slate-700">
                   Chief Complaints
                 </label>
                 <span className="text-[10px] font-medium text-[#94A3B8]">Primary patient symptoms</span>
@@ -413,7 +395,7 @@ export const NewConsultationPage: React.FC = () => {
             {/* Clinical Examination & Diagnosis Notes */}
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-[#475569]">
+                <label className="block text-xs font-semibold text-slate-700">
                   Clinical Examination &amp; Diagnosis Notes
                 </label>
                 <span className="text-[10px] font-medium text-[#94A3B8]">Physical examination findings</span>
@@ -430,7 +412,7 @@ export const NewConsultationPage: React.FC = () => {
             {/* Vitals Capture Matrix (4x2 grid with Real-Time BMI indicator) */}
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#0F172A]">
+                <label className="block text-xs font-semibold text-slate-800">
                   Vitals Capture Matrix
                 </label>
                 <span className="inline-flex items-center gap-1 rounded-md bg-[#EFF6FF] px-2 py-0.5 text-[11px] font-semibold text-[#2563EB]">
@@ -454,7 +436,7 @@ export const NewConsultationPage: React.FC = () => {
                     className="flex flex-col justify-between rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 transition-all hover:border-[#CBD5E1] focus-within:border-[#2563EB] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#EFF6FF] focus-within:shadow-xs min-h-[76px]"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[#64748B]">
+                      <span className="text-[11px] font-medium text-slate-600">
                         {v.label}
                       </span>
                       <span className="rounded bg-slate-200/70 px-2 py-0.5 font-mono text-[10px] font-bold text-[#475569]">
@@ -478,7 +460,7 @@ export const NewConsultationPage: React.FC = () => {
               {/* Real-time BMI Display Badge */}
               <div className={`mt-3 flex items-center justify-between rounded-xl px-4 py-2.5 ${toneCls[bmiTone]} shadow-2xs`}>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider">Computed BMI:</span>
+                  <span className="text-xs font-semibold">Computed BMI:</span>
                   {bmiCategory && (
                     <span className="rounded-md bg-white/80 px-2 py-0.5 text-xs font-extrabold shadow-xs">
                       {bmiCategory}
@@ -491,7 +473,7 @@ export const NewConsultationPage: React.FC = () => {
 
             {/* ICD-10 Diagnosis Codification */}
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#475569]">
+              <label className="block text-xs font-semibold text-slate-700">
                 ICD-10 Diagnosis Codification
               </label>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -554,7 +536,7 @@ export const NewConsultationPage: React.FC = () => {
 
             {/* Dynamic Medication Table */}
             <div className="overflow-x-auto rounded-xl border border-[#E2E8F0]" aria-label="Prescription medicine table">
-              <div className="grid min-w-[620px] grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] gap-2 bg-[#F8FAFC] px-3.5 py-2.5 text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+              <div className="grid min-w-[620px] grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] gap-2 bg-[#F8FAFC] px-3.5 py-2.5 text-xs font-semibold text-slate-600">
                 <span>Medicine Name</span>
                 <span>Dosage</span>
                 <span>Frequency</span>
@@ -564,59 +546,63 @@ export const NewConsultationPage: React.FC = () => {
               </div>
 
               <div className="min-w-[620px] divide-y divide-[#E2E8F0]">
-                {prescriptionItems.map((item) => (
-                  <div key={item.id} className="grid grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] items-center gap-2 px-3 py-2">
-                    <input
-                      aria-label="Medicine Name"
-                      value={item.medicationName}
-                      onChange={(e) => updatePrescriptionRow(item.id, 'medicationName', e.target.value)}
-                      placeholder="e.g. Tab. Amlocard"
-                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
-                    />
-                    <input
-                      aria-label="Dosage"
-                      value={item.dosage}
-                      onChange={(e) => updatePrescriptionRow(item.id, 'dosage', e.target.value)}
-                      placeholder="5mg"
-                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
-                    />
-                    <input
-                      aria-label="Frequency"
-                      value={item.frequency}
-                      onChange={(e) => updatePrescriptionRow(item.id, 'frequency', e.target.value)}
-                      placeholder="1+0+0"
-                      className="tabular font-mono text-xs rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
-                    />
-                    <input
-                      aria-label="Duration"
-                      value={item.duration}
-                      onChange={(e) => updatePrescriptionRow(item.id, 'duration', e.target.value)}
-                      placeholder="30 Days"
-                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
-                    />
-                    <input
-                      aria-label="Instructions"
-                      value={item.instructions}
-                      onChange={(e) => updatePrescriptionRow(item.id, 'instructions', e.target.value)}
-                      placeholder="After breakfast"
-                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
-                    />
-                    <button
-                      type="button"
-                      aria-label="Delete medicine row"
-                      disabled={prescriptionItems.length <= 1}
-                      onClick={() => removePrescriptionRow(item.id)}
-                      className={`grid h-8 w-8 place-items-center rounded-lg transition-colors ${
-                        prescriptionItems.length <= 1
-                          ? 'text-slate-300 cursor-not-allowed'
-                          : 'text-[#94A3B8] hover:bg-[#FEF2F2] hover:text-[#DC2626]'
-                      }`}
-                      title={prescriptionItems.length <= 1 ? "Prescription must contain at least one item" : "Remove medicine row"}
-                    >
-                      <Icon.Trash size={14} />
-                    </button>
+                {prescriptionItems.length === 0 ? (
+                  <div className="py-8 text-center bg-white px-4">
+                    <p className="text-xs font-semibold text-[#0F172A]">No medications added to this prescription yet</p>
+                    <p className="mt-1 text-[11px] text-[#64748B]">
+                      Click "+ Add Medication Item" below to prescribe medicines for this consultation.
+                    </p>
                   </div>
-                ))}
+                ) : (
+                  prescriptionItems.map((item) => (
+                    <div key={item.id} className="grid grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] items-center gap-2 px-3 py-2">
+                      <input
+                        aria-label="Medicine Name"
+                        value={item.medicationName}
+                        onChange={(e) => updatePrescriptionRow(item.id, 'medicationName', e.target.value)}
+                        placeholder="e.g. Tab. Amlocard"
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                      />
+                      <input
+                        aria-label="Dosage"
+                        value={item.dosage}
+                        onChange={(e) => updatePrescriptionRow(item.id, 'dosage', e.target.value)}
+                        placeholder="5mg"
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                      />
+                      <input
+                        aria-label="Frequency"
+                        value={item.frequency}
+                        onChange={(e) => updatePrescriptionRow(item.id, 'frequency', e.target.value)}
+                        placeholder="1+0+0"
+                        className="tabular font-mono text-xs rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                      />
+                      <input
+                        aria-label="Duration"
+                        value={item.duration}
+                        onChange={(e) => updatePrescriptionRow(item.id, 'duration', e.target.value)}
+                        placeholder="30 Days"
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                      />
+                      <input
+                        aria-label="Instructions"
+                        value={item.instructions}
+                        onChange={(e) => updatePrescriptionRow(item.id, 'instructions', e.target.value)}
+                        placeholder="After breakfast"
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                      />
+                      <button
+                        type="button"
+                        aria-label="Delete medicine row"
+                        onClick={() => removePrescriptionRow(item.id)}
+                        className="grid h-8 w-8 place-items-center rounded-lg transition-colors text-[#94A3B8] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
+                        title="Remove medicine row"
+                      >
+                        <Icon.Trash size={14} />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
@@ -658,7 +644,7 @@ export const NewConsultationPage: React.FC = () => {
 
             {/* Lifestyle & Dietary Advice */}
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-[#475569]">
+              <label className="block text-xs font-semibold text-slate-700">
                 Lifestyle &amp; Dietary Advice
               </label>
               <textarea
@@ -683,7 +669,7 @@ export const NewConsultationPage: React.FC = () => {
 
             {/* Diagnostic Laboratory Requisition */}
             <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#475569]">
+              <p className="text-xs font-semibold text-slate-700">
                 Diagnostic Laboratory Requisition
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -725,22 +711,23 @@ export const NewConsultationPage: React.FC = () => {
           </p>
 
           <div className="flex w-full gap-3 sm:w-auto">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               onClick={() => navigate('/doctor')}
-              className="flex-1 rounded-xl border border-[#E2E8F0] bg-white px-4 py-2.5 text-xs sm:text-sm font-semibold text-[#475569] transition-colors hover:border-[#cbd5e1] sm:flex-none"
+              className="flex-1 sm:flex-none"
             >
               Cancel
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="primary"
               disabled={isSubmitting}
+              isLoading={isSubmitting}
               onClick={() => handleSubmit()}
-              className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#1B365D] px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#16294a] active:scale-[0.98] sm:flex-none disabled:opacity-60"
+              icon={<Icon.Lock size={16} />}
+              className="flex-1 sm:flex-none"
             >
-              {isSubmitting ? <Icon.Loader size={16} /> : <Icon.Lock size={16} />}
-              <span>{isSubmitting ? 'Digitally Signing & Issuing...' : 'Finalize, Digitally Sign & Issue Prescription'}</span>
-            </button>
+              {isSubmitting ? 'Digitally Signing & Issuing...' : 'Finalize, Digitally Sign & Issue Prescription'}
+            </Button>
           </div>
         </div>
       </div>

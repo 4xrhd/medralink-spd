@@ -152,4 +152,100 @@ describe('MedraLink EMR Backend API Test Suite', () => {
       expect(pdfRes.headers['content-type']).toBe('application/pdf');
     });
   });
+
+  describe('5. Notification Engine & User Settings Module', () => {
+    let sampleNotifId: string;
+
+    it('should reject unauthenticated access to notifications', async () => {
+      const res = await request(app).get('/api/v1/notifications');
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
+    });
+
+    it('should retrieve seeded notifications and unreadCount for patient', async () => {
+      const res = await request(app)
+        .get('/api/v1/notifications')
+        .set('Authorization', `Bearer ${patientToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(Array.isArray(res.body.data.notifications)).toBe(true);
+      expect(res.body.data.notifications.length).toBeGreaterThan(0);
+      expect(typeof res.body.data.unreadCount).toBe('number');
+
+      sampleNotifId = res.body.data.notifications[0].id;
+    });
+
+    it('should mark a specific notification as read', async () => {
+      const res = await request(app)
+        .patch(`/api/v1/notifications/${sampleNotifId}/read`)
+        .set('Authorization', `Bearer ${patientToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.updated).toBe(true);
+    });
+
+    it('should mark all notifications as read for current user', async () => {
+      const res = await request(app)
+        .patch('/api/v1/notifications/read-all')
+        .set('Authorization', `Bearer ${patientToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+
+      const checkRes = await request(app)
+        .get('/api/v1/notifications')
+        .set('Authorization', `Bearer ${patientToken}`);
+
+      expect(checkRes.body.data.unreadCount).toBe(0);
+    });
+
+    it('should retrieve user notification preferences and settings', async () => {
+      const res = await request(app)
+        .get('/api/v1/notifications/settings')
+        .set('Authorization', `Bearer ${patientToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data).toHaveProperty('critical_alerts');
+      expect(res.body.data).toHaveProperty('prescription_updates');
+      expect(res.body.data).toHaveProperty('lab_results');
+      expect(res.body.data).toHaveProperty('security_audits');
+      expect(res.body.data).toHaveProperty('sound_enabled');
+      expect(res.body.data).toHaveProperty('email_digest');
+    });
+
+    it('should update user notification preferences', async () => {
+      const updatePayload = {
+        criticalAlerts: true,
+        prescriptionUpdates: false,
+        labResults: true,
+        securityAudits: true,
+        soundEnabled: false,
+        emailDigest: true
+      };
+
+      const res = await request(app)
+        .put('/api/v1/notifications/settings')
+        .set('Authorization', `Bearer ${patientToken}`)
+        .send(updatePayload);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.prescription_updates).toBe(0);
+      expect(res.body.data.sound_enabled).toBe(0);
+      expect(res.body.data.email_digest).toBe(1);
+    });
+
+    it('should delete a notification', async () => {
+      const res = await request(app)
+        .delete(`/api/v1/notifications/${sampleNotifId}`)
+        .set('Authorization', `Bearer ${patientToken}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.deleted).toBe(true);
+    });
+  });
 });

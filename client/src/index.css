@@ -84,12 +84,15 @@ body {
 @media print {
   @page { size: A4 portrait; margin: 0; }
   html, body { background: white; }
-  .screen-switcher, .print-controls, header, nav { display: none !important; }
+  .print-controls, header, nav { display: none !important; }
   .print-sheet { box-shadow: none !important; width: 595px !important; min-height: 842px !important; }
 }
 
-@media (max-width: 640px) {
-  .screen-switcher {
-    width: calc(100vw - 1.5rem);
-  }
+/* Ensure inline SVGs in badges, buttons, and flex containers never break into block layout */
+.inline-flex svg,
+.flex svg,
+svg.shrink-0 {
+  display: inline-block;
+  vertical-align: middle;
 }
+

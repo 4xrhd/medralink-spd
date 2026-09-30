@@ -17,7 +17,7 @@ export const PageLoader: React.FC<{ message?: string }> = ({
           <Icon.Cross size={16} />
         </div>
       </div>
-      <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+      <p className="mt-4 text-xs font-medium text-[#64748B]">
         {message}
       </p>
     </div>

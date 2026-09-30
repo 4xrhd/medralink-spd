@@ -9,7 +9,8 @@ export async function seedDatabase() {
   // Check if admin already exists
   const existingUser = await queryOne('SELECT id FROM users WHERE email = ?', ['admin@medralink.com']);
   if (existingUser) {
-    console.log('[SEED] Database already contains seed records. Skipping.');
+    console.log('[SEED] Database already contains seed records. Ensuring notification tables seeded...');
+    await seedNotificationsIfEmpty();
     return;
   }
 
@@ -222,7 +223,116 @@ export async function seedDatabase() {
     );
   }
 
+  // 8. Notifications & Notification Preferences
+  await seedNotificationsIfEmpty();
+
   console.log('[SEED] Database seeding completed successfully! ✨');
+}
+
+async function seedNotificationsIfEmpty() {
+  const existingNotif = await queryOne('SELECT id FROM notifications LIMIT 1');
+  if (existingNotif) {
+    return;
+  }
+
+  console.log('[SEED] Inserting initial notification settings and notifications...');
+  const userIds = ['usr-admin-1', 'usr-doc-1', 'usr-doc-2', 'usr-pat-1', 'usr-pat-2', 'usr-pat-3'];
+  for (const uid of userIds) {
+    await execute(
+      `INSERT OR IGNORE INTO notification_settings (user_id, critical_alerts, prescription_updates, lab_results, security_audits, sound_enabled, email_digest)
+       VALUES (?, 1, 1, 1, 1, 1, 0)`,
+      [uid]
+    );
+  }
+
+  const sampleNotifications = [
+    {
+      id: 'notif-1',
+      userId: 'usr-pat-1',
+      title: 'Digital Prescription Signed',
+      message: 'Rx #RX-4029 verified and anchored with cryptographic seal.',
+      type: 'SUCCESS',
+      category: 'PRESCRIPTION',
+      link: '/prescription/rx-1',
+      isRead: 0,
+      createdAt: new Date(Date.now() - 12 * 60 * 1000).toISOString()
+    },
+    {
+      id: 'notif-2',
+      userId: 'usr-pat-1',
+      title: 'Diagnostic Lab Finding Released',
+      message: 'Square Diagnostics uploaded Fast Blood Glucose & HbA1c panel results.',
+      type: 'WARNING',
+      category: 'LAB_RESULT',
+      link: '/patient/timeline/pat-1',
+      isRead: 0,
+      createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString()
+    },
+    {
+      id: 'notif-3',
+      userId: 'usr-pat-1',
+      title: 'Biometric Telemetry Recorded',
+      message: 'Blood pressure 125/82 mmHg & 99% SpO2 logged into longitudinal timeline.',
+      type: 'INFO',
+      category: 'GENERAL',
+      link: '/patient/timeline/pat-1',
+      isRead: 1,
+      createdAt: new Date(Date.now() - 3 * 3600 * 1000).toISOString()
+    },
+    {
+      id: 'notif-4',
+      userId: 'usr-doc-1',
+      title: 'High-Alert Drug Allergy Noted',
+      message: 'Patient Rahim Ahmed (P-1001) has documented severe allergy to Penicillin.',
+      type: 'ALERT',
+      category: 'CRITICAL_ALERT',
+      link: '/patient/timeline/pat-1',
+      isRead: 0,
+      createdAt: new Date(Date.now() - 20 * 60 * 1000).toISOString()
+    },
+    {
+      id: 'notif-5',
+      userId: 'usr-doc-1',
+      title: 'Follow-Up Review Scheduled',
+      message: 'Routine hypertensive re-assessment due for patient P-1001 in 30 days.',
+      type: 'INFO',
+      category: 'GENERAL',
+      link: '/doctor',
+      isRead: 1,
+      createdAt: new Date(Date.now() - 2 * 3600 * 1000).toISOString()
+    },
+    {
+      id: 'notif-6',
+      userId: 'usr-admin-1',
+      title: 'Audit Trail Integrity Check Passed',
+      message: 'Automated SHA-256 cryptographic ledger check verified zero tampering.',
+      type: 'SUCCESS',
+      category: 'SECURITY_AUDIT',
+      link: '/admin',
+      isRead: 0,
+      createdAt: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+    },
+    {
+      id: 'notif-7',
+      userId: 'usr-admin-1',
+      title: 'Physician Accreditation Pending',
+      message: 'New practitioner registration awaiting BMDC license verification.',
+      type: 'WARNING',
+      category: 'GENERAL',
+      link: '/admin',
+      isRead: 1,
+      createdAt: new Date(Date.now() - 4 * 3600 * 1000).toISOString()
+    }
+  ];
+
+  for (const n of sampleNotifications) {
+    await execute(
+      `INSERT OR IGNORE INTO notifications (id, user_id, title, message, type, category, link, is_read, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [n.id, n.userId, n.title, n.message, n.type, n.category, n.link, n.isRead, n.createdAt]
+    );
+  }
+  console.log('[SEED] Notification tables seeded successfully.');
 }
 
 if (process.argv[1] && process.argv[1].includes('seed.ts')) {

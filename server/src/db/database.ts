@@ -80,6 +80,19 @@ export async function initDb(): Promise<void> {
     console.log('[DB] PostgreSQL schema initialized successfully.');
   } else if (sqliteDb) {
     sqliteDb.exec(schemaSql);
+    // Check and migrate columns on notifications table if needed
+    try {
+      const columns = sqliteDb.prepare("PRAGMA table_info(notifications)").all() as Array<{ name: string }>;
+      const colNames = columns.map(c => c.name);
+      if (!colNames.includes('category')) {
+        sqliteDb.exec("ALTER TABLE notifications ADD COLUMN category TEXT NOT NULL DEFAULT 'GENERAL'");
+      }
+      if (!colNames.includes('link')) {
+        sqliteDb.exec("ALTER TABLE notifications ADD COLUMN link TEXT");
+      }
+    } catch (migErr) {
+      console.warn('[DB] Migration notice:', migErr);
+    }
     console.log('[DB] SQLite schema initialized successfully.');
   }
 }

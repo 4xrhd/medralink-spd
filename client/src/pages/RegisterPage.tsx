@@ -15,13 +15,13 @@ export const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   // Patient fields
   const [gender, setGender] = useState<'MALE' | 'FEMALE' | 'OTHER'>('MALE');
-  const [dateOfBirth, setDateOfBirth] = useState('1995-01-01');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   const [bloodGroup, setBloodGroup] = useState('O+');
   // Doctor fields
-  const [specialization, setSpecialization] = useState('Cardiology');
+  const [specialization, setSpecialization] = useState('');
   const [bmdcLicense, setBmdcLicense] = useState('');
-  const [qualifications, setQualifications] = useState('MBBS, FCPS');
-  const [hospital, setHospital] = useState('Square Hospital / NICVD');
+  const [qualifications, setQualifications] = useState('');
+  const [hospital, setHospital] = useState('');
 
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -50,9 +50,15 @@ export const RegisterPage: React.FC = () => {
           bloodGroup,
         };
       } else {
+        if (!bmdcLicense.trim()) {
+          setError('BMDC license number is required for doctor registration.');
+          toast.error('BMDC license number is required.');
+          setIsSubmitting(false);
+          return;
+        }
         payload.doctorData = {
           specialization,
-          bmdcLicenseNumber: bmdcLicense || `BMDC-A-${Math.floor(10000 + Math.random() * 90000)}`,
+          bmdcLicenseNumber: bmdcLicense.trim(),
           qualifications,
           hospitalAffiliation: hospital,
         };
@@ -237,10 +243,11 @@ export const RegisterPage: React.FC = () => {
                   />
                 </FormField>
 
-                <FormField label="BMDC license number" htmlFor="reg-bmdc" hint="Optional if awaiting verification">
+                <FormField label="BMDC license number" htmlFor="reg-bmdc" required>
                   <Input
                     id="reg-bmdc"
                     type="text"
+                    required
                     value={bmdcLicense}
                     onChange={(e) => setBmdcLicense(e.target.value)}
                     placeholder="e.g. A-98120"

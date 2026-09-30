@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { execute, query, queryOne, runTransaction } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
+import { createNotification } from '../services/notificationService.js';
 
 export async function createConsultation(req: Request, res: Response) {
   try {
@@ -26,7 +27,10 @@ export async function createConsultation(req: Request, res: Response) {
     }
 
     // Verify patient exists
-    const patient = await queryOne('SELECT id, patient_uid FROM patients WHERE id = ? OR patient_uid = ?', [patientId, patientId]);
+    const patient = await queryOne<{ id: string; user_id: string; patient_uid: string }>(
+      'SELECT id, user_id, patient_uid FROM patients WHERE id = ? OR patient_uid = ?',
+      [patientId, patientId]
+    );
     if (!patient) {
       return res.status(404).json({ success: false, message: 'Patient not found.' });
     }
@@ -182,6 +186,44 @@ export async function createConsultation(req: Request, res: Response) {
         details: `Recorded clinical consultation ${recordUid} with prescription ${prescriptionUid || 'NONE'} for patient ${patient.patient_uid}`
       });
     });
+
+    // 8. Dispatch Real-Time Patient In-App Notifications
+    if (patient.user_id) {
+      try {
+        if (prescriptionId) {
+          await createNotification({
+            userId: patient.user_id,
+            title: 'Digital Prescription Signed',
+            message: `Prescription #${prescriptionUid} digitally signed and anchored with cryptographic seal.`,
+            type: 'SUCCESS',
+            category: 'PRESCRIPTION',
+            link: `/prescription/${prescriptionId}`
+          });
+        } else {
+          await createNotification({
+            userId: patient.user_id,
+            title: 'New Consultation Summary',
+            message: `Clinical consultation #${recordUid} has been recorded to your longitudinal health record.`,
+            type: 'INFO',
+            category: 'GENERAL',
+            link: `/patient/timeline/${patient.id}`
+          });
+        }
+
+        if (Array.isArray(labOrders) && labOrders.length > 0) {
+          await createNotification({
+            userId: patient.user_id,
+            title: 'Diagnostic Lab Order Placed',
+            message: `${labOrders.length} laboratory diagnostic investigation(s) ordered by your physician.`,
+            type: 'WARNING',
+            category: 'LAB_RESULT',
+            link: `/patient/timeline/${patient.id}`
+          });
+        }
+      } catch (notifErr) {
+        console.error('Failed to dispatch notification on consultation create:', notifErr);
+      }
+    }
 
     return res.status(201).json({
       success: true,
