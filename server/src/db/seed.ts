@@ -230,12 +230,7 @@ export async function seedDatabase() {
 }
 
 async function seedNotificationsIfEmpty() {
-  const existingNotif = await queryOne('SELECT id FROM notifications LIMIT 1');
-  if (existingNotif) {
-    return;
-  }
-
-  console.log('[SEED] Inserting initial notification settings and notifications...');
+  console.log('[SEED] Ensuring notification settings and sample notifications...');
   const userIds = ['usr-admin-1', 'usr-doc-1', 'usr-doc-2', 'usr-pat-1', 'usr-pat-2', 'usr-pat-3'];
   for (const uid of userIds) {
     await execute(

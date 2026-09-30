@@ -54,10 +54,10 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
       role="dialog"
       aria-modal="true"
       aria-labelledby="notif-settings-title"
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+      className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
     >
       <div
-        className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-6"
+        className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -86,7 +86,7 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
         </div>
 
         {/* Channels List */}
-        <div className="space-y-5 max-h-[60vh] overflow-y-auto pr-1">
+        <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
           {/* Section: Clinical & Safety Alerts */}
           <div>
             <div className="flex items-center justify-between mb-3">

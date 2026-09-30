@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { execute, query, queryOne, runTransaction } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
 import { createNotification } from '../services/notificationService.js';
+import { generateConsultationSummaryPDF, generatePatientHealthSummaryPDF } from '../services/pdfService.js';
 
 export async function createConsultation(req: Request, res: Response) {
   try {
@@ -288,5 +289,243 @@ export async function getConsultationById(req: Request, res: Response) {
   } catch (error: any) {
     console.error('Error fetching consultation:', error);
     return res.status(500).json({ success: false, message: 'Failed to retrieve consultation.' });
+  }
+}
+
+export async function downloadConsultationPDF(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const record = await queryOne(
+      `SELECT r.*, 
+              d.doctor_uid, du.full_name as doctor_name, d.bmdc_license_number, d.specialization, d.qualifications, d.hospital_affiliation, d.chamber_details, du.phone as doctor_phone,
+              p.patient_uid, pu.full_name as patient_name, p.gender, p.date_of_birth, p.blood_group, pu.phone as patient_phone
+       FROM medical_records r
+       JOIN doctors d ON r.doctor_id = d.id
+       JOIN users du ON d.user_id = du.id
+       JOIN patients p ON r.patient_id = p.id
+       JOIN users pu ON p.user_id = pu.id
+       WHERE r.id = ? OR r.record_uid = ?`,
+      [id, id]
+    );
+
+    if (!record) {
+      return res.status(404).json({ success: false, message: 'Consultation record not found.' });
+    }
+
+    if (req.user?.role === 'PATIENT' && req.user.patientId !== record.patient_id) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+
+    const vitals = await queryOne('SELECT * FROM vital_signs WHERE record_id = ?', [record.id]);
+    const diagnoses = await query('SELECT * FROM diagnoses WHERE record_id = ?', [record.id]);
+    const prescription = await queryOne('SELECT * FROM prescriptions WHERE record_id = ?', [record.id]);
+    let prescriptionItems: any[] = [];
+    if (prescription) {
+      prescriptionItems = await query('SELECT * FROM prescription_items WHERE prescription_id = ?', [prescription.id]);
+    }
+    const labReports = await query('SELECT * FROM lab_reports WHERE record_id = ?', [record.id]);
+    const allergies = await query('SELECT allergen, severity FROM allergies WHERE patient_id = ?', [record.patient_id]);
+    const conditions = await query('SELECT condition_name, status FROM medical_conditions WHERE patient_id = ?', [record.patient_id]);
+
+    await recordAuditEvent({
+      actorId: req.user?.id,
+      actorRole: req.user?.role || 'UNKNOWN',
+      action: 'CONSULTATION_PDF_EXPORTED',
+      targetResource: 'medical_records',
+      targetId: record.id,
+      ipAddress: req.ip || '127.0.0.1',
+      userAgent: req.headers['user-agent'],
+      details: `Exported consultation summary PDF ${record.record_uid} for ${record.patient_name}`
+    });
+
+    const pdfData = {
+      recordUid: record.record_uid,
+      visitDate: record.visit_date,
+      chiefComplaint: record.chief_complaint,
+      clinicalNotes: record.clinical_notes,
+      followUpDate: record.follow_up_date,
+      doctor: {
+        fullName: record.doctor_name,
+        specialization: record.specialization,
+        qualifications: record.qualifications,
+        licenseNumber: record.bmdc_license_number,
+        hospital: record.hospital_affiliation,
+        chamber: record.chamber_details,
+        phone: record.doctor_phone,
+      },
+      patient: {
+        fullName: record.patient_name,
+        patientUid: record.patient_uid,
+        gender: record.gender,
+        dateOfBirth: record.date_of_birth,
+        bloodGroup: record.blood_group,
+        phone: record.patient_phone,
+        allergies: allergies.map((a: any) => ({ allergen: a.allergen, severity: a.severity })),
+        conditions: conditions.map((c: any) => ({ conditionName: c.condition_name, status: c.status })),
+      },
+      vitals: vitals ? {
+        systolicBp: vitals.systolic_bp,
+        diastolicBp: vitals.diastolic_bp,
+        heartRate: vitals.heart_rate,
+        temperature: vitals.temperature,
+        spo2: vitals.spo2,
+        weightKg: vitals.weight_kg,
+        heightCm: vitals.height_cm,
+        bmi: vitals.bmi,
+      } : undefined,
+      diagnoses: diagnoses.map((d: any) => ({
+        icd10Code: d.icd10_code,
+        diagnosisTitle: d.diagnosis_title,
+        severity: d.severity,
+        description: d.description,
+      })),
+      prescription: prescription ? {
+        prescriptionUid: prescription.prescription_uid,
+        instructions: prescription.instructions,
+        items: prescriptionItems.map((i: any) => ({
+          medicationName: i.medication_name,
+          genericName: i.generic_name,
+          dosage: i.dosage,
+          frequency: i.frequency,
+          duration: i.duration,
+          instructions: i.instructions,
+        })),
+      } : undefined,
+      labOrders: labReports.map((l: any) => ({
+        testName: l.test_name,
+        category: l.category,
+        status: l.status,
+        resultsSummary: l.results_summary,
+      })),
+    };
+
+    await generateConsultationSummaryPDF(pdfData, res);
+  } catch (error: any) {
+    console.error('Error generating consultation PDF:', error);
+    return res.status(500).json({ success: false, message: 'Failed to generate consultation PDF.' });
+  }
+}
+
+export async function downloadPatientSummaryPDF(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const patient = await queryOne(
+      `SELECT p.*, u.full_name, u.phone, u.email
+       FROM patients p
+       JOIN users u ON p.user_id = u.id
+       WHERE p.id = ? OR p.patient_uid = ?`,
+      [id, id]
+    );
+
+    if (!patient) {
+      return res.status(404).json({ success: false, message: 'Patient record not found.' });
+    }
+
+    if (req.user?.role === 'PATIENT' && req.user.patientId !== patient.id) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+
+    const allergies = await query('SELECT * FROM allergies WHERE patient_id = ?', [patient.id]);
+    const conditions = await query('SELECT * FROM medical_conditions WHERE patient_id = ?', [patient.id]);
+    const consultations = await query(
+      `SELECT r.record_uid, r.visit_date, du.full_name as doctor_name, d.specialization, r.chief_complaint,
+              COALESCE(GROUP_CONCAT(diag.diagnosis_title, ', '), 'None') as diagnoses
+       FROM medical_records r
+       JOIN doctors d ON r.doctor_id = d.id
+       JOIN users du ON d.user_id = du.id
+       LEFT JOIN diagnoses diag ON diag.record_id = r.id
+       WHERE r.patient_id = ?
+       GROUP BY r.id
+       ORDER BY r.visit_date DESC LIMIT 10`,
+      [patient.id]
+    );
+
+    const prescriptions = await query(
+      `SELECT pr.prescription_uid, pr.issue_date, du.full_name as doctor_name,
+              COUNT(pi.id) as items_count,
+              COALESCE(GROUP_CONCAT(pi.medication_name, ', '), '') as items_summary
+       FROM prescriptions pr
+       JOIN doctors d ON pr.doctor_id = d.id
+       JOIN users du ON d.user_id = du.id
+       LEFT JOIN prescription_items pi ON pi.prescription_id = pr.id
+       WHERE pr.patient_id = ?
+       GROUP BY pr.id
+       ORDER BY pr.issue_date DESC LIMIT 10`,
+      [patient.id]
+    );
+
+    const labReports = await query(
+      `SELECT test_name, category, test_date, status, results_summary
+       FROM lab_reports
+       WHERE patient_id = ?
+       ORDER BY test_date DESC LIMIT 10`,
+      [patient.id]
+    );
+
+    await recordAuditEvent({
+      actorId: req.user?.id,
+      actorRole: req.user?.role || 'UNKNOWN',
+      action: 'PATIENT_SUMMARY_PDF_EXPORTED',
+      targetResource: 'patients',
+      targetId: patient.id,
+      ipAddress: req.ip || '127.0.0.1',
+      userAgent: req.headers['user-agent'],
+      details: `Exported longitudinal health dossier PDF for ${patient.full_name}`
+    });
+
+    const pdfData = {
+      patient: {
+        fullName: patient.full_name,
+        patientUid: patient.patient_uid,
+        gender: patient.gender,
+        dateOfBirth: patient.date_of_birth,
+        bloodGroup: patient.blood_group,
+        phone: patient.phone,
+        address: patient.address,
+        city: patient.city,
+        district: patient.district,
+        nidOrBid: patient.nid_or_bid,
+        emergencyContactName: patient.emergency_contact_name,
+        emergencyContactPhone: patient.emergency_contact_phone,
+        emergencyContactRelation: patient.emergency_contact_relation,
+      },
+      allergies: allergies.map((a: any) => ({
+        allergen: a.allergen,
+        allergenType: a.allergen_type,
+        severity: a.severity,
+        reaction: a.reaction,
+      })),
+      chronicConditions: conditions.map((c: any) => ({
+        conditionName: c.condition_name,
+        status: c.status,
+        diagnosedDate: c.diagnosed_date,
+      })),
+      consultations: consultations.map((c: any) => ({
+        recordUid: c.record_uid,
+        visitDate: c.visit_date,
+        doctorName: c.doctor_name,
+        specialization: c.specialization,
+        chiefComplaint: c.chief_complaint,
+        diagnoses: c.diagnoses,
+      })),
+      activePrescriptions: prescriptions.map((p: any) => ({
+        prescriptionUid: p.prescription_uid,
+        issueDate: p.issue_date,
+        doctorName: p.doctor_name,
+        itemsSummary: p.items_summary || `${p.items_count} medication(s)`,
+      })),
+      labReports: labReports.map((l: any) => ({
+        testName: l.test_name,
+        category: l.category,
+        testDate: l.test_date,
+        status: l.status,
+        resultsSummary: l.results_summary,
+      })),
+    };
+
+    await generatePatientHealthSummaryPDF(pdfData, res);
+  } catch (error: any) {
+    console.error('Error generating patient health summary PDF:', error);
+    return res.status(500).json({ success: false, message: 'Failed to generate patient health summary PDF.' });
   }
 }

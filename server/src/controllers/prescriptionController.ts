@@ -107,6 +107,9 @@ export async function downloadPrescriptionPDF(req: Request, res: Response) {
     const items = await query('SELECT * FROM prescription_items WHERE prescription_id = ?', [prescription.id]);
     const vitals = await queryOne('SELECT * FROM vital_signs WHERE record_id = ?', [prescription.record_id]);
     const diagnoses = await query('SELECT * FROM diagnoses WHERE record_id = ?', [prescription.record_id]);
+    const allergies = await query('SELECT allergen, severity FROM allergies WHERE patient_id = ?', [prescription.patient_id]);
+    const conditions = await query('SELECT condition_name, status FROM medical_conditions WHERE patient_id = ?', [prescription.patient_id]);
+    const medicalRecord = await queryOne('SELECT follow_up_date FROM medical_records WHERE id = ?', [prescription.record_id]);
 
     await recordAuditEvent({
       actorId: req.user?.id,
@@ -123,6 +126,8 @@ export async function downloadPrescriptionPDF(req: Request, res: Response) {
       prescriptionUid: prescription.prescription_uid,
       issueDate: prescription.issue_date,
       instructions: prescription.instructions,
+      validityDays: prescription.validity_days || 30,
+      followUpDate: medicalRecord?.follow_up_date || undefined,
       doctor: {
         fullName: prescription.doctor_name,
         specialization: prescription.specialization,
@@ -139,6 +144,8 @@ export async function downloadPrescriptionPDF(req: Request, res: Response) {
         dateOfBirth: prescription.date_of_birth,
         bloodGroup: prescription.blood_group,
         phone: prescription.patient_phone,
+        allergies: allergies.map((a: any) => ({ allergen: a.allergen, severity: a.severity })),
+        conditions: conditions.map((c: any) => ({ conditionName: c.condition_name, status: c.status })),
       },
       vitals: vitals ? {
         systolicBp: vitals.systolic_bp,
@@ -164,7 +171,7 @@ export async function downloadPrescriptionPDF(req: Request, res: Response) {
       })),
     };
 
-    generatePrescriptionPDF(pdfData, res);
+    await generatePrescriptionPDF(pdfData, res);
   } catch (error: any) {
     console.error('PDF generation error:', error);
     return res.status(500).json({ success: false, message: 'Failed to generate prescription PDF.' });

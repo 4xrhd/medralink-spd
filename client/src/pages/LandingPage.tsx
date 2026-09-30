@@ -10,7 +10,11 @@ export const LandingPage: React.FC = () => {
   const { user } = useAuth();
   const [tab, setTab] = useState(0);
 
-  const tabs = ["Physician Workstation", "Patient Health Portal", "Clinical Administration"];
+  const tabs = [
+    { label: "Physician Workstation", icon: <Icon.Stethoscope size={16} /> },
+    { label: "Patient Health Portal", icon: <Icon.User size={16} /> },
+    { label: "Clinical Administration", icon: <Icon.Shield size={16} /> },
+  ];
   const content = [
     {
       title: "Rapid clinical documentation, structured for continuity",
@@ -240,37 +244,103 @@ export const LandingPage: React.FC = () => {
 
       {/* Role-based clinical workspaces */}
       <section className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
-        <h2 className="text-center font-display text-4xl font-bold tracking-tight text-[#0F172A]">
-          Role-based clinical workspaces
-        </h2>
-        <div role="tablist" aria-label="Clinical workspace features" className="mx-auto mt-8 flex max-w-full overflow-x-auto rounded-xl border border-[#E2E8F0] bg-white p-1">
-          {tabs.map((t, i) => (
-            <button
-              key={t}
-              type="button"
-              role="tab"
-              aria-selected={tab === i}
-              aria-controls={`workspace-panel-${i}`}
-              onClick={() => setTab(i)}
-              className={`shrink-0 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors ${
-                tab === i ? "bg-[#1B365D] text-white shadow-sm" : "text-[#475569] hover:text-[#1B365D]"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
+        <div className="text-center max-w-2xl mx-auto">
+          <Badge tone="blue" size="sm" className="mb-3 inline-flex items-center gap-1.5">
+            <Icon.Lock size={12} />
+            <span>Role-Scoped Workspaces</span>
+          </Badge>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#0F172A]">
+            Role-based clinical workspaces
+          </h2>
+          <p className="mt-2 text-sm sm:text-base text-[#475569]">
+            Tailored interfaces engineered specifically for physicians, patients, and clinical administrators.
+          </p>
         </div>
-        <Card id={`workspace-panel-${tab}`} role="tabpanel" className="mt-8 p-5 sm:p-8">
-          <h3 className="font-display text-2xl font-bold text-[#0F172A]">{content[tab].title}</h3>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+
+        {/* Centered Segmented Control Tab Bar */}
+        <div className="mt-8 flex justify-center">
+          <div
+            role="tablist"
+            aria-label="Clinical workspace features"
+            className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-[#E2E8F0] bg-[#F1F5F9] p-1.5 shadow-2xs"
+          >
+            {tabs.map((t, i) => (
+              <button
+                key={t.label}
+                type="button"
+                role="tab"
+                aria-selected={tab === i}
+                aria-controls={`workspace-panel-${i}`}
+                onClick={() => setTab(i)}
+                className={`inline-flex items-center gap-2 rounded-xl px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                  tab === i
+                    ? "bg-[#1B365D] text-white shadow-sm"
+                    : "text-[#475569] hover:text-[#0F172A] hover:bg-white/60"
+                }`}
+              >
+                <span className={tab === i ? "text-blue-300" : "text-[#64748B]"}>{t.icon}</span>
+                <span>{t.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <Card id={`workspace-panel-${tab}`} role="tabpanel" className="mt-8 p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-5">
+            <div>
+              <span className="text-xs font-semibold text-[#2563EB]">
+                {tabs[tab].label}
+              </span>
+              <h3 className="mt-1 font-display text-xl sm:text-2xl font-bold text-[#0F172A]">
+                {content[tab].title}
+              </h3>
+            </div>
+            {tab === 0 && (
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={handleLaunchDoctor}
+                icon={<Icon.Arrow size={14} />}
+                iconPosition="right"
+              >
+                Open Workstation
+              </Button>
+            )}
+            {tab === 1 && (
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={handleLaunchPatient}
+                icon={<Icon.Arrow size={14} />}
+                iconPosition="right"
+              >
+                View Health Record
+              </Button>
+            )}
+            {tab === 2 && (
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => navigate('/admin')}
+                icon={<Icon.Arrow size={14} />}
+                iconPosition="right"
+              >
+                Access Audit Console
+              </Button>
+            )}
+          </div>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {content[tab].features.map(([t, b]) => (
-              <div key={t} className="flex gap-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+              <div
+                key={t}
+                className="flex gap-3.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4.5 transition-all hover:bg-white hover:border-[#CBD5E1] hover:shadow-xs"
+              >
                 <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[#EFF6FF] text-[#2563EB]">
                   <Icon.Check size={15} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-[#0F172A]">{t}</p>
-                  <p className="mt-0.5 text-sm text-[#475569]">{b}</p>
+                  <p className="text-sm font-bold text-[#0F172A]">{t}</p>
+                  <p className="mt-1 text-xs sm:text-sm text-[#475569] leading-relaxed">{b}</p>
                 </div>
               </div>
             ))}

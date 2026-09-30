@@ -2,6 +2,7 @@ import request from 'supertest';
 import { app } from '../server.js';
 import { initDb } from '../db/database.js';
 import { seedDatabase } from '../db/seed.js';
+import { createNotification } from '../services/notificationService.js';
 
 describe('MedraLink EMR Backend API Test Suite', () => {
   let doctorToken: string;
@@ -239,8 +240,17 @@ describe('MedraLink EMR Backend API Test Suite', () => {
     });
 
     it('should delete a notification', async () => {
+      const tempNotif = await createNotification({
+        userId: 'usr-pat-1',
+        title: 'Temporary Deletion Test Alert',
+        message: 'This alert is to be deleted by test.',
+        type: 'INFO',
+        category: 'GENERAL'
+      });
+      expect(tempNotif).not.toBeNull();
+
       const res = await request(app)
-        .delete(`/api/v1/notifications/${sampleNotifId}`)
+        .delete(`/api/v1/notifications/${tempNotif!.id}`)
         .set('Authorization', `Bearer ${patientToken}`);
 
       expect(res.status).toBe(200);

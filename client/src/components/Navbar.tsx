@@ -1,63 +1,55 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
-import { Icon, Pill } from '../ui/primitives.js';
+import { useNotifications } from '../context/NotificationContext.js';
+import { NotificationSettingsModal } from './NotificationSettingsModal.js';
+import { Icon, Pill, Badge } from '../ui/primitives.js';
 
-interface NotificationItem {
-  id: string;
-  title: string;
-  desc: string;
-  time: string;
-  read: boolean;
-  tone: 'blue' | 'emerald' | 'purple' | 'amber';
+function formatRelativeTime(dateStr: string): string {
+  try {
+    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const diffMins = Math.floor(diffMs / (60 * 1000));
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d ago`;
+  } catch {
+    return 'Recently';
+  }
 }
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
+  const {
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification
+  } = useNotifications();
+
   const navigate = useNavigate();
   const location = useLocation();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: '1',
-      title: 'Prescription Digitally Signed',
-      desc: 'Rx #RX-2026-0042 verified and anchored with cryptographic seal.',
-      time: '12m ago',
-      read: false,
-      tone: 'emerald',
-    },
-    {
-      id: '2',
-      title: 'Audit Trail Integrity Check',
-      desc: 'Scheduled SHA-256 ledger validation completed. Zero discrepancies.',
-      time: '1h ago',
-      read: false,
-      tone: 'purple',
-    },
-    {
-      id: '3',
-      title: 'Biometric Telemetry Recorded',
-      desc: 'Patient P-1001 vitals logged and synced to longitudinal record.',
-      time: '3h ago',
-      read: true,
-      tone: 'blue',
-    },
-  ]);
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
-
-  const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-  };
+  const filteredNotifications = notifications.filter((item) => {
+    if (activeFilter === 'unread') {
+      return !item.is_read;
+    }
+    return true;
+  });
 
   // Close dropdowns on outside click or escape
   useEffect(() => {
@@ -172,7 +164,8 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 h-[72px] border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+    <>
+      <header className="sticky top-0 z-50 h-[72px] border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
       <div className="mx-auto flex h-full max-w-[1720px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12">
         {/* Brand Logo & Status */}
         <div className="flex shrink-0 items-center gap-3">
@@ -326,52 +319,200 @@ export const Navbar: React.FC = () => {
 
                 {/* Notifications Dropdown */}
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-[#E2E8F0] bg-white p-3 shadow-xl z-50">
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-[#E2E8F0] bg-white p-3 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
                     <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5 px-1">
                       <div className="flex items-center gap-2">
                         <span className="font-display text-sm font-bold text-[#0F172A]">
                           Clinical Alerts
                         </span>
                         {unreadCount > 0 && (
-                          <Pill tone="crimson" className="text-[10px] py-0 px-1.5">
+                          <Badge tone="crimson" size="sm">
                             {unreadCount} New
-                          </Pill>
+                          </Badge>
                         )}
                       </div>
-                      {unreadCount > 0 && (
+                      <div className="flex items-center gap-2">
+                        {unreadCount > 0 && (
+                          <button
+                            type="button"
+                            onClick={markAllAsRead}
+                            className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                          >
+                            Mark all read
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={markAllAsRead}
-                          className="text-[11px] font-semibold text-[#2563EB] hover:underline"
+                          onClick={() => {
+                            setShowSettingsModal(true);
+                            setShowNotifications(false);
+                          }}
+                          aria-label="Notification settings"
+                          title="Notification settings"
+                          className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
                         >
-                          Mark all as read
+                          <Icon.Settings size={15} />
                         </button>
-                      )}
+                      </div>
                     </div>
+
+                    {/* Filter Tabs: All vs Unread */}
+                    <div className="mt-2.5 flex items-center gap-1.5 px-1 border-b border-slate-100 pb-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveFilter('all')}
+                        className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
+                          activeFilter === 'all'
+                            ? 'bg-[#1B365D] text-white shadow-xs'
+                            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                        }`}
+                      >
+                        All ({notifications.length})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveFilter('unread')}
+                        className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                          activeFilter === 'unread'
+                            ? 'bg-[#1B365D] text-white shadow-xs'
+                            : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
+                        }`}
+                      >
+                        <span>Unread</span>
+                        {unreadCount > 0 && (
+                          <span
+                            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                              activeFilter === 'unread'
+                                ? 'bg-white/20 text-white'
+                                : 'bg-rose-100 text-rose-700 font-bold'
+                            }`}
+                          >
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Notifications List */}
                     <div className="mt-2 divide-y divide-[#F1F5F9] max-h-72 overflow-y-auto">
-                      {notifications.map((item) => (
-                        <div
-                          key={item.id}
-                          className={`p-2.5 rounded-xl transition-colors hover:bg-slate-50 ${
-                            !item.read ? 'bg-blue-50/50' : ''
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-xs font-semibold text-[#0F172A]">{item.title}</p>
-                            <span className="text-[10px] font-medium text-[#94A3B8] shrink-0">
-                              {item.time}
-                            </span>
+                      {filteredNotifications.length === 0 ? (
+                        <div className="py-8 px-4 text-center space-y-2">
+                          <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-400">
+                            <Icon.Check size={18} />
                           </div>
-                          <p className="mt-0.5 text-[11px] text-[#475569] leading-relaxed">
-                            {item.desc}
+                          <p className="text-xs font-semibold text-slate-700">All caught up!</p>
+                          <p className="text-[11px] text-slate-400 max-w-[200px] mx-auto leading-relaxed">
+                            {activeFilter === 'unread'
+                              ? 'No unread notifications at this time.'
+                              : 'No system or clinical notifications to display.'}
                           </p>
                         </div>
-                      ))}
+                      ) : (
+                        filteredNotifications.map((item) => {
+                          const isUnread = !item.is_read;
+                          const categoryStyle = {
+                            CRITICAL_ALERT: {
+                              bg: 'bg-rose-50 text-rose-600 border-rose-100',
+                              icon: <Icon.Alert size={14} className="shrink-0" />,
+                            },
+                            PRESCRIPTION: {
+                              bg: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+                              icon: <Icon.Pill size={14} className="shrink-0" />,
+                            },
+                            LAB_RESULT: {
+                              bg: 'bg-amber-50 text-amber-600 border-amber-100',
+                              icon: <Icon.Flask size={14} className="shrink-0" />,
+                            },
+                            SECURITY_AUDIT: {
+                              bg: 'bg-purple-50 text-purple-600 border-purple-100',
+                              icon: <Icon.Shield size={14} className="shrink-0" />,
+                            },
+                            GENERAL: {
+                              bg: 'bg-blue-50 text-blue-600 border-blue-100',
+                              icon: <Icon.Clock size={14} className="shrink-0" />,
+                            },
+                          }[item.category || 'GENERAL'] || {
+                            bg: 'bg-blue-50 text-blue-600 border-blue-100',
+                            icon: <Icon.Clock size={14} className="shrink-0" />,
+                          };
+
+                          return (
+                            <div
+                              key={item.id}
+                              onClick={() => {
+                                if (isUnread) {
+                                  markAsRead(item.id);
+                                }
+                                if (item.link) {
+                                  setShowNotifications(false);
+                                  navigate(item.link);
+                                }
+                              }}
+                              className={`group relative p-2.5 rounded-xl transition-all hover:bg-slate-50 cursor-pointer flex items-start gap-2.5 ${
+                                isUnread ? 'bg-blue-50/40' : ''
+                              }`}
+                            >
+                              <div
+                                className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg border ${categoryStyle.bg}`}
+                              >
+                                {categoryStyle.icon}
+                              </div>
+
+                              <div className="flex-1 min-w-0 pr-6">
+                                <div className="flex items-start justify-between gap-1">
+                                  <p className="text-xs font-semibold text-[#0F172A] truncate">
+                                    {item.title}
+                                  </p>
+                                  <span className="text-[10px] font-medium text-[#94A3B8] shrink-0">
+                                    {formatRelativeTime(item.created_at)}
+                                  </span>
+                                </div>
+                                <p className="mt-0.5 text-[11px] text-[#475569] leading-relaxed line-clamp-2">
+                                  {item.message}
+                                </p>
+                              </div>
+
+                              {/* Unread dot indicator */}
+                              {isUnread && (
+                                <span className="absolute top-3 right-2 h-2 w-2 rounded-full bg-[#2563EB] group-hover:hidden" />
+                              )}
+
+                              {/* Dismiss action button */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteNotification(item.id);
+                                }}
+                                title="Dismiss notification"
+                                aria-label="Dismiss notification"
+                                className="absolute top-2 right-1.5 hidden group-hover:grid h-5 w-5 place-items-center rounded-md text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
+                              >
+                                <Icon.X size={12} />
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
                     </div>
-                    <div className="mt-2 border-t border-[#E2E8F0] pt-2 px-1 text-center">
-                      <p className="text-[10px] font-medium text-[#94A3B8]">
-                        System health: All microservices operational
-                      </p>
+
+                    {/* Popover Footer */}
+                    <div className="mt-2.5 border-t border-[#E2E8F0] pt-2 px-1 flex items-center justify-between text-[11px]">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSettingsModal(true);
+                          setShowNotifications(false);
+                        }}
+                        className="text-slate-500 hover:text-blue-600 font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Icon.Settings size={12} />
+                        <span>Preferences</span>
+                      </button>
+                      <span className="text-[10px] font-mono text-emerald-600 flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        Ledger Verified
+                      </span>
                     </div>
                   </div>
                 )}
@@ -483,6 +624,17 @@ export const Navbar: React.FC = () => {
                       >
                         <Icon.Cross size={15} /> System Overview
                       </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSettingsModal(true);
+                          setShowProfileMenu(false);
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A] cursor-pointer"
+                      >
+                        <Icon.Settings size={15} /> Notification Preferences
+                      </button>
                     </div>
 
                     <div className="border-t border-[#E2E8F0] pt-1">
@@ -684,6 +836,13 @@ export const Navbar: React.FC = () => {
         </div>
       )}
     </header>
+
+    {/* Notification Preferences Modal - outside header to avoid backdrop-filter stacking context */}
+    <NotificationSettingsModal
+      isOpen={showSettingsModal}
+      onClose={() => setShowSettingsModal(false)}
+    />
+  </>
   );
 };
 
