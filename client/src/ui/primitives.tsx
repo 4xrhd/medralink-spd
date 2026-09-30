@@ -1,7 +1,18 @@
-import type { AriaRole, ReactNode, CSSProperties } from "react";
+import React, {
+  type AriaRole,
+  type ReactNode,
+  type CSSProperties,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  forwardRef,
+} from "react";
+import { cn } from "../utils/cn.js";
 
-/* ---------- Icons (thin, medical-grade line set) ---------- */
-type IconProps = { className?: string; size?: number; style?: CSSProperties };
+/* ==========================================================================
+   1. Icons (Medical-grade unified line set)
+   ========================================================================== */
+export type IconProps = { className?: string; size?: number; style?: CSSProperties };
+
 const base = (size = 18) => ({
   width: size,
   height: size,
@@ -179,38 +190,171 @@ export const Icon = {
     </svg>
   ),
   Loader: ({ size, className, style }: IconProps) => (
-    <svg {...base(size)} className={`animate-spin ${className || ''}`} style={style}>
+    <svg {...base(size)} className={cn("animate-spin", className)} style={style}>
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+    </svg>
+  ),
+  Info: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
     </svg>
   ),
 };
 
-/* ---------- Pills / chips ---------- */
-export function Pill({
+/* ==========================================================================
+   2. Buttons
+   ========================================================================== */
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "primary" | "clinical" | "secondary" | "outline" | "destructive" | "ghost";
+  size?: "sm" | "md" | "lg";
+  isLoading?: boolean;
+  icon?: ReactNode;
+  iconPosition?: "left" | "right";
+}
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  (
+    {
+      children,
+      className,
+      variant = "primary",
+      size = "md",
+      isLoading = false,
+      disabled = false,
+      icon,
+      iconPosition = "left",
+      type = "button",
+      ...props
+    },
+    ref
+  ) => {
+    const baseStyles =
+      "inline-flex items-center justify-center font-medium transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
+
+    const variants: Record<string, string> = {
+      primary:
+        "bg-[#1B365D] hover:bg-[#152a48] text-white border border-transparent shadow-xs focus-visible:ring-[#1B365D]",
+      clinical:
+        "bg-[#2563EB] hover:bg-[#1D4ED8] text-white border border-transparent shadow-xs focus-visible:ring-[#2563EB]",
+      secondary:
+        "bg-white hover:bg-slate-50 text-[#0F172A] border border-[#CBD5E1] shadow-xs focus-visible:ring-[#2563EB]",
+      outline:
+        "bg-transparent hover:bg-slate-50 text-[#1B365D] border border-[#CBD5E1] focus-visible:ring-[#2563EB]",
+      destructive:
+        "bg-[#DC2626] hover:bg-[#B91C1C] text-white border border-transparent shadow-xs focus-visible:ring-[#DC2626]",
+      ghost:
+        "bg-transparent hover:bg-slate-100 text-[#475569] hover:text-[#0F172A] border border-transparent focus-visible:ring-[#2563EB]",
+    };
+
+    const sizes: Record<string, string> = {
+      sm: "h-8 px-3 text-xs gap-1.5 rounded-lg",
+      md: "h-10 px-4 text-sm gap-2 rounded-xl",
+      lg: "h-12 px-5 text-base gap-2.5 rounded-xl font-semibold",
+    };
+
+    return (
+      <button
+        ref={ref}
+        type={type}
+        disabled={disabled || isLoading}
+        aria-busy={isLoading}
+        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        {...props}
+      >
+        {isLoading ? (
+          <Icon.Loader size={size === "sm" ? 14 : 16} className="text-current" />
+        ) : (
+          icon && iconPosition === "left" && <span className="shrink-0">{icon}</span>
+        )}
+        <span>{children}</span>
+        {!isLoading && icon && iconPosition === "right" && (
+          <span className="shrink-0">{icon}</span>
+        )}
+      </button>
+    );
+  }
+);
+Button.displayName = "Button";
+
+/* ==========================================================================
+   3. Badges / Status Chips
+   ========================================================================== */
+export type BadgeTone = "slate" | "blue" | "emerald" | "crimson" | "amber" | "purple" | "navy";
+
+export interface BadgeProps {
+  children: ReactNode;
+  tone?: BadgeTone;
+  size?: "sm" | "md";
+  dot?: boolean;
+  pulse?: boolean;
+  className?: string;
+}
+
+export function Badge({
   children,
   tone = "slate",
+  size = "md",
+  dot = false,
+  pulse = false,
   className = "",
-}: {
-  children: ReactNode;
-  tone?: "slate" | "blue" | "emerald" | "crimson" | "amber" | "purple" | "navy";
-  className?: string;
-}) {
-  const tones: Record<string, string> = {
-    slate: "bg-slate-100 text-slate-700 border-slate-200",
-    blue: "bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]",
-    emerald: "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]",
-    crimson: "bg-[#FEF2F2] text-[#DC2626] border-[#FECACA]",
-    amber: "bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]",
-    purple: "bg-[#F5F3FF] text-[#7C3AED] border-[#DDD6FE]",
-    navy: "bg-[#1B365D] text-white border-[#1B365D]",
+}: BadgeProps) {
+  const tones: Record<BadgeTone, { bg: string; dotBg: string }> = {
+    slate: { bg: "bg-slate-100 text-slate-700 border-slate-200", dotBg: "bg-slate-500" },
+    blue: { bg: "bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]", dotBg: "bg-[#2563EB]" },
+    emerald: { bg: "bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]", dotBg: "bg-[#059669]" },
+    crimson: { bg: "bg-[#FEF2F2] text-[#991B1B] border-[#FECACA]", dotBg: "bg-[#DC2626]" },
+    amber: { bg: "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]", dotBg: "bg-[#D97706]" },
+    purple: { bg: "bg-[#F5F3FF] text-[#6D28D9] border-[#DDD6FE]", dotBg: "bg-[#7C3AED]" },
+    navy: { bg: "bg-[#1B365D] text-white border-[#1B365D]", dotBg: "bg-white" },
   };
+
+  const sizes = {
+    sm: "px-2 py-0.5 text-[11px] font-medium",
+    md: "px-2.5 py-1 text-xs font-semibold",
+  };
+
+  const current = tones[tone];
+
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold ${tones[tone]} ${className}`}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border leading-none transition-colors",
+        current.bg,
+        sizes[size],
+        className
+      )}
     >
-      {children}
+      {dot && (
+        <span
+          className={cn(
+            "h-1.5 w-1.5 rounded-full shrink-0",
+            current.dotBg,
+            pulse && "animate-pulse"
+          )}
+        />
+      )}
+      <span>{children}</span>
     </span>
   );
+}
+
+// Backward-compatible alias
+export const Pill = Badge;
+
+/* ==========================================================================
+   4. Surface / Card Containers
+   ========================================================================== */
+export interface CardProps {
+  children: ReactNode;
+  className?: string;
+  style?: CSSProperties;
+  id?: string;
+  role?: AriaRole;
+  hover?: boolean;
+  variant?: "default" | "flat" | "elevated" | "subtle";
+  padding?: "none" | "sm" | "md" | "lg";
 }
 
 export function Card({
@@ -220,21 +364,34 @@ export function Card({
   id,
   role,
   hover = false,
-}: {
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
-  id?: string;
-  role?: AriaRole;
-  hover?: boolean;
-}) {
+  variant = "default",
+  padding = "none",
+}: CardProps) {
+  const variants = {
+    default: "border border-[#E2E8F0] bg-white shadow-card",
+    flat: "border border-[#E2E8F0] bg-white",
+    elevated: "border border-[#E2E8F0] bg-white shadow-elevated",
+    subtle: "border border-slate-200/80 bg-slate-50/70",
+  };
+
+  const paddings = {
+    none: "",
+    sm: "p-3 sm:p-4",
+    md: "p-4 sm:p-6",
+    lg: "p-6 sm:p-8",
+  };
+
   return (
     <div
       id={id}
       role={role}
-      className={`rounded-2xl border border-[#E2E8F0] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.03)] transition-all ${
-        hover ? 'hover:border-[#BFDBFE] hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]' : ''
-      } ${className}`}
+      className={cn(
+        "rounded-2xl transition-all duration-150",
+        variants[variant],
+        paddings[padding],
+        hover && "hover:border-[#BFDBFE] hover:shadow-card-hover",
+        className
+      )}
       style={style}
     >
       {children}
@@ -242,14 +399,264 @@ export function Card({
   );
 }
 
+/* ==========================================================================
+   5. Form Inputs & FormField
+   ========================================================================== */
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  error?: boolean;
+  leftIcon?: ReactNode;
+  rightElement?: ReactNode;
+  inputSize?: "sm" | "md";
+}
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  (
+    {
+      className,
+      error = false,
+      leftIcon,
+      rightElement,
+      inputSize = "md",
+      disabled = false,
+      ...props
+    },
+    ref
+  ) => {
+    const sizeClasses = {
+      sm: "h-9 text-xs px-3 rounded-lg",
+      md: "h-11 text-sm px-3.5 rounded-xl",
+    };
+
+    return (
+      <div className="relative flex items-center w-full">
+        {leftIcon && (
+          <span className="absolute left-3.5 text-[#94A3B8] pointer-events-none shrink-0 flex items-center justify-center">
+            {leftIcon}
+          </span>
+        )}
+        <input
+          ref={ref}
+          disabled={disabled}
+          className={cn(
+            "w-full border bg-white text-[#0F172A] outline-none transition-all duration-150 placeholder:text-[#94A3B8]",
+            sizeClasses[inputSize],
+            leftIcon && "pl-10",
+            rightElement && "pr-10",
+            error
+              ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-2 focus:ring-[#FEF2F2]"
+              : "border-[#CBD5E1] hover:border-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF]",
+            disabled && "bg-slate-50 text-slate-400 cursor-not-allowed",
+            className
+          )}
+          {...props}
+        />
+        {rightElement && (
+          <div className="absolute right-3 flex items-center shrink-0">
+            {rightElement}
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+Input.displayName = "Input";
+
+export interface FormFieldProps {
+  label?: string;
+  htmlFor?: string;
+  error?: string;
+  hint?: string;
+  required?: boolean;
+  children: ReactNode;
+  className?: string;
+}
+
+export function FormField({
+  label,
+  htmlFor,
+  error,
+  hint,
+  required = false,
+  children,
+  className = "",
+}: FormFieldProps) {
+  return (
+    <div className={cn("space-y-1.5 w-full", className)}>
+      {label && (
+        <label
+          htmlFor={htmlFor}
+          className="block text-xs font-semibold text-slate-700 select-none"
+        >
+          {label}
+          {required && <span className="text-[#DC2626] ml-1">*</span>}
+        </label>
+      )}
+      {children}
+      {error ? (
+        <p className="text-xs text-[#DC2626] font-medium flex items-center gap-1 mt-1">
+          <Icon.Alert size={12} className="shrink-0" />
+          <span>{error}</span>
+        </p>
+      ) : hint ? (
+        <p className="text-xs text-[#64748B] mt-1">{hint}</p>
+      ) : null}
+    </div>
+  );
+}
+
+/* ==========================================================================
+   6. Metric / Telemetry KPI Card
+   ========================================================================== */
+export interface MetricCardProps {
+  title: string;
+  value: string | number;
+  subtext?: string;
+  icon?: ReactNode;
+  iconTone?: "blue" | "emerald" | "navy" | "purple" | "amber";
+  status?: { label: string; tone?: "emerald" | "amber" | "blue" };
+  className?: string;
+  hover?: boolean;
+}
+
+export function MetricCard({
+  title,
+  value,
+  subtext,
+  icon,
+  iconTone = "blue",
+  status,
+  className = "",
+  hover = true,
+}: MetricCardProps) {
+  const iconTones = {
+    blue: "bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]",
+    emerald: "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]",
+    navy: "bg-[#EEF2F7] text-[#1B365D] border-[#CBD5E1]",
+    purple: "bg-[#F5F3FF] text-[#7C3AED] border-[#DDD6FE]",
+    amber: "bg-[#FEF3C7] text-[#D97706] border-[#FDE68A]",
+  };
+
+  return (
+    <Card hover={hover} className={cn("p-5 flex flex-col justify-between", className)}>
+      <div className="flex items-center justify-between gap-2">
+        {icon && (
+          <div
+            className={cn(
+              "grid h-10 w-10 place-items-center rounded-xl border",
+              iconTones[iconTone]
+            )}
+          >
+            {icon}
+          </div>
+        )}
+        {status && (
+          <Badge tone={status.tone || "emerald"} size="sm" dot>
+            {status.label}
+          </Badge>
+        )}
+      </div>
+      <div className="mt-4">
+        <p className="tabular font-display text-3xl font-bold tracking-tight text-[#0F172A]">
+          {value}
+        </p>
+        <p className="mt-1 text-xs font-medium text-[#475569]">{title}</p>
+        {subtext && <p className="mt-1 text-[11px] text-[#94A3B8]">{subtext}</p>}
+      </div>
+    </Card>
+  );
+}
+
+/* ==========================================================================
+   7. Typographic Section Header
+   ========================================================================== */
+export interface SectionHeaderProps {
+  title: string;
+  description?: string;
+  badge?: ReactNode;
+  action?: ReactNode;
+  className?: string;
+}
+
+export function SectionHeader({
+  title,
+  description,
+  badge,
+  action,
+  className = "",
+}: SectionHeaderProps) {
+  return (
+    <div
+      className={cn(
+        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-4 mb-6",
+        className
+      )}
+    >
+      <div>
+        <div className="flex items-center gap-2.5">
+          <h2 className="font-display text-lg font-bold text-[#0F172A]">{title}</h2>
+          {badge}
+        </div>
+        {description && (
+          <p className="mt-1 text-xs sm:text-sm text-[#475569]">{description}</p>
+        )}
+      </div>
+      {action && <div className="flex items-center gap-2.5 shrink-0">{action}</div>}
+    </div>
+  );
+}
+
+/* ==========================================================================
+   8. Friendly Clinical Empty State
+   ========================================================================== */
+export interface EmptyStateProps {
+  icon?: ReactNode;
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  className?: string;
+}
+
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+  className = "",
+}: EmptyStateProps) {
+  return (
+    <div
+      className={cn(
+        "rounded-2xl border border-dashed border-[#CBD5E1] bg-slate-50/50 p-8 sm:p-12 text-center",
+        className
+      )}
+    >
+      <div className="mx-auto mb-3.5 grid h-12 w-12 place-items-center rounded-2xl bg-white text-[#64748B] shadow-subtle border border-[#E2E8F0]">
+        {icon || <Icon.Search size={22} />}
+      </div>
+      <h3 className="font-display text-sm font-bold text-[#0F172A]">{title}</h3>
+      {description && (
+        <p className="mt-1.5 max-w-sm mx-auto text-xs text-[#64748B] leading-relaxed">
+          {description}
+        </p>
+      )}
+      {action && <div className="mt-5 flex justify-center">{action}</div>}
+    </div>
+  );
+}
+
+/* ==========================================================================
+   9. Vitals Pill (Clinical Vital Parameter Display)
+   ========================================================================== */
 export function VitalPill({
   label,
   value,
   tone = "slate",
+  className = "",
 }: {
   label: string;
   value: string;
   tone?: "slate" | "amber" | "emerald" | "crimson";
+  className?: string;
 }) {
   const tones: Record<string, string> = {
     slate: "border-slate-200 bg-slate-50",
@@ -264,11 +671,11 @@ export function VitalPill({
     crimson: "text-[#DC2626]",
   };
   return (
-    <div className={`flex flex-col rounded-xl border px-3 py-2 ${tones[tone]}`}>
-      <span className="text-[10px] font-semibold uppercase tracking-wider text-[#64748B]">
+    <div className={cn("flex flex-col rounded-xl border px-3 py-2", tones[tone], className)}>
+      <span className="text-[11px] font-medium text-[#64748B]">
         {label}
       </span>
-      <span className={`tabular text-sm font-semibold ${valTone[tone]}`}>{value}</span>
+      <span className={cn("tabular text-sm font-semibold mt-0.5", valTone[tone])}>{value}</span>
     </div>
   );
 }

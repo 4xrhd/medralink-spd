@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
 import { Icon } from '../ui/primitives.js';
 
@@ -21,6 +22,7 @@ function QR() {
 }
 
 export const PrescriptionViewPage: React.FC = () => {
+  useDocumentTitle('Official Digital Prescription');
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();

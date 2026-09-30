@@ -1,17 +1,23 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
+import { useToast } from '../context/ToastContext.js';
+import { useDebounce } from '../hooks/useDebounce.js';
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
-import { Card, Icon, Pill } from '../ui/primitives.js';
+import { Card, Icon, Pill, Badge, MetricCard, EmptyState } from '../ui/primitives.js';
 
 export const DoctorDashboard: React.FC = () => {
+  useDocumentTitle('Physician Portal - Clinical Workspace');
+  const toast = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Patient Search State
+  // Patient Search State with useDebounce
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
@@ -50,20 +56,45 @@ export const DoctorDashboard: React.FC = () => {
     fetchDashboard();
   }, []);
 
-  const handleSearch = async (queryText: string) => {
+  // Debounced search effect: eliminates high-frequency keystroke API requests
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    let active = true;
+    setIsSearching(true);
+
+    api
+      .get(`/patients?q=${encodeURIComponent(debouncedSearchQuery.trim())}`)
+      .then((res) => {
+        if (active) {
+          setSearchResults(res.data.data || []);
+        }
+      })
+      .catch((err) => {
+        if (active) {
+          console.error('Patient search error:', err);
+          toast.error('Failed to search patients from clinical registry.');
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setIsSearching(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [debouncedSearchQuery, toast]);
+
+  const handleSearchInput = (queryText: string) => {
     setSearchQuery(queryText);
     if (!queryText.trim()) {
       setSearchResults([]);
-      return;
-    }
-    setIsSearching(true);
-    try {
-      const res = await api.get(`/patients?q=${encodeURIComponent(queryText)}`);
-      setSearchResults(res.data.data);
-    } catch (err) {
-      console.error('Patient search error:', err);
-    } finally {
-      setIsSearching(false);
     }
   };
 
@@ -73,7 +104,7 @@ export const DoctorDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-16">
-      {/* Figma Screen 3 Header */}
+      {/* Clinician Header */}
       <div className="border-b border-[#E2E8F0] bg-white">
         <div className="mx-auto flex max-w-[1200px] 2xl:max-w-[1720px] flex-wrap items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12 py-5">
           <div className="flex items-center gap-3.5">
@@ -90,24 +121,23 @@ export const DoctorDashboard: React.FC = () => {
 
           <div className="hidden 2xl:flex items-center gap-6 border-l border-slate-200 pl-6 text-xs text-[#475569]">
             <div>
-              <span className="text-[#94A3B8] font-semibold uppercase tracking-wider block text-[10px]">Department</span>
-              <span className="font-bold text-[#0F172A]">Cardiovascular &amp; Internal Medicine</span>
+              <span className="text-[11px] font-medium text-slate-500 block">Department</span>
+              <span className="font-semibold text-slate-900">Cardiovascular &amp; Internal Medicine</span>
             </div>
             <div>
-              <span className="text-[#94A3B8] font-semibold uppercase tracking-wider block text-[10px]">Shift Schedule</span>
-              <span className="font-semibold text-[#0F172A]">Morning Rounds • 08:00 – 16:00</span>
+              <span className="text-[11px] font-medium text-slate-500 block">Shift Schedule</span>
+              <span className="font-semibold text-slate-900">Morning Rounds • 08:00 – 16:00</span>
             </div>
             <div>
-              <span className="text-[#94A3B8] font-semibold uppercase tracking-wider block text-[10px]">Station Protocol</span>
+              <span className="text-[11px] font-medium text-slate-500 block">Station Protocol</span>
               <span className="font-mono text-[#059669] font-bold">HL7 FHIR v4.0.1 Synced</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <Pill tone="emerald">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-[#059669]" />
+            <Badge tone="emerald" dot pulse>
               Active Clinical Session • Room 402
-            </Pill>
+            </Badge>
           </div>
         </div>
       </div>
@@ -124,7 +154,7 @@ export const DoctorDashboard: React.FC = () => {
             <input
               aria-label="Search patients"
               value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
+              onChange={(e) => handleSearchInput(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               placeholder="Search Patient by Medra-UID (e.g. P-1001), National ID, Name, or Mobile Number..."
               className="w-full bg-transparent text-sm text-[#0F172A] outline-none placeholder:text-[#94A3B8]"
@@ -208,69 +238,54 @@ export const DoctorDashboard: React.FC = () => {
                   })}
                 </div>
               ) : !isSearching && searchQuery.length > 1 ? (
-                <div className="p-8 text-center">
-                  <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-[#94A3B8]">
-                    <Icon.Search size={20} />
-                  </div>
-                  <p className="text-sm font-bold text-[#0F172A]">No patient records matching "{searchQuery}"</p>
-                  <p className="mt-1 text-xs text-[#64748B] max-w-sm mx-auto">
-                    Try searching by full Medra-UID (e.g. P-1001), mobile phone number, or national identification.
-                  </p>
+                <div className="p-4">
+                  <EmptyState
+                    icon={<Icon.Search size={22} />}
+                    title={`No patient records matching "${searchQuery}"`}
+                    description="Try searching by full Medra-UID (e.g. P-1001), mobile phone number, or national identification."
+                  />
                 </div>
               ) : null}
             </Card>
           )}
         </div>
 
-        {/* 4 Metric Stat Cards matching Figma KPI aesthetic */}
+        {/* 4 Standardized Metric KPI Cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card hover className="flex items-center gap-4 p-5">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-[#EFF6FF] text-[#2563EB]">
-              <Icon.Clock size={22} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Today's Appointment Queue</p>
-              <p className="tabular font-display text-2xl font-bold text-[#0F172A] mt-0.5">
-                {data?.stats?.todayAppointmentsCount || 0} <span className="text-xs font-normal text-[#64748B]">Patients</span>
-              </p>
-            </div>
-          </Card>
+          <MetricCard
+            title="Today's Appointment Queue"
+            value={data?.stats?.todayAppointmentsCount || 0}
+            subtext="Patients waiting"
+            icon={<Icon.Clock size={22} />}
+            iconTone="blue"
+            status={{ label: "Live Queue", tone: "blue" }}
+          />
 
-          <Card hover className="flex items-center gap-4 p-5">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-[#ECFDF5] text-[#059669]">
-              <Icon.CheckCircle size={22} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Total Consultations</p>
-              <p className="tabular font-display text-2xl font-bold text-[#0F172A] mt-0.5">
-                {data?.stats?.totalConsultations || 0} <span className="text-xs font-normal text-[#64748B]">Visits Logged</span>
-              </p>
-            </div>
-          </Card>
+          <MetricCard
+            title="Total Consultations"
+            value={data?.stats?.totalConsultations || 0}
+            subtext="Visits logged to date"
+            icon={<Icon.CheckCircle size={22} />}
+            iconTone="emerald"
+            status={{ label: "Active", tone: "emerald" }}
+          />
 
-          <Card hover className="flex items-center gap-4 p-5">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-[#F5F3FF] text-[#7C3AED]">
-              <Icon.File size={22} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">E-Prescriptions Issued</p>
-              <p className="tabular font-display text-2xl font-bold text-[#0F172A] mt-0.5">
-                {data?.stats?.totalPrescriptionsIssued || 0} <span className="text-xs font-normal text-[#64748B]">Rx Sheets</span>
-              </p>
-            </div>
-          </Card>
+          <MetricCard
+            title="E-Prescriptions Issued"
+            value={data?.stats?.totalPrescriptionsIssued || 0}
+            subtext="Cryptographically signed"
+            icon={<Icon.File size={22} />}
+            iconTone="purple"
+          />
 
-          <Card hover className="flex items-center gap-4 p-5">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-[#ECFDF5] text-[#059669]">
-              <Icon.Shield size={22} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Clinical Safety Index</p>
-              <p className="tabular font-display text-2xl font-bold text-[#0F172A] mt-0.5">
-                99.8% <span className="text-xs font-semibold text-[#059669] bg-[#ECFDF5] px-1.5 py-0.5 rounded ml-1 border border-[#A7F3D0]">0 Alerts</span>
-              </p>
-            </div>
-          </Card>
+          <MetricCard
+            title="Clinical Safety Index"
+            value="99.8%"
+            subtext="Zero unresolved adverse alerts"
+            icon={<Icon.Shield size={22} />}
+            iconTone="emerald"
+            status={{ label: "Verified", tone: "emerald" }}
+          />
         </div>
 
         {/* Main Workstation: 3 Columns on 2xl */}

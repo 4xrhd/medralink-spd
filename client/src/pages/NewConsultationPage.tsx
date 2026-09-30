@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
+import { useToast } from '../context/ToastContext.js';
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
 import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
 
@@ -19,6 +21,8 @@ const inputCls =
   "w-full rounded-xl border border-[#E2E8F0] bg-white px-3.5 py-2.5 text-sm text-[#0F172A] outline-none transition-colors placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF]";
 
 export const NewConsultationPage: React.FC = () => {
+  useDocumentTitle('New Consultation & E-Prescription');
+  const toast = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -254,13 +258,17 @@ export const NewConsultationPage: React.FC = () => {
       const res = await api.post('/consultations', payload);
       const { prescriptionId } = res.data.data || {};
 
+      toast.success('Consultation finalized & cryptographic prescription issued!');
+
       if (prescriptionId) {
         navigate(`/prescription/${prescriptionId}`);
       } else {
         navigate(`/patient/timeline/${selectedPatientId}`);
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to submit consultation record.');
+      const msg = err.response?.data?.message || 'Failed to submit consultation record.';
+      setError(msg);
+      toast.error(msg);
     } finally {
       setIsSubmitting(false);
     }

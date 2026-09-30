@@ -18,10 +18,23 @@ let sqliteDb: Database.Database | null = null;
 let pgPool: Pool | null = null;
 
 if (isPostgres) {
+  const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/medralink';
+  const requiresSsl = process.env.DATABASE_SSL === 'true' || 
+    (process.env.NODE_ENV === 'production' && !dbUrl.includes('localhost') && !dbUrl.includes('127.0.0.1'));
+
   pgPool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/medralink'
+    connectionString: dbUrl,
+    ssl: requiresSsl ? { rejectUnauthorized: false } : false,
+    max: Number(process.env.DB_POOL_MAX || 20),
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
   });
-  console.log('[DB] Connecting to PostgreSQL database...');
+
+  pgPool.on('error', (err) => {
+    console.error('[DB] Unexpected error on idle PostgreSQL client:', err.message);
+  });
+
+  console.log(`[DB] Connecting to PostgreSQL database (SSL: ${requiresSsl ? 'enabled' : 'disabled'})...`);
 } else {
   sqliteDb = new Database(sqlitePath);
   sqliteDb.pragma('journal_mode = WAL');
@@ -33,10 +46,31 @@ export const getDb = () => {
   return { isPostgres, sqliteDb, pgPool };
 };
 
+/**
+ * Resilient schema file resolution that works across dev, dist, and docker builds
+ */
+function resolveSchemaPath(): string | null {
+  const candidatePaths = [
+    path.resolve(__dirname, 'schema.sql'),
+    path.resolve(__dirname, '../../src/db/schema.sql'),
+    path.resolve(__dirname, '../src/db/schema.sql'),
+    path.resolve(process.cwd(), 'src/db/schema.sql'),
+    path.resolve(process.cwd(), 'server/src/db/schema.sql'),
+    path.resolve(process.cwd(), 'dist/db/schema.sql'),
+  ];
+
+  for (const p of candidatePaths) {
+    if (fs.existsSync(p)) {
+      return p;
+    }
+  }
+  return null;
+}
+
 export async function initDb(): Promise<void> {
-  const schemaPath = path.resolve(__dirname, 'schema.sql');
-  if (!fs.existsSync(schemaPath)) {
-    console.warn(`[DB] Schema file not found at ${schemaPath}`);
+  const schemaPath = resolveSchemaPath();
+  if (!schemaPath) {
+    console.warn('[DB] Warning: schema.sql file could not be located in standard candidate paths.');
     return;
   }
   const schemaSql = fs.readFileSync(schemaPath, 'utf8');
@@ -47,6 +81,32 @@ export async function initDb(): Promise<void> {
   } else if (sqliteDb) {
     sqliteDb.exec(schemaSql);
     console.log('[DB] SQLite schema initialized successfully.');
+  }
+}
+
+export async function pingDb(): Promise<{ ok: boolean; dialect: string; latencyMs: number; error?: string }> {
+  const start = Date.now();
+  try {
+    if (isPostgres && pgPool) {
+      await pgPool.query('SELECT 1');
+      return { ok: true, dialect: 'postgres', latencyMs: Date.now() - start };
+    } else if (sqliteDb) {
+      sqliteDb.prepare('SELECT 1').get();
+      return { ok: true, dialect: 'sqlite', latencyMs: Date.now() - start };
+    }
+    return { ok: false, dialect: 'unknown', latencyMs: Date.now() - start, error: 'No active DB driver' };
+  } catch (err: any) {
+    return { ok: false, dialect: isPostgres ? 'postgres' : 'sqlite', latencyMs: Date.now() - start, error: err.message };
+  }
+}
+
+export async function closeDb(): Promise<void> {
+  if (isPostgres && pgPool) {
+    await pgPool.end();
+    console.log('[DB] PostgreSQL connection pool terminated.');
+  } else if (sqliteDb) {
+    sqliteDb.close();
+    console.log('[DB] SQLite database closed.');
   }
 }
 

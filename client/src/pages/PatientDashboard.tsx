@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
+import { useToast } from '../context/ToastContext.js';
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
-import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
+import { Card, Icon, Pill, Badge, Button, MetricCard, VitalPill } from '../ui/primitives.js';
 
 export const PatientDashboard: React.FC = () => {
+  useDocumentTitle('Patient Health Records & Prescriptions');
+  const toast = useToast();
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -85,16 +89,25 @@ export const PatientDashboard: React.FC = () => {
                 <div>
                   <h1 className="font-display text-2xl font-bold">{fullName}</h1>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span className="rounded-md bg-white/15 px-2 py-0.5 font-mono text-xs">
-                      {patientUid}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(patientUid);
+                        toast.success(`Copied Medra-UID: ${patientUid}`);
+                      }}
+                      title="Click to copy Medra-UID"
+                      className="inline-flex items-center gap-1 rounded-md bg-white/15 hover:bg-white/25 px-2 py-0.5 font-mono text-xs text-white transition-colors cursor-pointer"
+                    >
+                      <span>{patientUid}</span>
+                      <Icon.Copy size={11} className="opacity-70" />
+                    </button>
                     <span className="text-sm text-blue-100">
                       {data?.patient?.gender || 'Male'} •{' '}
                       {data?.patient?.date_of_birth ? `${new Date().getFullYear() - new Date(data.patient.date_of_birth).getFullYear()} Yrs` : '45 Yrs'}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#DC2626] px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
+                    <Badge tone="crimson" size="sm" className="font-bold">
                       {bloodGroup} Blood Group
-                    </span>
+                    </Badge>
                   </div>
                 </div>
               </div>
@@ -102,22 +115,22 @@ export const PatientDashboard: React.FC = () => {
               {/* 2xl Demographic Cluster */}
               <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-blue-100">
                 <div>
-                  <span className="text-blue-300 font-semibold uppercase tracking-wider block text-[10px]">National ID (NID)</span>
-                  <span className="font-mono font-bold text-white">19812694123400012</span>
+                  <span className="text-blue-200 font-medium block text-xs">National ID (NID)</span>
+                  <span className="font-mono font-bold text-white text-sm">19812694123400012</span>
                 </div>
                 <div>
-                  <span className="text-blue-300 font-semibold uppercase tracking-wider block text-[10px]">Attending Physician</span>
-                  <span className="font-semibold text-white">Dr. Ahmed Tariq (A-54921)</span>
+                  <span className="text-blue-200 font-medium block text-xs">Attending Physician</span>
+                  <span className="font-semibold text-white text-sm">Dr. Ahmed Tariq (A-54921)</span>
                 </div>
                 <div>
-                  <span className="text-blue-300 font-semibold uppercase tracking-wider block text-[10px]">Primary Facility</span>
-                  <span className="font-semibold text-white">Square Hospital &amp; NICVD</span>
+                  <span className="text-blue-200 font-medium block text-xs">Primary Facility</span>
+                  <span className="font-semibold text-white text-sm">Square Hospital &amp; NICVD</span>
                 </div>
               </div>
 
               {/* Emergency Contact */}
               <div className="rounded-xl border border-white/20 bg-white/10 p-4 text-left backdrop-blur-xs">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-blue-200">
+                <p className="text-xs font-medium text-blue-200">
                   Emergency Contact
                 </p>
                 <p className="mt-1 font-semibold text-white flex items-center gap-1.5">
@@ -139,7 +152,7 @@ export const PatientDashboard: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-[#FDE68A] bg-[#FEF3C7] px-6 py-3.5">
             <div className="flex items-center gap-2 shrink-0">
               <Icon.Alert size={18} className="text-[#B45309] shrink-0" />
-              <span className="text-xs font-bold uppercase tracking-wider text-[#92400E]">Clinical Safety:</span>
+              <span className="text-xs font-semibold text-[#92400E]">Clinical Safety:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="font-medium text-[#78350F]">Allergies:</span>
@@ -175,38 +188,37 @@ export const PatientDashboard: React.FC = () => {
           </div>
         </Card>
 
-        {/* 4-Metric Row on 2xl */}
+        {/* 4-Metric Row with MetricCard */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-          {stats.map((st) => (
-            <Card key={st.label} hover className="flex items-center gap-4 p-5 transition-all">
-              <div
-                className="grid h-12 w-12 place-items-center rounded-xl shrink-0"
-                style={{ background: st.bg, color: st.fg }}
-              >
-                {st.icon}
-              </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">{st.label}</p>
-                <p className="tabular font-display text-2xl font-bold text-[#0F172A] mt-0.5">
-                  {st.value} <span className="text-sm font-medium text-[#64748B]">{st.unit}</span>
-                </p>
-              </div>
-            </Card>
-          ))}
-
-          <Card hover className="flex items-center gap-4 p-5 transition-all">
-            <div
-              className="grid h-12 w-12 place-items-center rounded-xl shrink-0 bg-[#FEF3C7] text-[#D97706]"
-            >
-              <Icon.Calendar size={20} />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">Next Scheduled Review</p>
-              <p className="tabular font-display text-2xl font-bold text-[#0F172A] mt-0.5">
-                Aug 24, 2026 <span className="text-xs font-semibold text-[#2563EB] bg-[#EFF6FF] px-1.5 py-0.5 rounded ml-1">In 14 Days</span>
-              </p>
-            </div>
-          </Card>
+          <MetricCard
+            title="Total Consultations"
+            value={data?.stats?.totalVisits ?? '3'}
+            subtext="Recorded clinical visits"
+            icon={<Icon.Stethoscope size={20} />}
+            iconTone="blue"
+          />
+          <MetricCard
+            title="Active Prescriptions"
+            value={data?.stats?.activePrescriptionsCount ?? '2'}
+            subtext="Verified regimens"
+            icon={<Icon.Pill size={20} />}
+            iconTone="emerald"
+          />
+          <MetricCard
+            title="Diagnostic Lab Reports"
+            value={data?.stats?.labReportsCount ?? '2'}
+            subtext="Reports available"
+            icon={<Icon.Flask size={20} />}
+            iconTone="purple"
+          />
+          <MetricCard
+            title="Next Scheduled Review"
+            value="Aug 24, 2026"
+            subtext="In 14 Days"
+            icon={<Icon.Calendar size={20} />}
+            iconTone="amber"
+            status={{ label: "In 14 Days", tone: "blue" }}
+          />
         </div>
 
         {/* Action Bar & Quick Timeline Access */}

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
 
 export const LandingPage: React.FC = () => {
+  useDocumentTitle('Unified Prescription & Health Network');
   const navigate = useNavigate();
   const { user, quickLogin } = useAuth();
   const [tab, setTab] = useState(0);

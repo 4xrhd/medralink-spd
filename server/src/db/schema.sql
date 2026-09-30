@@ -1,6 +1,6 @@
 -- =============================================================================
 -- MedraLink - 3NF Relational Database Schema (15 Normalized Tables)
--- CSE 416 Software Project Design & Development
+-- Enterprise Electronic Medical Record Management Platform
 -- =============================================================================
 
 -- 1. USERS: Base authentication credentials and roles

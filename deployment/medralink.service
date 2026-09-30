@@ -1,0 +1,40 @@
+# ==============================================================================
+# MedraLink EMR Platform - Systemd Service Unit
+# Path: /etc/systemd/system/medralink.service
+# ==============================================================================
+
+[Unit]
+Description=MedraLink Enterprise EMR Platform Service
+Documentation=https://github.com/4xrhd/medralink-spd
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=medralink
+Group=medralink
+WorkingDirectory=/opt/medralink
+
+# Environment variables loaded from secure configuration
+EnvironmentFile=/etc/medralink/medralink.env
+Environment=NODE_ENV=production
+Environment=PORT=5000
+
+# Start command
+ExecStart=/usr/bin/node server/dist/server.js
+
+# Process management & restart policy
+Restart=always
+RestartSec=5s
+KillMode=process
+TimeoutStopSec=20s
+
+# Security Hardening Sandbox
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

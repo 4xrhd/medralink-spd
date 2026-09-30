@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import { ConfirmModal } from '../components/ConfirmModal.js';
+import { useToast } from '../context/ToastContext.js';
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
-import { Card, Icon, Pill } from '../ui/primitives.js';
+import { Card, Icon, Pill, Badge, Button, MetricCard } from '../ui/primitives.js';
 
 export const AdminDashboard: React.FC = () => {
+  useDocumentTitle('Enterprise Governance & Audit Ledger');
+  const toast = useToast();
+
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [doctors, setDoctors] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Doctor Accreditation Confirmation State
+  const [revokeTarget, setRevokeTarget] = useState<{ id: string; name: string } | null>(null);
+  const [isRevoking, setIsRevoking] = useState(false);
 
   // Audit filter state
   const [auditFilterRole, setAuditFilterRole] = useState<'All' | 'DOCTOR' | 'PATIENT' | 'ADMIN'>('All');
@@ -26,6 +36,7 @@ export const AdminDashboard: React.FC = () => {
       setAuditLogs(auditRes.data.data?.logs || []);
     } catch (err) {
       console.error('Error fetching admin data:', err);
+      toast.error('Failed to load governance telemetry');
     } finally {
       setLoading(false);
     }
@@ -35,12 +46,30 @@ export const AdminDashboard: React.FC = () => {
     fetchStats();
   }, []);
 
-  const handleVerifyToggle = async (doctorId: string, isVerified: boolean) => {
+  const handleApproveDoctor = async (doctorId: string, doctorName: string) => {
     try {
-      await api.patch(`/doctors/${doctorId}/verify`, { isVerified });
+      await api.patch(`/doctors/${doctorId}/verify`, { isVerified: true });
+      toast.success(`Accreditation approved for ${doctorName}`);
+      await fetchStats();
+    } catch (err) {
+      console.error('Failed to approve doctor verification:', err);
+      toast.error('Failed to approve doctor accreditation.');
+    }
+  };
+
+  const handleConfirmRevoke = async () => {
+    if (!revokeTarget) return;
+    setIsRevoking(true);
+    try {
+      await api.patch(`/doctors/${revokeTarget.id}/verify`, { isVerified: false });
+      toast.warning(`Accreditation revoked for ${revokeTarget.name}`);
+      setRevokeTarget(null);
       await fetchStats();
     } catch (err) {
       console.error('Failed to update doctor verification:', err);
+      toast.error('Failed to revoke doctor accreditation.');
+    } finally {
+      setIsRevoking(false);
     }
   };
 
@@ -48,9 +77,10 @@ export const AdminDashboard: React.FC = () => {
     try {
       await navigator.clipboard?.writeText(hash);
       setCopiedHash(hash);
+      toast.info('SHA-256 integrity hash copied to clipboard');
       setTimeout(() => setCopiedHash((c) => (c === hash ? null : c)), 1500);
     } catch {
-      // Clipboard access fallback
+      toast.error('Could not access clipboard');
     }
   };
 
@@ -98,16 +128,16 @@ export const AdminDashboard: React.FC = () => {
 
           <div className="hidden 2xl:flex items-center gap-6 border-l border-slate-200 pl-6 text-xs text-[#475569]">
             <div>
-              <span className="text-[#94A3B8] font-semibold uppercase tracking-wider block text-[10px]">Data Center Node</span>
-              <span className="font-bold text-[#0F172A]">Dhaka Central Colo-1 (Active)</span>
+              <span className="text-[11px] font-medium text-slate-500 block">Data Center Node</span>
+              <span className="font-semibold text-slate-900">Dhaka Central Colo-1 (Active)</span>
             </div>
             <div>
-              <span className="text-[#94A3B8] font-semibold uppercase tracking-wider block text-[10px]">Cryptographic Keyring</span>
+              <span className="text-[11px] font-medium text-slate-500 block">Cryptographic Keyring</span>
               <span className="font-mono text-[#7C3AED] font-bold">HSM-256 Validated • FIPS 140-2</span>
             </div>
             <div>
-              <span className="text-[#94A3B8] font-semibold uppercase tracking-wider block text-[10px]">Regulatory Compliance</span>
-              <span className="font-bold text-[#059669]">BMDC Form-C &amp; DGDA Audited</span>
+              <span className="text-[11px] font-medium text-slate-500 block">Regulatory Compliance</span>
+              <span className="font-semibold text-[#059669]">BMDC Form-C &amp; DGDA Audited</span>
             </div>
           </div>
 
@@ -127,59 +157,43 @@ export const AdminDashboard: React.FC = () => {
       </section>
 
       <main className="mx-auto max-w-[1200px] 2xl:max-w-[1720px] space-y-6 px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
-        {/* Figma 4 KPI Cards */}
+        {/* 4 Standardized Metric KPI Cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card hover className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#EFF6FF] text-[#2563EB]">
-                <Icon.User size={18} />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded-md border border-[#A7F3D0]">Live</span>
-            </div>
-            <p className="tabular mt-4 font-display text-3xl font-bold text-[#0F172A]">
-              {stats?.totalPatients || '24,800'}
-            </p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-[#64748B]">Registered Patient Records</p>
-          </Card>
+          <MetricCard
+            title="Registered Patient Records"
+            value={stats?.totalPatients || '24,800'}
+            subtext="National health registry index"
+            icon={<Icon.User size={20} />}
+            iconTone="blue"
+            status={{ label: "Live", tone: "emerald" }}
+          />
 
-          <Card hover className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#ECFDF5] text-[#059669]">
-                <Icon.Stethoscope size={18} />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded-md border border-[#A7F3D0]">Live</span>
-            </div>
-            <p className="tabular mt-4 font-display text-3xl font-bold text-[#0F172A]">
-              {stats?.totalDoctors || '1,240'}
-            </p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-[#64748B]">Accredited Physicians</p>
-          </Card>
+          <MetricCard
+            title="Accredited Physicians"
+            value={stats?.totalDoctors || '1,240'}
+            subtext="BMDC Form-C certified"
+            icon={<Icon.Stethoscope size={20} />}
+            iconTone="emerald"
+            status={{ label: "Live", tone: "emerald" }}
+          />
 
-          <Card hover className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#EEF2F7] text-[#1B365D]">
-                <Icon.File size={18} />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded-md border border-[#A7F3D0]">Live</span>
-            </div>
-            <p className="tabular mt-4 font-display text-3xl font-bold text-[#0F172A]">
-              {stats?.totalConsultations || '142,600'}
-            </p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-[#64748B]">Consultations Processed</p>
-          </Card>
+          <MetricCard
+            title="Consultations Processed"
+            value={stats?.totalConsultations || '142,600'}
+            subtext="Unified clinical records"
+            icon={<Icon.File size={20} />}
+            iconTone="navy"
+            status={{ label: "Live", tone: "emerald" }}
+          />
 
-          <Card hover className="p-5">
-            <div className="flex items-center justify-between">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#F5F3FF] text-[#7C3AED]">
-                <Icon.Shield size={18} />
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded-md border border-[#A7F3D0]">Live</span>
-            </div>
-            <p className="tabular mt-4 font-display text-3xl font-bold text-[#0F172A]">
-              {stats?.auditEntriesCount || '489,120'}
-            </p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-[#64748B]">Cryptographic Audit Entries</p>
-          </Card>
+          <MetricCard
+            title="Cryptographic Audit Entries"
+            value={stats?.auditEntriesCount || '489,120'}
+            subtext="SHA-256 validated ledger"
+            icon={<Icon.Shield size={20} />}
+            iconTone="purple"
+            status={{ label: "Live", tone: "emerald" }}
+          />
         </div>
 
         {/* Section 1: Physician Credential Verification & Onboarding Table */}
@@ -223,28 +237,29 @@ export const AdminDashboard: React.FC = () => {
                       <td className="px-4 py-3.5 text-[#475569]">{doc.specialization}</td>
                       <td className="px-4 py-3.5 text-[#475569]">{doc.hospital_affiliation}</td>
                       <td className="px-4 py-3.5">
-                        <Pill tone={isAccredited ? 'emerald' : 'amber'}>
+                        <Badge tone={isAccredited ? 'emerald' : 'amber'} dot>
                           {isAccredited ? 'Accredited' : 'Pending'}
-                        </Pill>
+                        </Badge>
                       </td>
                       <td className="px-6 py-3.5 text-right">
                         <div className="flex justify-end gap-2">
                           {!isAccredited ? (
-                            <button
-                              type="button"
-                              onClick={() => handleVerifyToggle(doc.id, true)}
-                              className="rounded-lg bg-[#059669] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-[#047857] transition-colors focus-visible:ring-2 focus-visible:ring-[#059669]"
+                            <Button
+                              size="sm"
+                              variant="clinical"
+                              onClick={() => handleApproveDoctor(doc.id, doc.full_name)}
                             >
                               Approve
-                            </button>
+                            </Button>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() => handleVerifyToggle(doc.id, false)}
-                              className="rounded-lg border border-[#FECACA] bg-white px-3 py-1.5 text-xs font-semibold text-[#DC2626] shadow-xs hover:bg-[#FEF2F2] transition-colors focus-visible:ring-2 focus-visible:ring-[#DC2626]"
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-[#FECACA] text-[#DC2626] hover:bg-[#FEF2F2] hover:text-[#B91C1C]"
+                              onClick={() => setRevokeTarget({ id: doc.id, name: doc.full_name })}
                             >
                               Revoke
-                            </button>
+                            </Button>
                           )}
                         </div>
                       </td>
@@ -393,6 +408,29 @@ export const AdminDashboard: React.FC = () => {
             </table>
           </div>
         </Card>
+
+        {/* Destructive Action Confirmation Dialog */}
+        <ConfirmModal
+          isOpen={Boolean(revokeTarget)}
+          title="Revoke Physician BMDC Accreditation?"
+          message={
+            <div className="space-y-2">
+              <p>
+                Are you sure you want to revoke the accreditation of{' '}
+                <strong className="text-[#0F172A]">{revokeTarget?.name}</strong>?
+              </p>
+              <p className="text-xs text-[#DC2626] font-medium bg-[#FEF2F2] p-2.5 rounded-xl border border-[#FECACA]">
+                Revoking will immediately suspend this physician's authority to issue or cryptographically sign new clinical prescriptions across MedraLink.
+              </p>
+            </div>
+          }
+          confirmLabel="Revoke Accreditation"
+          cancelLabel="Keep Accredited"
+          isDestructive={true}
+          isLoading={isRevoking}
+          onConfirm={handleConfirmRevoke}
+          onCancel={() => setRevokeTarget(null)}
+        />
       </main>
     </div>
   );

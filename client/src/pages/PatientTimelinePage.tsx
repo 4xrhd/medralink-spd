@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
+import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
 import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
 
@@ -19,6 +20,7 @@ function TimelineMarker({ active }: { active?: boolean }) {
 }
 
 export const PatientTimelinePage: React.FC = () => {
+  useDocumentTitle('Longitudinal Patient Timeline');
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
