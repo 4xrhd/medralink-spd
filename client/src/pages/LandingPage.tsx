@@ -74,10 +74,6 @@ export const LandingPage: React.FC = () => {
       {/* Hero Section */}
       <section id="hero" className="mx-auto grid max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 items-center gap-12 2xl:gap-16 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] 2xl:grid-cols-[1.15fr_0.85fr] lg:py-20">
         <div>
-          <Badge tone="blue" size="md" className="mb-6 inline-flex items-center gap-2">
-            <Icon.Shield size={14} className="shrink-0" />
-            <span>Next-Gen EMR Infrastructure • BMDC &amp; Clinical Standards Compliant</span>
-          </Badge>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#0F172A] sm:text-5xl lg:text-[56px]">
             One Unified Record.<br />
             Seamless Clinical Continuity.
