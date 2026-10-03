@@ -157,10 +157,10 @@ export const Navbar: React.FC = () => {
 
   const publicNavItems = [
     ['Solutions', '#solutions'],
-    ['Clinical Architecture', '#clinical-architecture'],
-    ['Data Governance', '#governance'],
-    ['Network Clinics', '#network-clinics'],
-    ['Enterprise Support', '#support'],
+    ['Care Journey', '#how-it-works'],
+    ['Workspaces', '#clinical-architecture'],
+    ['Governance', '#governance'],
+    ['Support', '#support'],
   ];
 
   return (
@@ -174,7 +174,7 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
             aria-label="MedraLink Home"
           >
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-700 text-white shadow-sm">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-600 text-white shadow-sm">
               <Icon.Cross size={18} />
             </div>
             <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
@@ -682,13 +682,13 @@ export const Navbar: React.FC = () => {
               {/* Logged Out CTAs */}
               <Link
                 to="/login"
-                className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs sm:text-sm sm:px-3.5 sm:py-2 font-semibold text-primary-700 transition-colors hover:bg-slate-100"
+                className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs sm:text-sm sm:px-3.5 sm:py-2 font-semibold text-primary-700 transition-colors hover:bg-primary-50"
               >
                 Portal Login
               </Link>
               <Link
                 to="/register"
-                className="hidden sm:inline-flex whitespace-nowrap rounded-lg bg-primary-700 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-800"
+                className="hidden sm:inline-flex whitespace-nowrap rounded-lg bg-primary-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
               >
                 Register Clinic
               </Link>
