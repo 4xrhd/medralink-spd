@@ -41,3 +41,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Deployment & tooling artifacts
+.netlify/
+.agents/

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Card, Icon, Pill, Badge, Button, VitalPill } from '../ui/primitives.js';
@@ -49,7 +49,7 @@ export const LandingPage: React.FC = () => {
     if (user?.role === 'DOCTOR') {
       navigate('/doctor');
     } else {
-      navigate('/login');
+      navigate('/login?role=doctor');
     }
   };
 
@@ -57,14 +57,22 @@ export const LandingPage: React.FC = () => {
     if (user?.role === 'PATIENT') {
       navigate('/patient');
     } else {
-      navigate('/login');
+      navigate('/login?role=patient');
+    }
+  };
+
+  const handleLaunchAdmin = () => {
+    if (user?.role === 'ADMIN') {
+      navigate('/admin');
+    } else {
+      navigate('/login?role=admin');
     }
   };
 
   return (
     <div className="bg-[#F8FAFC]">
       {/* Hero Section */}
-      <section id="clinical-architecture" className="mx-auto grid max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 items-center gap-12 2xl:gap-16 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] 2xl:grid-cols-[1.15fr_0.85fr] lg:py-20">
+      <section id="hero" className="mx-auto grid max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 items-center gap-12 2xl:gap-16 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] 2xl:grid-cols-[1.15fr_0.85fr] lg:py-20">
         <div>
           <Badge tone="blue" size="md" className="mb-6 inline-flex items-center gap-2">
             <Icon.Shield size={14} className="shrink-0" />
@@ -243,7 +251,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Role-based clinical workspaces */}
-      <section className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
+      <section id="clinical-architecture" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <div className="text-center max-w-2xl mx-auto">
           <Badge tone="blue" size="sm" className="mb-3 inline-flex items-center gap-1.5">
             <Icon.Lock size={12} />
@@ -321,7 +329,7 @@ export const LandingPage: React.FC = () => {
               <Button
                 size="sm"
                 variant="secondary"
-                onClick={() => navigate('/admin')}
+                onClick={handleLaunchAdmin}
                 icon={<Icon.Arrow size={14} />}
                 iconPosition="right"
               >
@@ -393,19 +401,57 @@ export const LandingPage: React.FC = () => {
               </p>
             </div>
             {[
-              ["Brand & Accreditation", ["About MedraLink", "BMDC Compliance", "Accreditation Registry", "Newsroom"]],
-              ["Platform Solutions", ["Physician Workstation", "Patient Portal", "Diagnostic Streaming", "E-Prescribing"]],
-              ["Governance & Compliance", ["Data Governance", "Audit Ledger", "Security Overview", "RBAC Policy"]],
-              ["Enterprise Support", ["Clinic Onboarding", "Documentation", "Contact Sales", "Service Status"]],
+              ["Brand & Accreditation", [
+                ["About MedraLink", "#hero"],
+                ["BMDC Compliance", "#governance"],
+                ["Accreditation Registry", "#clinical-architecture"],
+                ["Platform Telemetry", "#network-clinics"],
+              ]],
+              ["Platform Solutions", [
+                ["Physician Workstation", "/doctor"],
+                ["Patient Portal", "/patient"],
+                ["Diagnostic Streaming", "#solutions"],
+                ["E-Prescribing", "#clinical-architecture"],
+              ]],
+              ["Governance & Compliance", [
+                ["Data Governance", "#governance"],
+                ["Audit Ledger", "/admin"],
+                ["Security Overview", "#governance"],
+                ["RBAC Policy", "#governance"],
+              ]],
+              ["Enterprise Support", [
+                ["Clinic Onboarding", "/register"],
+                ["Portal Login", "/login"],
+                ["Contact Sales", "#support"],
+                ["Service Status", "#support"],
+              ]],
             ].map(([title, links]) => (
               <div key={title as string}>
                 <p className="text-sm font-semibold text-white">{title as string}</p>
                 <ul className="mt-4 space-y-2.5">
-                  {(links as string[]).map((l) => (
-                    <li key={l}>
-                      <span className="text-sm text-slate-400 cursor-pointer transition-colors hover:text-white">
-                        {l}
-                      </span>
+                  {(links as [string, string][]).map(([label, href]) => (
+                    <li key={label}>
+                      {href.startsWith('#') ? (
+                        <a
+                          href={href}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const el = document.querySelector(href);
+                            if (el) el.scrollIntoView({ behavior: 'smooth' });
+                          }}
+                          className="text-sm text-slate-400 cursor-pointer transition-colors hover:text-white"
+                        >
+                          {label}
+                        </a>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => navigate(href)}
+                          className="text-sm text-slate-400 cursor-pointer transition-colors hover:text-white text-left"
+                        >
+                          {label}
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -415,9 +461,36 @@ export const LandingPage: React.FC = () => {
           <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 MedraLink Health Technologies Ltd. All rights reserved.</p>
             <div className="flex gap-5">
-              <span className="hover:text-white cursor-pointer">Privacy Policy</span>
-              <span className="hover:text-white cursor-pointer">Terms of Service</span>
-              <span className="hover:text-white cursor-pointer">Security Overview</span>
+              <a
+                href="#governance"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.querySelector('#governance')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="hover:text-white cursor-pointer transition-colors"
+              >
+                Privacy Policy
+              </a>
+              <a
+                href="#governance"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.querySelector('#governance')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="hover:text-white cursor-pointer transition-colors"
+              >
+                Terms of Service
+              </a>
+              <a
+                href="#governance"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.querySelector('#governance')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="hover:text-white cursor-pointer transition-colors"
+              >
+                Security Overview
+              </a>
             </div>
           </div>
         </div>

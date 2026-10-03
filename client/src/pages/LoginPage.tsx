@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
@@ -8,6 +8,9 @@ import { Card, Icon, Button, FormField, Input } from '../ui/primitives.js';
 export const LoginPage: React.FC = () => {
   useDocumentTitle('Sign In');
   const toast = useToast();
+  const [searchParams] = useSearchParams();
+  const roleParam = searchParams.get('role');
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -16,8 +19,21 @@ export const LoginPage: React.FC = () => {
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (roleParam === 'doctor') {
+      setEmail('dr.test@medralink.com');
+      setPassword('Password123!');
+    } else if (roleParam === 'patient') {
+      setEmail('patient.test@medralink.com');
+      setPassword('Password123!');
+    } else if (roleParam === 'admin') {
+      setEmail('admin@medralink.com');
+      setPassword('admin123');
+    }
+  }, [roleParam]);
+
   // If already logged in, navigate based on role
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       if (user.role === 'DOCTOR') navigate('/doctor');
       else if (user.role === 'PATIENT') navigate('/patient');
@@ -65,6 +81,57 @@ export const LoginPage: React.FC = () => {
               <span>{error}</span>
             </div>
           )}
+
+          {/* Quick Demo Evaluation Selectors */}
+          <div className="mb-5 rounded-xl border border-[#E2E8F0] bg-slate-50/80 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B] mb-2 flex items-center gap-1.5">
+              <Icon.User size={13} /> Quick Demo Access:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('dr.test@medralink.com');
+                  setPassword('Password123!');
+                }}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer border ${
+                  email === 'dr.test@medralink.com'
+                    ? 'border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                🩺 Doctor Demo
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('patient.test@medralink.com');
+                  setPassword('Password123!');
+                }}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer border ${
+                  email === 'patient.test@medralink.com'
+                    ? 'border-[#059669] bg-[#ECFDF5] text-[#065F46]'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                👤 Patient Demo
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail('admin@medralink.com');
+                  setPassword('admin123');
+                }}
+                className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer border ${
+                  email === 'admin@medralink.com'
+                    ? 'border-[#7C3AED] bg-[#F5F3FF] text-[#6D28D9]'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                🛡️ Admin Demo
+              </button>
+            </div>
+          </div>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <FormField label="Email address" htmlFor="login-email" required>
