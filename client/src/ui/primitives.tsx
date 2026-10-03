@@ -220,13 +220,76 @@ export const Icon = {
       <line x1="12" y1="8" x2="12.01" y2="8" />
     </svg>
   ),
+  HeartPulse: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="M19.5 12.6 12 20l-7.5-7.4A5 5 0 1 1 12 6a5 5 0 1 1 7.5 6.6z" />
+      <path d="M3.5 12h4l1.5-3 3 6 1.5-3h7" />
+    </svg>
+  ),
+  Hospital: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="M4 21V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14" />
+      <path d="M2 21h20M12 8v6M9 11h6M10 21v-3h4v3" />
+    </svg>
+  ),
+  Capsule: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7z" />
+      <path d="m8.5 8.5 7 7" />
+    </svg>
+  ),
+  Ambulance: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="M3 17V7a1 1 0 0 1 1-1h10v11M14 10h4l3 3v4h-7" />
+      <circle cx="7" cy="17.5" r="1.8" />
+      <circle cx="17" cy="17.5" r="1.8" />
+      <path d="M8.5 9v4M6.5 11h4" />
+    </svg>
+  ),
+  ClipboardHeart: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <rect x="5" y="4" width="14" height="17" rx="2" />
+      <path d="M9 4V3h6v1" />
+      <path d="M12 17s-3.5-2-3.5-4.3a1.8 1.8 0 0 1 3.5-.6 1.8 1.8 0 0 1 3.5.6C15.5 15 12 17 12 17z" />
+    </svg>
+  ),
+  Microscope: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="M6 18h8M3 22h18M14 22a7 7 0 1 0 0-14h-1" />
+      <path d="M9 14h2M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2zM12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" />
+    </svg>
+  ),
+  ShieldPlus: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5z" />
+      <path d="M12 8.5v6M9 11.5h6" />
+    </svg>
+  ),
+  Phone: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z" />
+    </svg>
+  ),
+  Mail: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-10 6L2 7" />
+    </svg>
+  ),
+  IdCard: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <circle cx="8" cy="12" r="2" />
+      <path d="M5 16a3 3 0 0 1 6 0M14 10h5M14 14h3" />
+    </svg>
+  ),
 };
 
 /* ==========================================================================
    2. Buttons
    ========================================================================== */
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "clinical" | "secondary" | "outline" | "destructive" | "ghost";
+  variant?: "primary" | "clinical" | "secondary" | "outline" | "destructive" | "ghost" | "soft";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
   icon?: ReactNode;
@@ -254,17 +317,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants: Record<string, string> = {
       primary:
-        "bg-[#1B365D] hover:bg-[#152a48] text-white border border-transparent shadow-xs focus-visible:ring-[#1B365D]",
+        "bg-primary-600 hover:bg-primary-700 text-white border border-transparent shadow-sm shadow-primary-600/20 focus-visible:ring-primary-600",
       clinical:
-        "bg-[#2563EB] hover:bg-[#1D4ED8] text-white border border-transparent shadow-xs focus-visible:ring-[#2563EB]",
+        "bg-primary-700 hover:bg-primary-800 text-white border border-transparent shadow-sm focus-visible:ring-primary-700",
       secondary:
-        "bg-white hover:bg-slate-50 text-[#0F172A] border border-[#CBD5E1] shadow-xs focus-visible:ring-[#2563EB]",
+        "bg-white hover:bg-primary-50 text-ink-900 border border-hair-strong hover:border-primary-200 shadow-subtle focus-visible:ring-primary-600",
       outline:
-        "bg-transparent hover:bg-slate-50 text-[#1B365D] border border-[#CBD5E1] focus-visible:ring-[#2563EB]",
+        "bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-200 focus-visible:ring-primary-600",
       destructive:
-        "bg-[#DC2626] hover:bg-[#B91C1C] text-white border border-transparent shadow-xs focus-visible:ring-[#DC2626]",
+        "bg-critical hover:bg-critical/90 text-white border border-transparent shadow-sm focus-visible:ring-critical",
       ghost:
-        "bg-transparent hover:bg-slate-100 text-[#475569] hover:text-[#0F172A] border border-transparent focus-visible:ring-[#2563EB]",
+        "bg-transparent hover:bg-primary-50 text-ink-600 hover:text-ink-900 border border-transparent focus-visible:ring-primary-600",
+      soft:
+        "bg-primary-50 hover:bg-primary-100 text-primary-700 border border-primary-100 focus-visible:ring-primary-600",
     };
 
     const sizes: Record<string, string> = {
@@ -321,12 +386,12 @@ export function Badge({
 }: BadgeProps) {
   const tones: Record<BadgeTone, { bg: string; dotBg: string }> = {
     slate: { bg: "bg-slate-100 text-slate-700 border-slate-200", dotBg: "bg-slate-500" },
-    blue: { bg: "bg-[#EFF6FF] text-[#1D4ED8] border-[#BFDBFE]", dotBg: "bg-[#2563EB]" },
-    emerald: { bg: "bg-[#ECFDF5] text-[#065F46] border-[#A7F3D0]", dotBg: "bg-[#059669]" },
-    crimson: { bg: "bg-[#FEF2F2] text-[#991B1B] border-[#FECACA]", dotBg: "bg-[#DC2626]" },
-    amber: { bg: "bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]", dotBg: "bg-[#D97706]" },
-    purple: { bg: "bg-[#F5F3FF] text-[#6D28D9] border-[#DDD6FE]", dotBg: "bg-[#7C3AED]" },
-    navy: { bg: "bg-[#1B365D] text-white border-[#1B365D]", dotBg: "bg-white" },
+    blue: { bg: "bg-primary-50 text-primary-700 border-primary-100", dotBg: "bg-primary-600" },
+    emerald: { bg: "bg-emerald-50 text-emerald-800 border-emerald-200", dotBg: "bg-success" },
+    crimson: { bg: "bg-rose-50 text-rose-800 border-rose-200", dotBg: "bg-critical" },
+    amber: { bg: "bg-amber-50 text-amber-800 border-amber-200", dotBg: "bg-warning" },
+    purple: { bg: "bg-violet-50 text-violet-700 border-violet-200", dotBg: "bg-audit" },
+    navy: { bg: "bg-primary-700 text-white border-primary-700", dotBg: "bg-white" },
   };
 
   const sizes = {
@@ -387,10 +452,10 @@ export function Card({
   padding = "none",
 }: CardProps) {
   const variants = {
-    default: "border border-[#E2E8F0] bg-white shadow-card",
-    flat: "border border-[#E2E8F0] bg-white",
-    elevated: "border border-[#E2E8F0] bg-white shadow-elevated",
-    subtle: "border border-slate-200/80 bg-slate-50/70",
+    default: "border border-hair bg-surface shadow-card",
+    flat: "border border-hair bg-surface",
+    elevated: "border border-hair bg-surface shadow-elevated",
+    subtle: "border border-hair bg-primary-50/40",
   };
 
   const paddings = {
@@ -405,10 +470,10 @@ export function Card({
       id={id}
       role={role}
       className={cn(
-        "rounded-2xl transition-all duration-150",
+        "rounded-2xl transition-all duration-200",
         variants[variant],
         paddings[padding],
-        hover && "hover:border-[#BFDBFE] hover:shadow-card-hover",
+        hover && "hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-card-hover",
         className
       )}
       style={style}
