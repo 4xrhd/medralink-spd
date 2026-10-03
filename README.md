@@ -1,4 +1,4 @@
-# 🏥 MedraLink — Enterprise Electronic Medical Record (EMR) Platform
+# 🏥 MedraLink | Enterprise Electronic Medical Record (EMR) Platform
 
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue?style=flat-square&logo=githubactions)](https://github.com/4xrhd/medralink-spd/actions)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-green?style=flat-square&logo=node.js)](https://nodejs.org/)
@@ -210,26 +210,26 @@ npm test
 All endpoints are versioned under `/api/v1`:
 
 ### Health & Monitoring
-- `GET /api/health` — System status, DB connection latency, memory usage (RSS/heap), uptime.
-- `GET /health` — Load balancer liveness check endpoint.
+- `GET /api/health`: System status, DB connection latency, memory usage (RSS/heap), uptime.
+- `GET /health`: Load balancer liveness check endpoint.
 
 ### Authentication & Authorization
-- `POST /api/v1/auth/login` — Authenticate user and issue JWT token.
-- `POST /api/v1/auth/register` — Patient self-registration.
-- `GET /api/v1/auth/me` — Retrieve active user session and profile.
+- `POST /api/v1/auth/login`: Authenticate user and issue JWT token.
+- `POST /api/v1/auth/register`: Patient self-registration.
+- `GET /api/v1/auth/me`: Retrieve active user session and profile.
 
 ### Clinical Workflows
-- `GET /api/v1/patients/search?q=:query` — Doctor search for patient by name, phone, or ID.
-- `GET /api/v1/patients/:id/timeline` — Retrieve unified longitudinal medical timeline.
-- `POST /api/v1/consultations` — Submit complete atomic consultation visit (vitals + diagnosis + prescription).
-- `GET /api/v1/prescriptions/:id` — Fetch prescription details and items.
-- `GET /api/v1/prescriptions/:id/pdf` — Stream official PDF prescription document.
-- `POST /api/v1/lab-reports` — Upload diagnostic lab report attachment.
+- `GET /api/v1/patients/search?q=:query`: Doctor search for patient by name, phone, or ID.
+- `GET /api/v1/patients/:id/timeline`: Retrieve unified longitudinal medical timeline.
+- `POST /api/v1/consultations`: Submit complete atomic consultation visit (vitals + diagnosis + prescription).
+- `GET /api/v1/prescriptions/:id`: Fetch prescription details and items.
+- `GET /api/v1/prescriptions/:id/pdf`: Stream official PDF prescription document.
+- `POST /api/v1/lab-reports`: Upload diagnostic lab report attachment.
 
 ### Administration & Governance
-- `GET /api/v1/admin/doctors` — List all registered physicians and verification statuses.
-- `PATCH /api/v1/admin/doctors/:id/verify` — Verify physician BMDC license.
-- `GET /api/v1/admin/audit-logs` — Query immutable SHA-256 cryptographically chained audit trail.
+- `GET /api/v1/admin/doctors`: List all registered physicians and verification statuses.
+- `PATCH /api/v1/admin/doctors/:id/verify`: Verify physician BMDC license.
+- `GET /api/v1/admin/audit-logs`: Query immutable SHA-256 cryptographically chained audit trail.
 
 ---
 
@@ -241,7 +241,18 @@ All endpoints are versioned under `/api/v1`:
 - **Strict Content Security Policy (CSP):** Helmet HTTP security headers configured with resource isolation.
 - **DDoS & Brute-Force Rate Limiting:** Stricter rate limits on `/api/v1/auth` (50 req/15min) and general API protection (600 req/15min).
 
+
+---
+
+## 👥 Contributors & Core Team
+
+| Name | Role | Student ID | GitHub Profile | Contact |
+| :--- | :--- | :--- | :--- | :--- |
+| **Kazi Md Azhar Uddin Abeer** | Team Leader & Backend/DB Engineer | `0432320005101120` | [@4xrhd](https://github.com/4xrhd) | `azhar.abeer@uits.edu.bd` |
+| **Sabikun Nahar Alina** | Frontend UI/UX & Integration Engineer | `0432320005101016` | [@sabikun-nahar-alina](https://github.com/sabikun-nahar-alina) | `sabikunalina16@gmail.com` |
+
 ---
 
 ## 📄 License
 This software is licensed under the [MIT License](LICENSE).
+
