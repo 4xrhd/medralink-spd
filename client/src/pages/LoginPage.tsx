@@ -58,15 +58,15 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#F8FAFC]">
+    <div className="min-h-[calc(100vh-5rem)] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 bg-canvas">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-[#1B365D] text-white shadow-card">
+        <div className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-primary-700 text-white shadow-card">
           <Icon.Cross size={24} />
         </div>
-        <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-[#0F172A]">
-          Sign in to Medra<span className="text-[#2563EB]">Link</span>
+        <h1 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-ink-900">
+          Sign in to Medra<span className="text-primary-600">Link</span>
         </h1>
-        <p className="mt-2 text-sm text-[#475569]">
+        <p className="mt-2 text-sm text-ink-600">
           Unified Electronic Medical Records &amp; Clinical Workflow Platform
         </p>
       </div>
@@ -83,8 +83,8 @@ export const LoginPage: React.FC = () => {
           )}
 
           {/* Quick Demo Evaluation Selectors */}
-          <div className="mb-5 rounded-xl border border-[#E2E8F0] bg-slate-50/80 p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#64748B] mb-2 flex items-center gap-1.5">
+          <div className="mb-5 rounded-xl border border-hair bg-slate-50/80 p-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-600 mb-2 flex items-center gap-1.5">
               <Icon.User size={13} /> Quick Demo Access:
             </p>
             <div className="flex flex-wrap gap-2">
@@ -96,7 +96,7 @@ export const LoginPage: React.FC = () => {
                 }}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer border ${
                   email === 'dr.test@medralink.com'
-                    ? 'border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]'
+                    ? 'border-primary-600 bg-primary-50 text-primary-700'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
@@ -110,7 +110,7 @@ export const LoginPage: React.FC = () => {
                 }}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer border ${
                   email === 'patient.test@medralink.com'
-                    ? 'border-[#059669] bg-[#ECFDF5] text-[#065F46]'
+                    ? 'border-success bg-emerald-50 text-emerald-800'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
@@ -124,7 +124,7 @@ export const LoginPage: React.FC = () => {
                 }}
                 className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer border ${
                   email === 'admin@medralink.com'
-                    ? 'border-[#7C3AED] bg-[#F5F3FF] text-[#6D28D9]'
+                    ? 'border-audit bg-violet-50 text-violet-700'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
                 }`}
               >
@@ -180,9 +180,9 @@ export const LoginPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="mt-6 border-t border-[#E2E8F0] pt-4 text-center text-xs text-[#475569]">
+          <div className="mt-6 border-t border-hair pt-4 text-center text-xs text-ink-600">
             Don't have a clinical account?{' '}
-            <Link to="/register" className="font-semibold text-[#2563EB] hover:underline">
+            <Link to="/register" className="font-semibold text-primary-600 hover:underline">
               Register Patient or Doctor Profile
             </Link>
           </div>

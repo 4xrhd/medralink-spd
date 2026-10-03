@@ -13,9 +13,9 @@ function QR() {
     cells.push(on);
   }
   return (
-    <div className="grid h-20 w-20 grid-cols-11 gap-px rounded-md bg-white p-1 ring-1 ring-[#E2E8F0]">
+    <div className="grid h-20 w-20 grid-cols-11 gap-px rounded-md bg-white p-1 ring-1 ring-hair">
       {cells.map((c, i) => (
-        <div key={i} className={c ? "bg-[#0F172A]" : "bg-transparent"} />
+        <div key={i} className={c ? "bg-ink-900" : "bg-transparent"} />
       ))}
     </div>
   );
@@ -46,7 +46,7 @@ export const PrescriptionViewPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-[#334155]">
+      <div className="flex min-h-[60vh] items-center justify-center bg-ink-600">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
       </div>
     );
@@ -54,13 +54,13 @@ export const PrescriptionViewPage: React.FC = () => {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-[#334155] px-4 py-16 text-center text-white">
+      <div className="min-h-screen bg-ink-600 px-4 py-16 text-center text-white">
         <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl">
           <Icon.Alert size={36} className="mx-auto text-rose-400 mb-3" />
           <p className="text-sm font-semibold">{error || 'Prescription record not found.'}</p>
           <Link
             to="/"
-            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-semibold text-[#1B365D] hover:bg-slate-100"
+            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-semibold text-primary-700 hover:bg-slate-100"
           >
             <Icon.Arrow size={14} className="rotate-180" /> Return to Workstation
           </Link>
@@ -99,7 +99,7 @@ export const PrescriptionViewPage: React.FC = () => {
   const items = Array.isArray(data.items) ? data.items : [];
 
   return (
-    <div className="min-h-screen overflow-x-auto bg-[#334155] py-6 sm:py-10 px-2 sm:px-4">
+    <div className="min-h-screen overflow-x-auto bg-ink-600 py-6 sm:py-10 px-2 sm:px-4">
       <style>{`
         @media print {
           body { background: white !important; }
@@ -147,7 +147,7 @@ export const PrescriptionViewPage: React.FC = () => {
             href={pdfDownloadUrl}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-white px-3.5 py-2 text-xs font-semibold text-[#1B365D] shadow-sm transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-white px-3.5 py-2 text-xs font-semibold text-primary-700 shadow-sm transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-primary-600"
           >
             <Icon.Download size={14} /> Official PDF (℞)
           </a>
@@ -157,7 +157,7 @@ export const PrescriptionViewPage: React.FC = () => {
       {/* A4 page: 595 x 842 pt ratio, fully responsive on mobile */}
       <div className="print-sheet mx-auto flex min-h-[842px] w-full max-w-[595px] flex-col bg-white shadow-2xl rounded-sm">
         {/* Header banner */}
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-[#1B365D] px-6 sm:px-8 py-5 text-white">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-primary-700 px-6 sm:px-8 py-5 text-white">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/15">
               <Icon.Cross size={20} />
@@ -179,33 +179,33 @@ export const PrescriptionViewPage: React.FC = () => {
           {/* Physician letterhead */}
           <div className="flex flex-col sm:flex-row justify-between gap-4 sm:gap-6">
             <div>
-              <p className="text-base font-bold text-[#0F172A]">{doctorName}</p>
-              <p className="text-xs text-[#475569]">{qualifications}</p>
-              <p className="text-xs text-[#475569]">{specialization}</p>
-              <p className="mt-1 font-mono text-[11px] text-[#64748B]">
+              <p className="text-base font-bold text-ink-900">{doctorName}</p>
+              <p className="text-xs text-ink-600">{qualifications}</p>
+              <p className="text-xs text-ink-600">{specialization}</p>
+              <p className="mt-1 font-mono text-[11px] text-ink-600">
                 BMDC Registration No: {doctorLicense}
               </p>
             </div>
-            <div className="text-left sm:text-right text-xs text-[#475569]">
-              <p className="font-semibold text-[#0F172A]">Chamber: {hospitalAffiliation}</p>
+            <div className="text-left sm:text-right text-xs text-ink-600">
+              <p className="font-semibold text-ink-900">Chamber: {hospitalAffiliation}</p>
               <p>{chamberDetails}</p>
-              <p className="mt-1 font-mono text-[11px] text-[#64748B]">Tel: {doctorPhone}</p>
+              <p className="mt-1 font-mono text-[11px] text-ink-600">Tel: {doctorPhone}</p>
             </div>
           </div>
 
-          <div className="my-4 h-px bg-[#E2E8F0]" />
+          <div className="my-4 h-px bg-hair" />
 
           {/* Patient demographic strip (2 columns on mobile, 4 columns on sm+) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px overflow-hidden rounded-lg bg-[#CBD5E1]">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-px overflow-hidden rounded-lg bg-hair-strong">
             {[
               ['Patient Name', patientName],
               ['UID', patientUid],
               ['Gender & Age', `${gender} • ${age}`],
               ['Blood Group', bloodGroup],
             ].map(([l, v], i) => (
-              <div key={l} className="bg-[#F8FAFC] px-3 py-2.5">
+              <div key={l} className="bg-canvas px-3 py-2.5">
                 <p className="text-[10px] font-semibold text-slate-500">{l}</p>
-                <p className={`mt-0.5 text-xs sm:text-sm font-semibold text-[#0F172A] ${i > 0 ? 'tabular' : ''}`}>
+                <p className={`mt-0.5 text-xs sm:text-sm font-semibold text-ink-900 ${i > 0 ? 'tabular' : ''}`}>
                   {v}
                 </p>
               </div>
@@ -215,8 +215,8 @@ export const PrescriptionViewPage: React.FC = () => {
           {/* Clinical indicators (Vitals & Diagnoses) */}
           <div className="mt-4 space-y-1.5 text-xs">
             {data.vitals && (
-              <p className="text-[#475569]">
-                <span className="font-semibold text-[#0F172A]">Vitals: </span>
+              <p className="text-ink-600">
+                <span className="font-semibold text-ink-900">Vitals: </span>
                 <span className="tabular">
                   BP: {data.vitals.systolic_bp && data.vitals.diastolic_bp ? `${data.vitals.systolic_bp}/${data.vitals.diastolic_bp} mmHg` : '—'}
                   {data.vitals.heart_rate ? ` | Pulse: ${data.vitals.heart_rate} bpm` : ''}
@@ -227,13 +227,13 @@ export const PrescriptionViewPage: React.FC = () => {
               </p>
             )}
 
-            <p className="text-[#475569]">
-              <span className="font-semibold text-[#0F172A]">Diagnosis: </span>
+            <p className="text-ink-600">
+              <span className="font-semibold text-ink-900">Diagnosis: </span>
               {data.diagnoses && data.diagnoses.length > 0 ? (
                 data.diagnoses.map((d: any) => (
                   <span key={d.id || d.icd10_code} className="mr-2">
                     ICD-10: [{d.icd10_code}] {d.diagnosis_title}{' '}
-                    <span className="font-medium text-[#059669]">({d.severity || 'Active'})</span>
+                    <span className="font-medium text-success">({d.severity || 'Active'})</span>
                   </span>
                 ))
               ) : (
@@ -245,14 +245,14 @@ export const PrescriptionViewPage: React.FC = () => {
           {/* Prescription Body (The ℞ Section) */}
           <div className="mt-5 flex-1">
             <div className="flex items-center gap-3">
-              <span className="font-serif text-3xl font-bold text-[#1B365D]">℞</span>
-              <div className="h-px flex-1 bg-[#E2E8F0]" />
+              <span className="font-serif text-3xl font-bold text-primary-700">℞</span>
+              <div className="h-px flex-1 bg-hair" />
             </div>
 
             <div className="overflow-x-auto">
               <table className="mt-3 w-full min-w-[500px] border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#CBD5E1] text-left text-[11px] font-semibold text-slate-600">
+                  <tr className="border-b border-hair-strong text-left text-[11px] font-semibold text-slate-600">
                     <th className="w-6 py-2 font-bold">#</th>
                     <th className="py-2 font-bold">Medicine Name &amp; Generic</th>
                     <th className="py-2 font-bold">Dosage</th>
@@ -261,7 +261,7 @@ export const PrescriptionViewPage: React.FC = () => {
                     <th className="py-2 font-bold">Instructions</th>
                   </tr>
                 </thead>
-                <tbody className="text-[#0F172A]">
+                <tbody className="text-ink-900">
                   {items.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-6 text-center text-xs text-slate-500">
@@ -270,20 +270,20 @@ export const PrescriptionViewPage: React.FC = () => {
                     </tr>
                   ) : (
                     items.map((item: any, index: number) => (
-                      <tr key={item.id || index} className="border-b border-[#F1F5F9] align-top">
-                        <td className="py-2.5 tabular text-[#64748B]">{index + 1}</td>
+                      <tr key={item.id || index} className="border-b border-primary-50/60 align-top">
+                        <td className="py-2.5 tabular text-ink-600">{index + 1}</td>
                         <td className="py-2.5 pr-2">
-                          <p className="font-semibold text-[#0F172A]">{item.medication_name}</p>
+                          <p className="font-semibold text-ink-900">{item.medication_name}</p>
                           {item.generic_name && (
-                            <p className="text-[10px] text-[#64748B]">({item.generic_name})</p>
+                            <p className="text-[10px] text-ink-600">({item.generic_name})</p>
                           )}
                         </td>
                         <td className="py-2.5 tabular">{item.dosage}</td>
                         <td className="py-2.5">
-                          <span className="font-mono font-semibold text-[#2563EB]">{item.frequency}</span>
+                          <span className="font-mono font-semibold text-primary-600">{item.frequency}</span>
                         </td>
                         <td className="py-2.5 tabular">{item.duration}</td>
-                        <td className="py-2.5 text-[#475569]">{item.instructions || 'As directed'}</td>
+                        <td className="py-2.5 text-ink-600">{item.instructions || 'As directed'}</td>
                       </tr>
                     ))
                   )}
@@ -292,17 +292,17 @@ export const PrescriptionViewPage: React.FC = () => {
             </div>
 
             {/* Advice & Follow-up */}
-            <div className="mt-5 rounded-lg bg-[#F8FAFC] p-3.5 border border-[#E2E8F0]">
+            <div className="mt-5 rounded-lg bg-canvas p-3.5 border border-hair">
               <p className="text-xs font-semibold text-slate-700">
                 Physician's Clinical Advice
               </p>
-              <p className="mt-1 text-xs text-[#0F172A] leading-relaxed">
+              <p className="mt-1 text-xs text-ink-900 leading-relaxed">
                 {data.instructions || 'Continue prescribed medications as advised. Maintain routine follow-up.'}
               </p>
               {data.follow_up_date && (
                 <p className="mt-2 text-xs">
-                  <span className="font-semibold text-[#1B365D]">Follow-up: </span>
-                  <span className="text-[#475569]">
+                  <span className="font-semibold text-primary-700">Follow-up: </span>
+                  <span className="text-ink-600">
                     Review in chamber on {new Date(data.follow_up_date).toLocaleDateString()}.
                   </span>
                 </p>
@@ -311,14 +311,14 @@ export const PrescriptionViewPage: React.FC = () => {
           </div>
 
           {/* Digital Authentication & Verification Sign-Off */}
-          <div className="mt-6 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 border-t border-[#E2E8F0] pt-4">
+          <div className="mt-6 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 border-t border-hair pt-4">
             <div className="flex items-center gap-3">
               <QR />
               <div className="max-w-[190px]">
-                <p className="text-[10px] leading-relaxed text-[#64748B]">
+                <p className="text-[10px] leading-relaxed text-ink-600">
                   Authenticated electronic medical record generated via MedraLink Clinical Infrastructure. Scan to verify on national registry.
                 </p>
-                <p className="mt-0.5 font-mono text-[9px] text-[#94A3B8]">
+                <p className="mt-0.5 font-mono text-[9px] text-ink-400">
                   SHA-256: {data.prescription_uid ? `${data.prescription_uid.toLowerCase()}-verified` : 'Record Verified'}
                 </p>
               </div>
@@ -333,15 +333,15 @@ export const PrescriptionViewPage: React.FC = () => {
                 loading="lazy"
               />
               <div className="text-center sm:text-right">
-                <div className="mb-1 flex h-10 w-36 items-end justify-center border-b border-[#0F172A] mx-auto sm:ml-auto">
-                  <span className="font-serif text-lg italic text-[#1B365D]">
+                <div className="mb-1 flex h-10 w-36 items-end justify-center border-b border-ink-900 mx-auto sm:ml-auto">
+                  <span className="font-serif text-lg italic text-primary-700">
                     {doctorName.replace('Dr. ', '')}
                   </span>
                 </div>
-                <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#059669]">
+                <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-success">
                   <Icon.Lock size={11} /> Cryptographically Signed
                 </p>
-                <p className="text-[10px] text-[#64748B]">{doctorName} • {doctorLicense}</p>
+                <p className="text-[10px] text-ink-600">{doctorName} • {doctorLicense}</p>
               </div>
             </div>
           </div>

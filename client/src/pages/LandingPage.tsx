@@ -70,15 +70,15 @@ export const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#F8FAFC]">
+    <div className="bg-canvas">
       {/* Hero Section */}
       <section id="hero" className="mx-auto grid max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 items-center gap-12 2xl:gap-16 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16 lg:grid-cols-[1.05fr_0.95fr] 2xl:grid-cols-[1.15fr_0.85fr] lg:py-20">
         <div>
-          <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-[#0F172A] sm:text-5xl lg:text-[56px]">
+          <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-ink-900 sm:text-5xl lg:text-[56px]">
             One Unified Record.<br />
             Seamless Clinical Continuity.
           </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-[#475569]">
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-600">
             Eliminate fragmented medical history and paper-based slips. MedraLink empowers physicians,
             clinics, and diagnostic centers with instant, role-secured access to longitudinal patient
             health timelines.
@@ -108,8 +108,8 @@ export const LandingPage: React.FC = () => {
               ["Zero", "Blockchain Overhead"],
             ].map(([a, b]) => (
               <div key={b} className="flex items-baseline gap-2">
-                <span className="tabular font-display text-base font-bold text-[#059669]">{a}</span>
-                <span className="text-[#475569]">{b}</span>
+                <span className="tabular font-display text-base font-bold text-success">{a}</span>
+                <span className="text-ink-600">{b}</span>
               </div>
             ))}
           </div>
@@ -117,20 +117,20 @@ export const LandingPage: React.FC = () => {
 
         {/* Floating consultation preview */}
         <div className="relative">
-          <div className="absolute -inset-6 rounded-[28px] bg-gradient-to-br from-[#EFF6FF] to-transparent" />
+          <div className="absolute -inset-6 rounded-[28px] bg-gradient-to-br from-primary-50 to-transparent" />
           <Card className="relative -rotate-1 p-5 shadow-[0_24px_60px_-20px_rgba(27,54,93,0.35)]">
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            <div className="flex items-center justify-between border-b border-hair pb-3">
               <div className="flex items-center gap-2">
-                <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#1B365D] text-white">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-700 text-white">
                   <Icon.Stethoscope size={16} />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-[#0F172A]">Consultation Workstation</p>
-                  <p className="text-[10px] text-[#94A3B8]">Rahim Ahmed • P-1001</p>
+                  <p className="text-xs font-semibold text-ink-900">Consultation Workstation</p>
+                  <p className="text-[10px] text-ink-400">Rahim Ahmed • P-1001</p>
                 </div>
               </div>
               <Pill tone="emerald">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#059669]" /> Live
+                <span className="h-1.5 w-1.5 rounded-full bg-success" /> Live
               </Pill>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2">
@@ -147,18 +147,18 @@ export const LandingPage: React.FC = () => {
                 <Pill tone="slate">[E11] T2 Diabetes</Pill>
               </div>
             </div>
-            <div className="mt-4 rounded-xl border border-[#A7F3D0] bg-[#ECFDF5] p-3">
-              <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-[#059669]">
+            <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+              <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-success">
                 <Icon.Pill size={14} /> Digital Prescription Sheet
               </div>
-              <div className="space-y-1 text-xs text-[#0F172A]">
+              <div className="space-y-1 text-xs text-ink-900">
                 <div className="flex justify-between tabular">
                   <span>Tab. Amlocard 5mg</span>
-                  <span className="font-mono text-[#475569]">1+0+0</span>
+                  <span className="font-mono text-ink-600">1+0+0</span>
                 </div>
                 <div className="flex justify-between tabular">
                   <span>Tab. Napa Extra</span>
-                  <span className="font-mono text-[#475569]">1+0+1</span>
+                  <span className="font-mono text-ink-600">1+0+1</span>
                 </div>
               </div>
             </div>
@@ -176,8 +176,8 @@ export const LandingPage: React.FC = () => {
             ["Bank-Grade", "Cryptographic Audit Security"],
           ].map(([a, b]) => (
             <Card key={b} className="p-6">
-              <p className="font-display text-2xl font-bold text-[#1B365D]">{a}</p>
-              <p className="mt-1 text-sm text-[#475569]">{b}</p>
+              <p className="font-display text-2xl font-bold text-primary-700">{a}</p>
+              <p className="mt-1 text-sm text-ink-600">{b}</p>
             </Card>
           ))}
         </div>
@@ -186,7 +186,7 @@ export const LandingPage: React.FC = () => {
       {/* Problem vs MedraLink Grid */}
       <section id="solutions" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <div className="max-w-2xl">
-          <h2 className="mt-2 font-display text-4xl font-bold tracking-tight text-[#0F172A]">
+          <h2 className="mt-2 font-display text-4xl font-bold tracking-tight text-ink-900">
             From fragmented records to one continuous timeline
           </h2>
         </div>
@@ -237,8 +237,8 @@ export const LandingPage: React.FC = () => {
                 <span className="text-xs font-semibold" style={{ color: c.accent }}>
                   {c.tag}
                 </span>
-                <h3 className="mt-1.5 font-display text-xl font-bold text-[#0F172A]">{c.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-[#475569]">{c.body}</p>
+                <h3 className="mt-1.5 font-display text-xl font-bold text-ink-900">{c.title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-ink-600">{c.body}</p>
               </div>
             </Card>
           ))}
@@ -248,10 +248,10 @@ export const LandingPage: React.FC = () => {
       {/* Role-based clinical workspaces */}
       <section id="clinical-architecture" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <div className="text-center max-w-2xl mx-auto">
-          <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#0F172A]">
+          <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-ink-900">
             Role-based clinical workspaces
           </h2>
-          <p className="mt-2 text-sm sm:text-base text-[#475569]">
+          <p className="mt-2 text-sm sm:text-base text-ink-600">
             Tailored interfaces engineered specifically for physicians, patients, and clinical administrators.
           </p>
         </div>
@@ -261,7 +261,7 @@ export const LandingPage: React.FC = () => {
           <div
             role="tablist"
             aria-label="Clinical workspace features"
-            className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-[#E2E8F0] bg-[#F1F5F9] p-1.5 shadow-2xs"
+            className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-hair bg-primary-50/60 p-1.5 shadow-2xs"
           >
             {tabs.map((t, i) => (
               <button
@@ -273,11 +273,11 @@ export const LandingPage: React.FC = () => {
                 onClick={() => setTab(i)}
                 className={`inline-flex items-center gap-2 rounded-xl px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   tab === i
-                    ? "bg-[#1B365D] text-white shadow-sm"
-                    : "text-[#475569] hover:text-[#0F172A] hover:bg-white/60"
+                    ? "bg-primary-700 text-white shadow-sm"
+                    : "text-ink-600 hover:text-ink-900 hover:bg-white/60"
                 }`}
               >
-                <span className={tab === i ? "text-blue-300" : "text-[#64748B]"}>{t.icon}</span>
+                <span className={tab === i ? "text-blue-300" : "text-ink-600"}>{t.icon}</span>
                 <span>{t.label}</span>
               </button>
             ))}
@@ -285,12 +285,12 @@ export const LandingPage: React.FC = () => {
         </div>
 
         <Card id={`workspace-panel-${tab}`} role="tabpanel" className="mt-8 p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hair pb-5">
             <div>
-              <span className="text-xs font-semibold text-[#2563EB]">
+              <span className="text-xs font-semibold text-primary-600">
                 {tabs[tab].label}
               </span>
-              <h3 className="mt-1 font-display text-xl sm:text-2xl font-bold text-[#0F172A]">
+              <h3 className="mt-1 font-display text-xl sm:text-2xl font-bold text-ink-900">
                 {content[tab].title}
               </h3>
             </div>
@@ -332,14 +332,14 @@ export const LandingPage: React.FC = () => {
             {content[tab].features.map(([t, b]) => (
               <div
                 key={t}
-                className="flex gap-3.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4.5 transition-all hover:bg-white hover:border-[#CBD5E1] hover:shadow-xs"
+                className="flex gap-3.5 rounded-xl border border-hair bg-canvas p-4.5 transition-all hover:bg-white hover:border-hair-strong hover:shadow-xs"
               >
-                <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[#EFF6FF] text-[#2563EB]">
+                <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary-50 text-primary-600">
                   <Icon.Check size={15} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-[#0F172A]">{t}</p>
-                  <p className="mt-1 text-xs sm:text-sm text-[#475569] leading-relaxed">{b}</p>
+                  <p className="text-sm font-bold text-ink-900">{t}</p>
+                  <p className="mt-1 text-xs sm:text-sm text-ink-600 leading-relaxed">{b}</p>
                 </div>
               </div>
             ))}
@@ -348,7 +348,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Security & Compliance Banner */}
-      <section id="governance" className="scroll-mt-24 bg-[#1B365D] py-16 text-white">
+      <section id="governance" className="scroll-mt-24 bg-primary-700 py-16 text-white">
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <p className="text-xs font-semibold text-blue-200">
             Enterprise Security &amp; Compliance
@@ -364,7 +364,7 @@ export const LandingPage: React.FC = () => {
               ["Immutable Audit Ledger", "Append-only cryptographic ledger of every clinical action.", <Icon.Pulse size={20} />],
             ].map(([t, b, icon]) => (
               <div key={t as string} className="rounded-2xl border border-white/10 bg-white/5 p-6">
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-[#93C5FD]">
+                <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-primary-200">
                   {icon}
                 </div>
                 <p className="mt-4 font-display text-lg font-semibold">{t as string}</p>
@@ -376,12 +376,12 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Enterprise Footer */}
-      <footer id="support" className="scroll-mt-24 bg-[#0F172A] text-slate-300">
+      <footer id="support" className="scroll-mt-24 bg-ink-900 text-slate-300">
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-14">
           <div className="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
             <div>
               <div className="flex items-center gap-2.5">
-                <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#2563EB] text-white">
+                <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-600 text-white">
                   <Icon.Cross size={18} />
                 </div>
                 <span className="font-display text-lg font-extrabold text-white">MedraLink</span>

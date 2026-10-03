@@ -30,7 +30,7 @@ export const PatientDashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#2563EB] border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
       </div>
     );
   }
@@ -72,11 +72,11 @@ export const PatientDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-16">
+    <div className="min-h-screen bg-canvas pb-16">
       <main className="mx-auto max-w-[1200px] 2xl:max-w-[1720px] space-y-6 px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
         {/* Figma Screen 2 Summary Banner */}
         <Card className="overflow-hidden p-0">
-          <div className="bg-gradient-to-r from-[#1B365D] to-[#2563EB] p-6 text-white">
+          <div className="bg-gradient-to-r from-primary-700 to-primary-600 p-6 text-white">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/15 font-display text-xl font-bold">
@@ -153,40 +153,40 @@ export const PatientDashboard: React.FC = () => {
           </div>
 
           {/* Safety Alert Strip with high-contrast medical badges */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-[#FDE68A] bg-[#FEF3C7] px-6 py-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-amber-200 bg-amber-50 px-6 py-3.5">
             <div className="flex items-center gap-2 shrink-0">
-              <Icon.Alert size={18} className="text-[#B45309] shrink-0" />
-              <span className="text-xs font-semibold text-[#92400E]">Clinical Safety:</span>
+              <Icon.Alert size={18} className="text-warning shrink-0" />
+              <span className="text-xs font-semibold text-amber-800">Clinical Safety:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-medium text-[#78350F]">Allergies:</span>
+              <span className="font-medium text-amber-900">Allergies:</span>
               {allergies && allergies.length > 0 ? (
                 allergies.map((a: any, idx: number) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-[#FDE68A] px-2 py-0.5 font-semibold text-[#92400E] border border-[#FCD34D]"
+                    className="inline-flex items-center gap-1 rounded-md bg-amber-200 px-2 py-0.5 font-semibold text-amber-800 border border-amber-300"
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#DC2626]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-critical" />
                     {a.allergen} ({a.severity})
                   </span>
                 ))
               ) : (
-                <span className="text-[#92400E] font-medium">None Recorded</span>
+                <span className="text-amber-800 font-medium">None Recorded</span>
               )}
-              <span className="hidden sm:inline text-[#D97706]">•</span>
-              <span className="font-medium text-[#78350F]">Chronic Conditions:</span>
+              <span className="hidden sm:inline text-warning">•</span>
+              <span className="font-medium text-amber-900">Chronic Conditions:</span>
               {conditions && conditions.length > 0 ? (
                 conditions.map((c: any, idx: number) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 font-semibold text-[#1E293B] border border-[#CBD5E1]"
+                    className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 font-semibold text-ink-900 border border-hair-strong"
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary-600" />
                     {c.condition_name} ({c.status || 'Active'})
                   </span>
                 ))
               ) : (
-                <span className="text-[#92400E] font-medium">None Recorded</span>
+                <span className="text-amber-800 font-medium">None Recorded</span>
               )}
             </div>
           </div>
@@ -235,13 +235,13 @@ export const PatientDashboard: React.FC = () => {
         {/* Action Bar & Quick Timeline Access */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="font-display text-xl font-bold text-[#0F172A]">Clinical Biometrics &amp; Regimens</h2>
-            <p className="text-sm text-[#475569]">Summary of latest vital signs and current active prescriptions.</p>
+            <h2 className="font-display text-xl font-bold text-ink-900">Clinical Biometrics &amp; Regimens</h2>
+            <p className="text-sm text-ink-600">Summary of latest vital signs and current active prescriptions.</p>
           </div>
           {patientId && (
             <Link
               to={`/patient/timeline/${patientId}`}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#1B365D] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16294a]"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-800"
             >
               <Icon.Clock size={16} />
               <span>Open Longitudinal Timeline</span>
@@ -254,15 +254,15 @@ export const PatientDashboard: React.FC = () => {
         <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-[1.1fr_1.1fr_360px]">
           {/* Latest Recorded Vitals */}
           <Card hover className="p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            <div className="flex items-center justify-between border-b border-hair pb-3">
               <div className="flex items-center gap-2">
-                <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#EFF6FF] text-[#2563EB]">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-600">
                   <Icon.Pulse size={16} />
                 </div>
-                <h3 className="font-display text-base font-bold text-[#0F172A]">Recent Clinical Biometrics</h3>
+                <h3 className="font-display text-base font-bold text-ink-900">Recent Clinical Biometrics</h3>
               </div>
               {data?.latestVitals?.visit_date && (
-                <span className="font-mono text-xs font-medium text-[#64748B]">
+                <span className="font-mono text-xs font-medium text-ink-600">
                   Captured: {new Date(data.latestVitals.visit_date).toLocaleDateString()}
                 </span>
               )}
@@ -308,12 +308,12 @@ export const PatientDashboard: React.FC = () => {
 
           {/* Active Prescriptions */}
           <Card hover className="p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            <div className="flex items-center justify-between border-b border-hair pb-3">
               <div className="flex items-center gap-2">
-                <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#ECFDF5] text-[#059669]">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success">
                   <Icon.Pill size={16} />
                 </div>
-                <h3 className="font-display text-base font-bold text-[#0F172A]">Active Electronic Prescriptions</h3>
+                <h3 className="font-display text-base font-bold text-ink-900">Active Electronic Prescriptions</h3>
               </div>
               <Pill tone="emerald">Verified Regimens</Pill>
             </div>
@@ -323,14 +323,14 @@ export const PatientDashboard: React.FC = () => {
                 data.activePrescriptions.map((rx: any) => (
                   <div
                     key={rx.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[#A7F3D0] bg-[#ECFDF5] p-3.5 transition-all hover:shadow-xs hover:border-[#34D399]"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 transition-all hover:shadow-xs hover:border-emerald-400"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-[#059669]">{rx.prescription_uid}</span>
-                        <span className="text-xs text-[#0F172A] font-semibold">{rx.doctor_name}</span>
+                        <span className="font-mono text-xs font-bold text-success">{rx.prescription_uid}</span>
+                        <span className="text-xs text-ink-900 font-semibold">{rx.doctor_name}</span>
                       </div>
-                      <p className="mt-1 font-mono text-xs text-[#047857]">
+                      <p className="mt-1 font-mono text-xs text-success">
                         Issued: {new Date(rx.issue_date).toLocaleDateString()} • {rx.specialization || 'Cardiology'}
                       </p>
                     </div>
@@ -338,7 +338,7 @@ export const PatientDashboard: React.FC = () => {
                     <div className="flex items-center gap-2 self-end sm:self-auto shrink-0">
                       <Link
                         to={`/prescription/${rx.id}`}
-                        className="inline-flex items-center gap-1 rounded-lg border border-[#A7F3D0] bg-white px-3 py-1.5 text-xs font-semibold text-[#059669] shadow-xs hover:bg-emerald-50 transition-colors"
+                        className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-success shadow-xs hover:bg-emerald-50 transition-colors"
                       >
                         <Icon.ExternalLink size={12} />
                         <span>View ℞</span>
@@ -347,7 +347,7 @@ export const PatientDashboard: React.FC = () => {
                         href={`/api/v1/prescriptions/${rx.id}/pdf?token=${localStorage.getItem('medralink_token')}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-lg bg-[#059669] px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-[#047857] transition-colors"
+                        className="inline-flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-success transition-colors"
                       >
                         <Icon.Download size={13} />
                         <span>PDF</span>
@@ -357,15 +357,15 @@ export const PatientDashboard: React.FC = () => {
                 ))
               ) : (
                 <div className="space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[#A7F3D0] bg-[#ECFDF5] p-3.5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5">
                     <div>
-                      <span className="font-mono text-xs font-bold text-[#059669]">RX-4029</span>
-                      <p className="text-xs text-[#065F46] font-semibold mt-0.5">Tab. Amlocard 5mg (1+0+0) • Tab. Napa Extra</p>
-                      <p className="text-[11px] text-[#047857] mt-0.5">Dr. Ahmed Tariq • Square Hospital</p>
+                      <span className="font-mono text-xs font-bold text-success">RX-4029</span>
+                      <p className="text-xs text-emerald-800 font-semibold mt-0.5">Tab. Amlocard 5mg (1+0+0) • Tab. Napa Extra</p>
+                      <p className="text-[11px] text-success mt-0.5">Dr. Ahmed Tariq • Square Hospital</p>
                     </div>
                     <Link
                       to={`/patient/timeline/${patientId}`}
-                      className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#059669] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-[#047857] transition-colors self-end sm:self-auto"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-success px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-success transition-colors self-end sm:self-auto"
                     >
                       <span>View in Timeline</span>
                       <Icon.Arrow size={12} />
@@ -380,45 +380,45 @@ export const PatientDashboard: React.FC = () => {
           <div className="space-y-6 lg:col-span-2 2xl:col-span-1">
             {/* Health Navigator Card */}
             <Card className="p-6 space-y-4">
-              <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <div className="flex items-center justify-between border-b border-hair pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#EFF6FF] text-[#2563EB]">
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-600">
                     <Icon.Shield size={16} />
                   </div>
-                  <h3 className="font-display text-base font-bold text-[#0F172A]">Patient Care Navigator</h3>
+                  <h3 className="font-display text-base font-bold text-ink-900">Patient Care Navigator</h3>
                 </div>
                 <Pill tone="blue">Self-Service</Pill>
               </div>
 
               <div className="space-y-3">
-                <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs">
-                  <p className="font-semibold text-[#0F172A]">Direct Longitudinal Access</p>
-                  <p className="mt-1 text-[#64748B]">
+                <div className="rounded-xl border border-hair bg-canvas p-3 text-xs">
+                  <p className="font-semibold text-ink-900">Direct Longitudinal Access</p>
+                  <p className="mt-1 text-ink-600">
                     Full access to codified diagnoses, medications, and laboratory values.
                   </p>
                   <Link
                     to={`/patient/timeline/${patientId}`}
-                    className="mt-2.5 inline-flex items-center gap-1.5 font-bold text-[#2563EB] hover:underline"
+                    className="mt-2.5 inline-flex items-center gap-1.5 font-bold text-primary-600 hover:underline"
                   >
                     <span>Browse complete visit timeline</span>
                     <Icon.Arrow size={12} />
                   </Link>
                 </div>
 
-                <div className="rounded-xl border border-[#A7F3D0] bg-[#ECFDF5] p-3 text-xs">
-                  <div className="flex items-center gap-2 text-[#065F46] font-bold">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs">
+                  <div className="flex items-center gap-2 text-emerald-800 font-bold">
                     <Icon.Lock size={14} />
                     <span>AES-256 Health Locker</span>
                   </div>
-                  <p className="mt-1 text-[#047857]">
+                  <p className="mt-1 text-success">
                     Encrypted zero-knowledge patient consent vault active.
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs">
+                <div className="rounded-xl border border-hair bg-canvas p-3 text-xs">
                   <p className="text-xs font-semibold text-slate-700">Emergency Ambulance</p>
-                  <p className="mt-1 font-mono font-bold text-[#DC2626] text-sm">Call 16263 (National Health Line)</p>
-                  <p className="mt-0.5 text-[#64748B]">Toll-free 24/7 emergency medical triage</p>
+                  <p className="mt-1 font-mono font-bold text-critical text-sm">Call 16263 (National Health Line)</p>
+                  <p className="mt-0.5 text-ink-600">Toll-free 24/7 emergency medical triage</p>
                 </div>
               </div>
             </Card>

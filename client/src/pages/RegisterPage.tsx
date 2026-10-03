@@ -78,42 +78,42 @@ export const RegisterPage: React.FC = () => {
   };
 
   const selectCls =
-    "w-full h-11 rounded-xl border border-[#CBD5E1] bg-white px-3.5 text-sm text-[#0F172A] outline-none transition-colors hover:border-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF]";
+    "w-full h-11 rounded-xl border border-hair-strong bg-white px-3.5 text-sm text-ink-900 outline-none transition-colors hover:border-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50";
 
   return (
-    <div className="min-h-[calc(100vh-5rem)] py-12 px-4 sm:px-6 lg:px-8 bg-[#F8FAFC] flex flex-col justify-center">
+    <div className="min-h-[calc(100vh-5rem)] py-12 px-4 sm:px-6 lg:px-8 bg-canvas flex flex-col justify-center">
       <div className="max-w-xl mx-auto w-full">
         <div className="text-center mb-6">
-          <div className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-[#1B365D] text-white shadow-card mb-3">
+          <div className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-primary-700 text-white shadow-card mb-3">
             <Icon.Cross size={24} />
           </div>
-          <h1 className="font-display text-3xl font-extrabold tracking-tight text-[#0F172A]">
-            Create Medra<span className="text-[#2563EB]">Link</span> Account
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink-900">
+            Create Medra<span className="text-primary-600">Link</span> Account
           </h1>
-          <p className="text-sm text-[#475569] mt-1">Register for continuous clinical record management</p>
+          <p className="text-sm text-ink-600 mt-1">Register for continuous clinical record management</p>
         </div>
 
         <Card className="p-6 sm:p-8">
           {/* Role selector tabs */}
-          <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#F1F5F9] rounded-xl mb-6 border border-[#E2E8F0]">
+          <div className="grid grid-cols-2 gap-2 p-1.5 bg-primary-50/60 rounded-xl mb-6 border border-hair">
             <button
               type="button"
               onClick={() => setRole('PATIENT')}
-              className={`flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-[#2563EB] cursor-pointer ${
-                role === 'PATIENT' ? 'bg-white text-[#1B365D] shadow-xs' : 'text-[#475569] hover:text-[#0F172A]'
+              className={`flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-primary-600 cursor-pointer ${
+                role === 'PATIENT' ? 'bg-white text-primary-700 shadow-xs' : 'text-ink-600 hover:text-ink-900'
               }`}
             >
-              <Icon.User size={16} className="text-[#059669]" />
+              <Icon.User size={16} className="text-success" />
               <span>Patient Profile</span>
             </button>
             <button
               type="button"
               onClick={() => setRole('DOCTOR')}
-              className={`flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-[#2563EB] cursor-pointer ${
-                role === 'DOCTOR' ? 'bg-white text-[#1B365D] shadow-xs' : 'text-[#475569] hover:text-[#0F172A]'
+              className={`flex items-center justify-center gap-2 py-2.5 text-xs font-semibold rounded-lg transition-all focus-visible:ring-2 focus-visible:ring-primary-600 cursor-pointer ${
+                role === 'DOCTOR' ? 'bg-white text-primary-700 shadow-xs' : 'text-ink-600 hover:text-ink-900'
               }`}
             >
-              <Icon.Stethoscope size={16} className="text-[#2563EB]" />
+              <Icon.Stethoscope size={16} className="text-primary-600" />
               <span>Doctor Workstation</span>
             </button>
           </div>
@@ -188,7 +188,7 @@ export const RegisterPage: React.FC = () => {
 
             {/* Conditional Fields based on Role */}
             {role === 'PATIENT' ? (
-              <div className="pt-2 border-t border-[#E2E8F0] grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="pt-2 border-t border-hair grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <FormField label="Date of birth" htmlFor="reg-dob" required>
                   <Input
                     id="reg-dob"
@@ -231,7 +231,7 @@ export const RegisterPage: React.FC = () => {
                 </FormField>
               </div>
             ) : (
-              <div className="pt-2 border-t border-[#E2E8F0] grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="pt-2 border-t border-hair grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField label="Medical specialization" htmlFor="reg-spec" required>
                   <Input
                     id="reg-spec"
@@ -288,9 +288,9 @@ export const RegisterPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-[#475569] border-t border-[#E2E8F0] pt-4">
+          <div className="mt-6 text-center text-xs text-ink-600 border-t border-hair pt-4">
             Already registered?{' '}
-            <Link to="/login" className="font-semibold text-[#2563EB] hover:underline">
+            <Link to="/login" className="font-semibold text-primary-600 hover:underline">
               Sign In
             </Link>
           </div>

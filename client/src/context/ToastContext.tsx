@@ -66,28 +66,28 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         {toasts.map((toast) => {
           const styleByType: Record<ToastType, { bg: string; border: string; text: string; icon: React.ReactNode }> = {
             success: {
-              bg: 'bg-[#ECFDF5]',
-              border: 'border-[#A7F3D0]',
-              text: 'text-[#065F46]',
-              icon: <Icon.Check size={18} className="text-[#059669] shrink-0 mt-0.5" />,
+              bg: 'bg-emerald-50',
+              border: 'border-emerald-200',
+              text: 'text-emerald-800',
+              icon: <Icon.Check size={18} className="text-success shrink-0 mt-0.5" />,
             },
             error: {
-              bg: 'bg-[#FEF2F2]',
-              border: 'border-[#FECACA]',
-              text: 'text-[#991B1B]',
-              icon: <Icon.Alert size={18} className="text-[#DC2626] shrink-0 mt-0.5" />,
+              bg: 'bg-rose-50',
+              border: 'border-rose-200',
+              text: 'text-rose-800',
+              icon: <Icon.Alert size={18} className="text-critical shrink-0 mt-0.5" />,
             },
             warning: {
-              bg: 'bg-[#FEF3C7]',
-              border: 'border-[#FDE68A]',
-              text: 'text-[#92400E]',
-              icon: <Icon.Alert size={18} className="text-[#D97706] shrink-0 mt-0.5" />,
+              bg: 'bg-amber-50',
+              border: 'border-amber-200',
+              text: 'text-amber-800',
+              icon: <Icon.Alert size={18} className="text-warning shrink-0 mt-0.5" />,
             },
             info: {
-              bg: 'bg-[#EFF6FF]',
-              border: 'border-[#BFDBFE]',
-              text: 'text-[#1E40AF]',
-              icon: <Icon.Shield size={18} className="text-[#2563EB] shrink-0 mt-0.5" />,
+              bg: 'bg-primary-50',
+              border: 'border-primary-100',
+              text: 'text-primary-800',
+              icon: <Icon.Shield size={18} className="text-primary-600 shrink-0 mt-0.5" />,
             },
           };
 

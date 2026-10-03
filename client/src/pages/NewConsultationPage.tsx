@@ -18,7 +18,7 @@ const COMMON_ICD10 = [
 const PRESET_LABS = ['CBC', 'Lipid Profile', 'ECG', 'HbA1c', 'Serum Creatinine', 'Chest X-Ray'];
 
 const inputCls =
-  "w-full rounded-xl border border-[#E2E8F0] bg-white px-3.5 py-2.5 text-sm text-[#0F172A] outline-none transition-colors placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF]";
+  "w-full rounded-xl border border-hair bg-white px-3.5 py-2.5 text-sm text-ink-900 outline-none transition-colors placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50";
 
 export const NewConsultationPage: React.FC = () => {
   useDocumentTitle('New Consultation & E-Prescription');
@@ -77,9 +77,9 @@ export const NewConsultationPage: React.FC = () => {
 
   const toneCls: Record<string, string> = {
     slate: 'bg-slate-100 text-slate-700',
-    amber: 'bg-[#FEF3C7] text-[#B45309]',
-    emerald: 'bg-[#ECFDF5] text-[#059669]',
-    crimson: 'bg-[#FEF2F2] text-[#DC2626]',
+    amber: 'bg-amber-50 text-warning',
+    emerald: 'bg-emerald-50 text-success',
+    crimson: 'bg-rose-50 text-critical',
   };
 
   // Diagnoses
@@ -262,23 +262,23 @@ export const NewConsultationPage: React.FC = () => {
   const hospitalAffiliation = user?.doctorProfile?.hospitalAffiliation || 'Square Hospital / NICVD';
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-28">
+    <div className="min-h-screen bg-canvas pb-28">
       {/* Attending Physician Letterhead Banner */}
-      <section aria-label="Attending Physician Letterhead" className="border-b border-[#E2E8F0] bg-white">
+      <section aria-label="Attending Physician Letterhead" className="border-b border-hair bg-white">
         <div className="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#1B365D] text-white shadow-sm">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary-700 text-white shadow-sm">
               <Icon.Stethoscope size={18} />
             </div>
             <div>
-              <p className="font-display text-base font-bold text-[#0F172A]">{doctorName}</p>
-              <p className="text-xs text-[#475569]">
-                BMDC License: <span className="font-mono font-semibold text-[#0F172A]">{doctorLicense}</span> • {hospitalAffiliation}
+              <p className="font-display text-base font-bold text-ink-900">{doctorName}</p>
+              <p className="text-xs text-ink-600">
+                BMDC License: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span> • {hospitalAffiliation}
               </p>
             </div>
           </div>
           <Pill tone="emerald">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#059669]" /> Active Clinical Session • Room 402
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Active Clinical Session • Room 402
           </Pill>
         </div>
       </section>
@@ -296,25 +296,25 @@ export const NewConsultationPage: React.FC = () => {
         <Card className="p-5">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3.5">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-[#1B365D] font-bold text-white">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary-700 font-bold text-white">
                 {selectedPatient?.full_name ? selectedPatient.full_name.slice(0, 2).toUpperCase() : 'RA'}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-display text-base font-bold text-[#0F172A]">
+                  <span className="font-display text-base font-bold text-ink-900">
                     {selectedPatient?.full_name || 'Rahim Ahmed'}
                   </span>
-                  <span className="font-mono text-xs text-[#94A3B8]">
+                  <span className="font-mono text-xs text-ink-400">
                     {selectedPatient?.patient_uid || 'P-1001'}
                   </span>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
                   <Pill tone="crimson">{selectedPatient?.blood_group || 'O+'}</Pill>
-                  <span className="text-[#475569]">
+                  <span className="text-ink-600">
                     {selectedPatient?.gender || 'Male'} •{' '}
                     {selectedPatient?.date_of_birth ? `${new Date().getFullYear() - new Date(selectedPatient.date_of_birth).getFullYear()} Yrs` : '45 Yrs'}
                   </span>
-                  <span className="text-[#94A3B8]">| 📱 {selectedPatient?.phone || '+8801712345678'}</span>
+                  <span className="text-ink-400">| 📱 {selectedPatient?.phone || '+8801712345678'}</span>
                 </div>
               </div>
             </div>
@@ -322,16 +322,16 @@ export const NewConsultationPage: React.FC = () => {
             {/* Center Clinical Safety & Emergency Telemetry (Fills empty space on 1920px) */}
             <div className="hidden 2xl:flex items-center gap-4">
               <div className="flex items-center gap-2 rounded-xl bg-amber-50/90 border border-amber-200/80 px-3 py-1.5 text-xs">
-                <span className="font-bold text-[#92400E]">Allergy Alert:</span>
-                <span className="font-semibold text-[#B45309]">Penicillin (Severe)</span>
+                <span className="font-bold text-amber-800">Allergy Alert:</span>
+                <span className="font-semibold text-warning">Penicillin (Severe)</span>
                 <span className="text-amber-400">•</span>
-                <span className="font-semibold text-[#B45309]">Sulfa Drugs</span>
+                <span className="font-semibold text-warning">Sulfa Drugs</span>
               </div>
-              <div className="flex items-center gap-2 text-xs text-[#475569] bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
-                <span className="text-[#94A3B8]">Emergency:</span>
-                <span className="font-semibold text-[#0F172A]">{selectedPatient?.emergency_contact_name || 'Nasreen Ahmed'}</span>
-                <span className="text-[#64748B]">({selectedPatient?.emergency_contact_relation || 'Spouse'})</span>
-                <span className="font-mono text-[#2563EB]">{selectedPatient?.emergency_contact_phone || '+8801712345678'}</span>
+              <div className="flex items-center gap-2 text-xs text-ink-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
+                <span className="text-ink-400">Emergency:</span>
+                <span className="font-semibold text-ink-900">{selectedPatient?.emergency_contact_name || 'Nasreen Ahmed'}</span>
+                <span className="text-ink-600">({selectedPatient?.emergency_contact_relation || 'Spouse'})</span>
+                <span className="font-mono text-primary-600">{selectedPatient?.emergency_contact_phone || '+8801712345678'}</span>
               </div>
             </div>
 
@@ -343,7 +343,7 @@ export const NewConsultationPage: React.FC = () => {
                 aria-label="Select Patient"
                 value={selectedPatientId}
                 onChange={(e) => setSelectedPatientId(e.target.value)}
-                className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-3 py-2 text-xs font-semibold text-[#0F172A] outline-none focus:border-[#2563EB]"
+                className="rounded-xl border border-hair bg-canvas px-3 py-2 text-xs font-semibold text-ink-900 outline-none focus:border-primary-600"
               >
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -353,7 +353,7 @@ export const NewConsultationPage: React.FC = () => {
               </select>
               <Link
                 to={`/patient/timeline/${selectedPatientId}`}
-                className="rounded-xl border border-[#E2E8F0] bg-white px-3 py-2 text-xs font-semibold text-[#1B365D] transition-colors hover:border-[#cbd5e1]"
+                className="rounded-xl border border-hair bg-white px-3 py-2 text-xs font-semibold text-primary-700 transition-colors hover:border-hair-strong"
               >
                 View Full Timeline
               </Link>
@@ -365,13 +365,13 @@ export const NewConsultationPage: React.FC = () => {
         <div className="grid gap-6 xl:grid-cols-[1fr_1fr] 2xl:grid-cols-[560px_1fr]">
           {/* Left Column: Clinical Observations & Telemetry */}
           <Card className="space-y-6 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E2E8F0] pb-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hair pb-3">
               <div>
-                <h3 className="font-display text-lg font-bold text-[#0F172A]">Clinical Observations &amp; Telemetry</h3>
-                <p className="mt-0.5 text-xs text-[#475569]">Capture symptoms, examination findings, and vitals matrix</p>
+                <h3 className="font-display text-lg font-bold text-ink-900">Clinical Observations &amp; Telemetry</h3>
+                <p className="mt-0.5 text-xs text-ink-600">Capture symptoms, examination findings, and vitals matrix</p>
               </div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ECFDF5] px-2.5 py-1 text-[11px] font-semibold text-[#059669]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#059669]" /> Telemetry Active
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-success">
+                <span className="h-1.5 w-1.5 rounded-full bg-success" /> Telemetry Active
               </span>
             </div>
 
@@ -381,14 +381,14 @@ export const NewConsultationPage: React.FC = () => {
                 <label className="block text-xs font-semibold text-slate-700">
                   Chief Complaints
                 </label>
-                <span className="text-[10px] font-medium text-[#94A3B8]">Primary patient symptoms</span>
+                <span className="text-[10px] font-medium text-ink-400">Primary patient symptoms</span>
               </div>
               <textarea
                 rows={3}
                 value={chiefComplaint}
                 onChange={(e) => setChiefComplaint(e.target.value)}
                 placeholder="e.g. Mild exertional chest tightness and occipital headaches for 2 weeks..."
-                className="mt-1.5 w-full min-h-[80px] rounded-xl border border-[#E2E8F0] bg-white p-3 text-sm leading-relaxed text-[#0F172A] outline-none transition-all placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF] resize-y"
+                className="mt-1.5 w-full min-h-[80px] rounded-xl border border-hair bg-white p-3 text-sm leading-relaxed text-ink-900 outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50 resize-y"
               />
             </div>
 
@@ -398,14 +398,14 @@ export const NewConsultationPage: React.FC = () => {
                 <label className="block text-xs font-semibold text-slate-700">
                   Clinical Examination &amp; Diagnosis Notes
                 </label>
-                <span className="text-[10px] font-medium text-[#94A3B8]">Physical examination findings</span>
+                <span className="text-[10px] font-medium text-ink-400">Physical examination findings</span>
               </div>
               <textarea
                 rows={4}
                 value={clinicalNotes}
                 onChange={(e) => setClinicalNotes(e.target.value)}
                 placeholder="Examination findings, physical status, cardiovascular auscultation..."
-                className="mt-1.5 w-full min-h-[108px] rounded-xl border border-[#E2E8F0] bg-white p-3 text-sm leading-relaxed text-[#0F172A] outline-none transition-all placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF] resize-y"
+                className="mt-1.5 w-full min-h-[108px] rounded-xl border border-hair bg-white p-3 text-sm leading-relaxed text-ink-900 outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50 resize-y"
               />
             </div>
 
@@ -415,7 +415,7 @@ export const NewConsultationPage: React.FC = () => {
                 <label className="block text-xs font-semibold text-slate-800">
                   Vitals Capture Matrix
                 </label>
-                <span className="inline-flex items-center gap-1 rounded-md bg-[#EFF6FF] px-2 py-0.5 text-[11px] font-semibold text-[#2563EB]">
+                <span className="inline-flex items-center gap-1 rounded-md bg-primary-50 px-2 py-0.5 text-[11px] font-semibold text-primary-600">
                   <Icon.Activity size={12} /> Auto-Computed BMI
                 </span>
               </div>
@@ -433,13 +433,13 @@ export const NewConsultationPage: React.FC = () => {
                 ].map((v) => (
                   <div
                     key={v.label}
-                    className="flex flex-col justify-between rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 transition-all hover:border-[#CBD5E1] focus-within:border-[#2563EB] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#EFF6FF] focus-within:shadow-xs min-h-[76px]"
+                    className="flex flex-col justify-between rounded-xl border border-hair bg-canvas p-3 transition-all hover:border-hair-strong focus-within:border-primary-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-50 focus-within:shadow-xs min-h-[76px]"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-medium text-slate-600">
                         {v.label}
                       </span>
-                      <span className="rounded bg-slate-200/70 px-2 py-0.5 font-mono text-[10px] font-bold text-[#475569]">
+                      <span className="rounded bg-slate-200/70 px-2 py-0.5 font-mono text-[10px] font-bold text-ink-600">
                         {v.unit}
                       </span>
                     </div>
@@ -450,7 +450,7 @@ export const NewConsultationPage: React.FC = () => {
                         onChange={(e) => v.set(e.target.value)}
                         inputMode="decimal"
                         placeholder={v.ph}
-                        className="w-full tabular bg-transparent font-display text-xl sm:text-2xl font-bold text-[#0F172A] outline-none placeholder:text-[#CBD5E1]"
+                        className="w-full tabular bg-transparent font-display text-xl sm:text-2xl font-bold text-ink-900 outline-none placeholder:text-hair-strong"
                       />
                     </div>
                   </div>
@@ -487,8 +487,8 @@ export const NewConsultationPage: React.FC = () => {
                       onClick={() => toggleDiagnosis(item.code, item.title)}
                       className={`min-h-9 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                         on
-                          ? 'border-[#2563EB] bg-[#EFF6FF] text-[#1D4ED8]'
-                          : 'border-[#E2E8F0] bg-white text-[#475569] hover:border-[#cbd5e1]'
+                          ? 'border-primary-600 bg-primary-50 text-primary-700'
+                          : 'border-hair bg-white text-ink-600 hover:border-hair-strong'
                       }`}
                     >
                       {on && <Icon.Check size={12} className="mr-1 inline" />}
@@ -498,21 +498,21 @@ export const NewConsultationPage: React.FC = () => {
                 })}
               </div>
 
-              <div className="mt-3 flex items-center gap-2 rounded-xl border border-dashed border-[#CBD5E1] px-3 py-2 bg-white">
-                <Icon.Search size={16} className="text-[#94A3B8]" />
+              <div className="mt-3 flex items-center gap-2 rounded-xl border border-dashed border-hair-strong px-3 py-2 bg-white">
+                <Icon.Search size={16} className="text-ink-400" />
                 <input
                   aria-label="Search or add custom ICD-10 diagnosis"
                   value={customIcd}
                   onChange={(e) => setCustomIcd(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomDiagnosis())}
                   placeholder="+ Type custom diagnosis & press Enter..."
-                  className="w-full bg-transparent text-xs outline-none placeholder:text-[#94A3B8]"
+                  className="w-full bg-transparent text-xs outline-none placeholder:text-ink-400"
                 />
                 {customIcd && (
                   <button
                     type="button"
                     onClick={addCustomDiagnosis}
-                    className="text-xs font-semibold text-[#2563EB] hover:underline"
+                    className="text-xs font-semibold text-primary-600 hover:underline"
                   >
                     Add
                   </button>
@@ -523,20 +523,20 @@ export const NewConsultationPage: React.FC = () => {
 
           {/* Right Column: Structured E-Prescription Builder */}
           <Card className="space-y-6 p-6">
-            <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+            <div className="flex items-center justify-between border-b border-hair pb-3">
               <div className="flex items-center gap-2">
-                <span className="font-serif text-3xl font-bold text-[#1B365D]">℞</span>
+                <span className="font-serif text-3xl font-bold text-primary-700">℞</span>
                 <div>
-                  <h3 className="font-display text-lg font-bold text-[#0F172A]">Electronic Prescription Formulation</h3>
-                  <p className="text-xs text-[#475569]">Valid BMDC digital medication regimen</p>
+                  <h3 className="font-display text-lg font-bold text-ink-900">Electronic Prescription Formulation</h3>
+                  <p className="text-xs text-ink-600">Valid BMDC digital medication regimen</p>
                 </div>
               </div>
               <Pill tone="emerald">Verified Regimen</Pill>
             </div>
 
             {/* Dynamic Medication Table */}
-            <div className="overflow-x-auto rounded-xl border border-[#E2E8F0]" aria-label="Prescription medicine table">
-              <div className="grid min-w-[620px] grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] gap-2 bg-[#F8FAFC] px-3.5 py-2.5 text-xs font-semibold text-slate-600">
+            <div className="overflow-x-auto rounded-xl border border-hair" aria-label="Prescription medicine table">
+              <div className="grid min-w-[620px] grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] gap-2 bg-canvas px-3.5 py-2.5 text-xs font-semibold text-slate-600">
                 <span>Medicine Name</span>
                 <span>Dosage</span>
                 <span>Frequency</span>
@@ -545,11 +545,11 @@ export const NewConsultationPage: React.FC = () => {
                 <span />
               </div>
 
-              <div className="min-w-[620px] divide-y divide-[#E2E8F0]">
+              <div className="min-w-[620px] divide-y divide-hair">
                 {prescriptionItems.length === 0 ? (
                   <div className="py-8 text-center bg-white px-4">
-                    <p className="text-xs font-semibold text-[#0F172A]">No medications added to this prescription yet</p>
-                    <p className="mt-1 text-[11px] text-[#64748B]">
+                    <p className="text-xs font-semibold text-ink-900">No medications added to this prescription yet</p>
+                    <p className="mt-1 text-[11px] text-ink-600">
                       Click "+ Add Medication Item" below to prescribe medicines for this consultation.
                     </p>
                   </div>
@@ -561,41 +561,41 @@ export const NewConsultationPage: React.FC = () => {
                         value={item.medicationName}
                         onChange={(e) => updatePrescriptionRow(item.id, 'medicationName', e.target.value)}
                         placeholder="e.g. Tab. Amlocard"
-                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-ink-900 shadow-2xs outline-none transition-all focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
                       />
                       <input
                         aria-label="Dosage"
                         value={item.dosage}
                         onChange={(e) => updatePrescriptionRow(item.id, 'dosage', e.target.value)}
                         placeholder="5mg"
-                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-ink-900 shadow-2xs outline-none transition-all focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
                       />
                       <input
                         aria-label="Frequency"
                         value={item.frequency}
                         onChange={(e) => updatePrescriptionRow(item.id, 'frequency', e.target.value)}
                         placeholder="1+0+0"
-                        className="tabular font-mono text-xs rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        className="tabular font-mono text-xs rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-ink-900 shadow-2xs outline-none transition-all focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
                       />
                       <input
                         aria-label="Duration"
                         value={item.duration}
                         onChange={(e) => updatePrescriptionRow(item.id, 'duration', e.target.value)}
                         placeholder="30 Days"
-                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-ink-900 shadow-2xs outline-none transition-all focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
                       />
                       <input
                         aria-label="Instructions"
                         value={item.instructions}
                         onChange={(e) => updatePrescriptionRow(item.id, 'instructions', e.target.value)}
                         placeholder="After breakfast"
-                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-[#0F172A] shadow-2xs outline-none transition-all focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs text-ink-900 shadow-2xs outline-none transition-all focus:border-primary-600 focus:ring-1 focus:ring-primary-600"
                       />
                       <button
                         type="button"
                         aria-label="Delete medicine row"
                         onClick={() => removePrescriptionRow(item.id)}
-                        className="grid h-8 w-8 place-items-center rounded-lg transition-colors text-[#94A3B8] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
+                        className="grid h-8 w-8 place-items-center rounded-lg transition-colors text-ink-400 hover:bg-rose-50 hover:text-critical"
                         title="Remove medicine row"
                       >
                         <Icon.Trash size={14} />
@@ -608,7 +608,7 @@ export const NewConsultationPage: React.FC = () => {
 
             {/* Quick Frequency Helper Bar */}
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-              <span className="text-[11px] font-semibold text-[#64748B]">Quick Dosage Frequency:</span>
+              <span className="text-[11px] font-semibold text-ink-600">Quick Dosage Frequency:</span>
               {[
                 ['1+0+0', 'Morning'],
                 ['1+0+1', 'Morning & Night'],
@@ -625,7 +625,7 @@ export const NewConsultationPage: React.FC = () => {
                       updatePrescriptionRow(lastId, 'frequency', freq);
                     }
                   }}
-                  className="rounded-lg border border-[#E2E8F0] bg-white px-2 py-0.5 font-mono text-[11px] font-semibold text-[#1B365D] hover:bg-slate-50 hover:border-[#2563EB] transition-colors"
+                  className="rounded-lg border border-hair bg-white px-2 py-0.5 font-mono text-[11px] font-semibold text-primary-700 hover:bg-slate-50 hover:border-primary-600 transition-colors"
                   title={`Apply ${freq} (${tip}) to row`}
                 >
                   {freq}
@@ -637,7 +637,7 @@ export const NewConsultationPage: React.FC = () => {
             <button
               type="button"
               onClick={addPrescriptionRow}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#CBD5E1] py-2.5 text-xs font-semibold text-[#2563EB] transition-colors hover:border-[#2563EB] hover:bg-[#EFF6FF]"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-hair-strong py-2.5 text-xs font-semibold text-primary-600 transition-colors hover:border-primary-600 hover:bg-primary-50"
             >
               <Icon.Plus size={15} /> Add Medicine Row
             </button>
@@ -652,23 +652,23 @@ export const NewConsultationPage: React.FC = () => {
                 value={rxInstructions}
                 onChange={(e) => setRxInstructions(e.target.value)}
                 placeholder="e.g. Low sodium diet, brisk walking 30 minutes daily, monitor BP twice weekly."
-                className="mt-1.5 w-full min-h-[80px] rounded-xl border border-[#E2E8F0] bg-white p-3 text-sm leading-relaxed text-[#0F172A] outline-none transition-all placeholder:text-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF] resize-y"
+                className="mt-1.5 w-full min-h-[80px] rounded-xl border border-hair bg-white p-3 text-sm leading-relaxed text-ink-900 outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50 resize-y"
               />
             </div>
 
             {/* Follow-up recommendation */}
-            <div className="flex items-center justify-between rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3">
-              <span className="text-xs font-semibold text-[#475569]">Scheduled Chamber Follow-up</span>
+            <div className="flex items-center justify-between rounded-xl border border-hair bg-canvas p-3">
+              <span className="text-xs font-semibold text-ink-600">Scheduled Chamber Follow-up</span>
               <input
                 type="date"
                 value={followUpDate}
                 onChange={(e) => setFollowUpDate(e.target.value)}
-                className="rounded-lg border border-[#E2E8F0] bg-white px-2.5 py-1 text-xs font-medium text-[#0F172A] outline-none"
+                className="rounded-lg border border-hair bg-white px-2.5 py-1 text-xs font-medium text-ink-900 outline-none"
               />
             </div>
 
             {/* Diagnostic Laboratory Requisition */}
-            <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+            <div className="rounded-xl border border-hair bg-canvas p-4">
               <p className="text-xs font-semibold text-slate-700">
                 Diagnostic Laboratory Requisition
               </p>
@@ -683,8 +683,8 @@ export const NewConsultationPage: React.FC = () => {
                       onClick={() => toggleLab(lab)}
                       className={`min-h-8 rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${
                         on
-                          ? 'border-[#7C3AED] bg-[#F5F3FF] text-[#7C3AED]'
-                          : 'border-[#E2E8F0] bg-white text-[#475569] hover:border-[#cbd5e1]'
+                          ? 'border-audit bg-violet-50 text-audit'
+                          : 'border-hair bg-white text-ink-600 hover:border-hair-strong'
                       }`}
                     >
                       {on && <Icon.Check size={12} className="mr-1 inline" />}
@@ -699,13 +699,13 @@ export const NewConsultationPage: React.FC = () => {
       </main>
 
       {/* Figma Sticky Action Footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#E2E8F0] bg-white/95 backdrop-blur shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-hair bg-white/95 backdrop-blur shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
         <div className="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:px-8 2xl:px-12">
-          <p className="flex items-center gap-2 text-xs sm:text-sm text-[#475569]">
-            <Icon.Check size={16} className="text-[#059669]" />
+          <p className="flex items-center gap-2 text-xs sm:text-sm text-ink-600">
+            <Icon.Check size={16} className="text-success" />
             <span>All mandatory clinical fields verified</span>
-            <span className="text-[#94A3B8]">•</span>
-            <span className="inline-flex items-center gap-1 text-[#94A3B8]">
+            <span className="text-ink-400">•</span>
+            <span className="inline-flex items-center gap-1 text-ink-400">
               <Icon.Clock size={14} /> Autosaved 1m ago
             </span>
           </p>

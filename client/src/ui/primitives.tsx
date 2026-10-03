@@ -514,7 +514,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="relative flex items-center w-full">
         {leftIcon && (
-          <span className="absolute left-3.5 text-[#94A3B8] pointer-events-none shrink-0 flex items-center justify-center">
+          <span className="absolute left-3.5 text-ink-400 pointer-events-none shrink-0 flex items-center justify-center">
             {leftIcon}
           </span>
         )}
@@ -522,13 +522,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           disabled={disabled}
           className={cn(
-            "w-full border bg-white text-[#0F172A] outline-none transition-all duration-150 placeholder:text-[#94A3B8]",
+            "w-full border bg-white text-ink-900 outline-none transition-all duration-150 placeholder:text-ink-400",
             sizeClasses[inputSize],
             leftIcon && "pl-10",
             rightElement && "pr-10",
             error
-              ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-2 focus:ring-[#FEF2F2]"
-              : "border-[#CBD5E1] hover:border-[#94A3B8] focus:border-[#2563EB] focus:ring-2 focus:ring-[#EFF6FF]",
+              ? "border-critical focus:border-critical focus:ring-2 focus:ring-rose-50"
+              : "border-hair-strong hover:border-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50",
             disabled && "bg-slate-50 text-slate-400 cursor-not-allowed",
             className
           )}
@@ -572,17 +572,17 @@ export function FormField({
           className="block text-xs font-semibold text-slate-700 select-none"
         >
           {label}
-          {required && <span className="text-[#DC2626] ml-1">*</span>}
+          {required && <span className="text-critical ml-1">*</span>}
         </label>
       )}
       {children}
       {error ? (
-        <p className="text-xs text-[#DC2626] font-medium flex items-center gap-1 mt-1">
+        <p className="text-xs text-critical font-medium flex items-center gap-1 mt-1">
           <Icon.Alert size={12} className="shrink-0" />
           <span>{error}</span>
         </p>
       ) : hint ? (
-        <p className="text-xs text-[#64748B] mt-1">{hint}</p>
+        <p className="text-xs text-ink-600 mt-1">{hint}</p>
       ) : null}
     </div>
   );
@@ -613,11 +613,11 @@ export function MetricCard({
   hover = true,
 }: MetricCardProps) {
   const iconTones = {
-    blue: "bg-[#EFF6FF] text-[#2563EB] border-[#BFDBFE]",
-    emerald: "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]",
-    navy: "bg-[#EEF2F7] text-[#1B365D] border-[#CBD5E1]",
-    purple: "bg-[#F5F3FF] text-[#7C3AED] border-[#DDD6FE]",
-    amber: "bg-[#FEF3C7] text-[#D97706] border-[#FDE68A]",
+    blue: "bg-primary-50 text-primary-600 border-primary-100",
+    emerald: "bg-emerald-50 text-success border-emerald-200",
+    navy: "bg-canvas text-primary-700 border-hair-strong",
+    purple: "bg-violet-50 text-audit border-violet-200",
+    amber: "bg-amber-50 text-warning border-amber-200",
   };
 
   return (
@@ -640,11 +640,11 @@ export function MetricCard({
         )}
       </div>
       <div className="mt-4">
-        <p className="tabular font-display text-3xl font-bold tracking-tight text-[#0F172A]">
+        <p className="tabular font-display text-3xl font-bold tracking-tight text-ink-900">
           {value}
         </p>
-        <p className="mt-1 text-xs font-medium text-[#475569]">{title}</p>
-        {subtext && <p className="mt-1 text-[11px] text-[#94A3B8]">{subtext}</p>}
+        <p className="mt-1 text-xs font-medium text-ink-600">{title}</p>
+        {subtext && <p className="mt-1 text-[11px] text-ink-400">{subtext}</p>}
       </div>
     </Card>
   );
@@ -671,17 +671,17 @@ export function SectionHeader({
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2E8F0] pb-4 mb-6",
+        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hair pb-4 mb-6",
         className
       )}
     >
       <div>
         <div className="flex items-center gap-2.5">
-          <h2 className="font-display text-lg font-bold text-[#0F172A]">{title}</h2>
+          <h2 className="font-display text-lg font-bold text-ink-900">{title}</h2>
           {badge}
         </div>
         {description && (
-          <p className="mt-1 text-xs sm:text-sm text-[#475569]">{description}</p>
+          <p className="mt-1 text-xs sm:text-sm text-ink-600">{description}</p>
         )}
       </div>
       {action && <div className="flex items-center gap-2.5 shrink-0">{action}</div>}
@@ -710,16 +710,16 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-dashed border-[#CBD5E1] bg-slate-50/50 p-8 sm:p-12 text-center",
+        "rounded-2xl border border-dashed border-hair-strong bg-slate-50/50 p-8 sm:p-12 text-center",
         className
       )}
     >
-      <div className="mx-auto mb-3.5 grid h-12 w-12 place-items-center rounded-2xl bg-white text-[#64748B] shadow-subtle border border-[#E2E8F0]">
+      <div className="mx-auto mb-3.5 grid h-12 w-12 place-items-center rounded-2xl bg-white text-ink-600 shadow-subtle border border-hair">
         {icon || <Icon.Search size={22} />}
       </div>
-      <h3 className="font-display text-sm font-bold text-[#0F172A]">{title}</h3>
+      <h3 className="font-display text-sm font-bold text-ink-900">{title}</h3>
       {description && (
-        <p className="mt-1.5 max-w-sm mx-auto text-xs text-[#64748B] leading-relaxed">
+        <p className="mt-1.5 max-w-sm mx-auto text-xs text-ink-600 leading-relaxed">
           {description}
         </p>
       )}
@@ -744,19 +744,19 @@ export function VitalPill({
 }) {
   const tones: Record<string, string> = {
     slate: "border-slate-200 bg-slate-50",
-    amber: "border-[#FDE68A] bg-[#FEF3C7]",
-    emerald: "border-[#A7F3D0] bg-[#ECFDF5]",
-    crimson: "border-[#FECACA] bg-[#FEF2F2]",
+    amber: "border-amber-200 bg-amber-50",
+    emerald: "border-emerald-200 bg-emerald-50",
+    crimson: "border-rose-200 bg-rose-50",
   };
   const valTone: Record<string, string> = {
-    slate: "text-[#0F172A]",
-    amber: "text-[#B45309]",
-    emerald: "text-[#059669]",
-    crimson: "text-[#DC2626]",
+    slate: "text-ink-900",
+    amber: "text-warning",
+    emerald: "text-success",
+    crimson: "text-critical",
   };
   return (
     <div className={cn("flex flex-col rounded-xl border px-3 py-2", tones[tone], className)}>
-      <span className="text-[11px] font-medium text-[#64748B]">
+      <span className="text-[11px] font-medium text-ink-600">
         {label}
       </span>
       <span className={cn("tabular text-sm font-semibold mt-0.5", valTone[tone])}>{value}</span>

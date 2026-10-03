@@ -11,7 +11,7 @@ function TimelineMarker({ active }: { active?: boolean }) {
     <div className="relative flex flex-col items-center">
       <div
         className={`z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-white ${
-          active ? "bg-[#2563EB] shadow-[0_0_0_4px_rgba(37,99,235,0.2)]" : "bg-[#94A3B8]"
+          active ? "bg-primary-600 shadow-[0_0_0_4px_rgba(37,99,235,0.2)]" : "bg-ink-400"
         }`}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-white" />
@@ -51,7 +51,7 @@ export const PatientTimelinePage: React.FC = () => {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#2563EB] border-t-transparent"></div>
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
       </div>
     );
   }
@@ -64,7 +64,7 @@ export const PatientTimelinePage: React.FC = () => {
           <p className="text-sm font-semibold text-rose-700">{error || 'Patient timeline data unavailable.'}</p>
           <Link
             to="/"
-            className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:underline"
+            className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 hover:underline"
           >
             <Icon.Arrow size={14} className="rotate-180" /> Return to Dashboard
           </Link>
@@ -89,7 +89,7 @@ export const PatientTimelinePage: React.FC = () => {
   const token = localStorage.getItem('medralink_token');
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-20">
+    <div className="min-h-screen bg-canvas pb-20">
       <main className="mx-auto max-w-[1200px] 2xl:max-w-[1720px] space-y-6 px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
         {/* Back Link & Title */}
         <div className="flex items-center justify-between">
@@ -100,7 +100,7 @@ export const PatientTimelinePage: React.FC = () => {
               else if (user?.role === 'ADMIN') navigate('/admin');
               else navigate('/patient');
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 -ml-2 text-xs font-semibold text-[#475569] transition-colors hover:bg-slate-100 hover:text-[#0F172A] focus-visible:ring-2 focus-visible:ring-[#2563EB]"
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 -ml-2 text-xs font-semibold text-ink-600 transition-colors hover:bg-slate-100 hover:text-ink-900 focus-visible:ring-2 focus-visible:ring-primary-600"
           >
             <Icon.Arrow size={14} className="rotate-180" />
             <span>
@@ -108,13 +108,13 @@ export const PatientTimelinePage: React.FC = () => {
             </span>
           </button>
           <Pill tone="emerald">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#059669]" /> Verified RBAC Medical Timeline
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Verified RBAC Medical Timeline
           </Pill>
         </div>
 
         {/* Summary Banner */}
         <Card className="overflow-hidden p-0">
-          <div className="bg-gradient-to-r from-[#1B365D] to-[#2563EB] p-6 text-white">
+          <div className="bg-gradient-to-r from-primary-700 to-primary-600 p-6 text-white">
             <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/15 font-display text-xl font-bold">
@@ -132,7 +132,7 @@ export const PatientTimelinePage: React.FC = () => {
                         ? `${new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()} Yrs`
                         : '—'}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#DC2626] px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-critical px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
                       {patient?.blood_group ? `${patient.blood_group} Blood Group` : 'Blood Group N/A'}
                     </span>
                   </div>
@@ -182,35 +182,35 @@ export const PatientTimelinePage: React.FC = () => {
           </div>
 
           {/* Safety Alert Strip with high-contrast medical badges */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-[#FDE68A] bg-[#FEF3C7] px-6 py-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-amber-200 bg-amber-50 px-6 py-3.5">
             <div className="flex items-center gap-2 shrink-0">
-              <Icon.Alert size={18} className="text-[#B45309] shrink-0" />
-              <span className="text-xs font-semibold text-[#92400E]">Clinical Safety:</span>
+              <Icon.Alert size={18} className="text-warning shrink-0" />
+              <span className="text-xs font-semibold text-amber-800">Clinical Safety:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-medium text-[#78350F]">Allergies:</span>
+              <span className="font-medium text-amber-900">Allergies:</span>
               {allergies && allergies.length > 0 ? (
                 allergies.map((a: any, idx: number) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-[#FDE68A] px-2 py-0.5 font-semibold text-[#92400E] border border-[#FCD34D]"
+                    className="inline-flex items-center gap-1 rounded-md bg-amber-200 px-2 py-0.5 font-semibold text-amber-800 border border-amber-300"
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#DC2626]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-critical" />
                     {a.allergen} ({a.severity})
                   </span>
                 ))
               ) : (
-                <span className="text-[#92400E] font-medium">No known drug allergies (NKDA)</span>
+                <span className="text-amber-800 font-medium">No known drug allergies (NKDA)</span>
               )}
-              <span className="hidden sm:inline text-[#D97706]">•</span>
-              <span className="font-medium text-[#78350F]">Chronic Conditions:</span>
+              <span className="hidden sm:inline text-warning">•</span>
+              <span className="font-medium text-amber-900">Chronic Conditions:</span>
               {conditions && conditions.length > 0 ? (
                 conditions.map((c: any, idx: number) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 font-semibold text-[#1E293B] border border-[#CBD5E1]"
+                    className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 font-semibold text-ink-900 border border-hair-strong"
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-primary-600" />
                     {c.condition_name} ({c.status || 'Managed'})
                   </span>
                 ))
@@ -223,8 +223,8 @@ export const PatientTimelinePage: React.FC = () => {
 
         {/* Section Heading */}
         <div className="pt-2">
-          <h2 className="font-display text-xl font-bold text-[#0F172A]">Longitudinal Health Timeline</h2>
-          <p className="mt-1 text-sm text-[#475569]">
+          <h2 className="font-display text-xl font-bold text-ink-900">Longitudinal Health Timeline</h2>
+          <p className="mt-1 text-sm text-ink-600">
             A single continuous record of every consultation, accessible under strict RBAC.
           </p>
         </div>
@@ -234,11 +234,11 @@ export const PatientTimelinePage: React.FC = () => {
           {/* The Timeline Tree */}
           <div className="relative mt-2 pl-9">
             {/* Vertical continuous blue gradient line */}
-            <div className="absolute bottom-6 left-[11px] top-3 w-0.5 bg-gradient-to-b from-[#2563EB] to-[#CBD5E1]" />
+            <div className="absolute bottom-6 left-[11px] top-3 w-0.5 bg-gradient-to-b from-primary-600 to-hair-strong" />
 
           <div className="space-y-8">
             {timeline.length === 0 ? (
-              <Card className="p-8 text-center text-sm text-[#94A3B8]">
+              <Card className="p-8 text-center text-sm text-ink-400">
                 No consultation history recorded yet for this patient.
               </Card>
             ) : (
@@ -272,24 +272,24 @@ export const PatientTimelinePage: React.FC = () => {
                         role="button"
                         aria-expanded={isAccordionOpen}
                         aria-label={`Toggle consultation details for ${visitDateStr}`}
-                        className="flex flex-wrap items-start justify-between gap-3 cursor-pointer select-none rounded-xl -m-2 p-2 hover:bg-slate-50/70 focus-visible:ring-2 focus-visible:ring-[#2563EB] transition-colors"
+                        className="flex flex-wrap items-start justify-between gap-3 cursor-pointer select-none rounded-xl -m-2 p-2 hover:bg-slate-50/70 focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
                       >
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-display text-lg font-bold text-[#0F172A]">
+                            <h3 className="font-display text-lg font-bold text-ink-900">
                               {visitDateStr}
                             </h3>
                             <Pill tone="blue">
                               {record.reason || 'General Clinical Review'}
                             </Pill>
                           </div>
-                          <p className="mt-1.5 text-sm text-[#475569]">
+                          <p className="mt-1.5 text-sm text-ink-600">
                             {record.doctor_name}{' '}
-                            <span className="text-[#64748B]">
+                            <span className="text-ink-600">
                               ({record.doctor_qualifications || record.doctor_specialization || 'MBBS, FCPS Cardiology — NICVD'})
                             </span>
                           </p>
-                          <p className="text-sm text-[#64748B]">
+                          <p className="text-sm text-ink-600">
                             {record.doctor_hospital || 'Square Hospital, Dhaka'}
                           </p>
                         </div>
@@ -297,7 +297,7 @@ export const PatientTimelinePage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           {isLatest && (
                             <Pill tone="emerald">
-                              <span className="h-1.5 w-1.5 rounded-full bg-[#059669]" /> Most Recent
+                              <span className="h-1.5 w-1.5 rounded-full bg-success" /> Most Recent
                             </Pill>
                           )}
                           <button
@@ -308,7 +308,7 @@ export const PatientTimelinePage: React.FC = () => {
                             }}
                             aria-expanded={isAccordionOpen}
                             aria-label={`Expand consultation from ${visitDateStr}`}
-                            className="rounded-lg border border-[#E2E8F0] p-1.5 text-[#64748B] hover:text-[#0F172A] hover:bg-white transition-colors"
+                            className="rounded-lg border border-hair p-1.5 text-ink-600 hover:text-ink-900 hover:bg-white transition-colors"
                           >
                             <Icon.Chevron
                               size={18}
@@ -320,18 +320,18 @@ export const PatientTimelinePage: React.FC = () => {
 
                       {/* Expandable / Visible Details */}
                       {isAccordionOpen && (
-                        <div className="mt-5 space-y-5 border-t border-[#E2E8F0] pt-5">
+                        <div className="mt-5 space-y-5 border-t border-hair pt-5">
                           {/* Chief Complaints */}
-                          <div className="rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4">
+                          <div className="rounded-xl border border-hair bg-canvas p-4">
                             <p className="text-xs font-semibold text-slate-700">
                               Chief Complaints
                             </p>
-                            <p className="mt-1 text-sm text-[#0F172A]">
+                            <p className="mt-1 text-sm text-ink-900">
                               {record.chief_complaint || 'No complaints recorded.'}
                             </p>
                             {record.clinical_notes && (
-                              <p className="mt-2 text-xs text-[#475569] border-t border-[#E2E8F0] pt-2">
-                                <span className="font-semibold text-[#0F172A]">Clinical Notes:</span> {record.clinical_notes}
+                              <p className="mt-2 text-xs text-ink-600 border-t border-hair pt-2">
+                                <span className="font-semibold text-ink-900">Clinical Notes:</span> {record.clinical_notes}
                               </p>
                             )}
                           </div>
@@ -380,7 +380,7 @@ export const PatientTimelinePage: React.FC = () => {
                               </p>
                               <div className="flex flex-wrap gap-2">
                                 {record.diagnoses.map((d: any) => (
-                                  <Pill key={d.id} tone="navy" className="!bg-[#334155] !border-[#334155]">
+                                  <Pill key={d.id} tone="navy" className="!bg-ink-600 !border-ink-600">
                                     [{d.icd10_code}] {d.diagnosis_title}
                                   </Pill>
                                 ))}
@@ -390,15 +390,15 @@ export const PatientTimelinePage: React.FC = () => {
 
                           {/* Digital Prescription Block */}
                           {record.prescription && (
-                            <div className="rounded-xl border border-[#A7F3D0] bg-[#ECFDF5] p-4">
+                            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                               <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div className="flex items-center gap-2 text-sm font-semibold text-[#059669]">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-success">
                                   <Icon.Pill size={16} /> Digital Prescription ({record.prescription.prescription_uid})
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <Link
                                     to={`/prescription/${record.prescription.id}`}
-                                    className="rounded-lg border border-[#A7F3D0] bg-white px-3 py-1.5 text-xs font-semibold text-[#059669] hover:bg-emerald-50"
+                                    className="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-success hover:bg-emerald-50"
                                   >
                                     View ℞ Sheet
                                   </Link>
@@ -406,7 +406,7 @@ export const PatientTimelinePage: React.FC = () => {
                                     href={`/api/v1/prescriptions/${record.prescription.id}/pdf?token=${token}`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#059669] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#047857]"
+                                    className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-success"
                                   >
                                     <Icon.Download size={14} /> Download Official PDF (℞)
                                   </a>
@@ -414,14 +414,14 @@ export const PatientTimelinePage: React.FC = () => {
                               </div>
 
                               {record.prescription.items && record.prescription.items.length > 0 && (
-                                <div className="mt-3 divide-y divide-[#A7F3D0]/60">
+                                <div className="mt-3 divide-y divide-emerald-200/60">
                                   {record.prescription.items.map((item: any) => (
                                     <div key={item.id} className="flex items-center justify-between py-2 tabular text-xs sm:text-sm">
-                                      <span className="font-semibold text-[#065F46]">
+                                      <span className="font-semibold text-emerald-800">
                                         {item.medication_name} {item.dosage && `(${item.dosage})`}
-                                        {item.instructions && <span className="block text-xs font-normal text-[#047857]">{item.instructions}</span>}
+                                        {item.instructions && <span className="block text-xs font-normal text-success">{item.instructions}</span>}
                                       </span>
-                                      <span className="font-mono font-medium text-[#047857]">
+                                      <span className="font-mono font-medium text-success">
                                         {item.frequency} • {item.duration}
                                       </span>
                                     </div>
@@ -437,30 +437,30 @@ export const PatientTimelinePage: React.FC = () => {
                               {record.labReports.map((lab: any) => {
                                 const isOpen = expandedReports[lab.id];
                                 return (
-                                  <div key={lab.id} className="rounded-xl border border-[#E2E8F0] p-4 bg-white">
+                                  <div key={lab.id} className="rounded-xl border border-hair p-4 bg-white">
                                     <div className="flex items-center justify-between">
                                       <div className="flex items-center gap-3">
-                                        <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#F5F3FF] text-[#7C3AED]">
+                                        <div className="grid h-9 w-9 place-items-center rounded-lg bg-violet-50 text-audit">
                                           <Icon.Flask size={16} />
                                         </div>
                                         <div>
-                                          <p className="text-sm font-semibold text-[#0F172A]">{lab.test_name}</p>
-                                          <p className="text-xs text-[#059669] font-medium">{lab.status || 'Completed'}</p>
+                                          <p className="text-sm font-semibold text-ink-900">{lab.test_name}</p>
+                                          <p className="text-xs text-success font-medium">{lab.status || 'Completed'}</p>
                                         </div>
                                       </div>
                                       <button
                                         type="button"
                                         aria-expanded={isOpen}
                                         onClick={() => toggleReport(lab.id)}
-                                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2563EB] hover:text-[#1D4ED8]"
+                                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-700"
                                       >
                                         {isOpen ? 'Hide details' : 'View scan / results'}
                                         <Icon.Arrow size={13} className={isOpen ? 'rotate-90' : ''} />
                                       </button>
                                     </div>
                                     {isOpen && (
-                                      <div className="mt-3 rounded-lg bg-[#F8FAFC] px-4 py-3 text-xs text-[#475569] border border-[#E2E8F0]">
-                                        <p className="font-semibold text-[#0F172A]">Diagnostic Laboratory Finding:</p>
+                                      <div className="mt-3 rounded-lg bg-canvas px-4 py-3 text-xs text-ink-600 border border-hair">
+                                        <p className="font-semibold text-ink-900">Diagnostic Laboratory Finding:</p>
                                         <p className="mt-1">{lab.results_summary || 'Normal physiological thresholds observed. Fasting blood sugar and lipid metrics authenticated.'}</p>
                                       </div>
                                     )}
@@ -483,57 +483,57 @@ export const PatientTimelinePage: React.FC = () => {
           <div className="hidden 2xl:block space-y-6 sticky top-24">
             {/* Timeline Summary Card */}
             <Card className="p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <div className="flex items-center justify-between border-b border-hair pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#EFF6FF] text-[#2563EB]">
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-600">
                     <Icon.Clock size={16} />
                   </div>
-                  <h3 className="font-display text-sm font-bold text-[#0F172A]">Timeline Analytics</h3>
+                  <h3 className="font-display text-sm font-bold text-ink-900">Timeline Analytics</h3>
                 </div>
                 <Pill tone="blue">{timeline.length} Records</Pill>
               </div>
 
               <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between items-center rounded-lg bg-[#F8FAFC] p-2.5 border border-[#E2E8F0]">
-                  <span className="text-[#64748B]">Active Chronic Conditions</span>
-                  <span className="font-bold text-[#0F172A]">{conditions?.length || 1} Conditions</span>
+                <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
+                  <span className="text-ink-600">Active Chronic Conditions</span>
+                  <span className="font-bold text-ink-900">{conditions?.length || 1} Conditions</span>
                 </div>
-                <div className="flex justify-between items-center rounded-lg bg-[#F8FAFC] p-2.5 border border-[#E2E8F0]">
-                  <span className="text-[#64748B]">Documented Drug Allergies</span>
-                  <span className="font-bold text-[#DC2626]">{allergies?.length || 1} High-Alert</span>
+                <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
+                  <span className="text-ink-600">Documented Drug Allergies</span>
+                  <span className="font-bold text-critical">{allergies?.length || 1} High-Alert</span>
                 </div>
-                <div className="flex justify-between items-center rounded-lg bg-[#F8FAFC] p-2.5 border border-[#E2E8F0]">
-                  <span className="text-[#64748B]">Cumulative Prescriptions</span>
-                  <span className="font-bold text-[#059669]">{timeline.filter((t: any) => t.prescription).length || 2} E-Prescriptions</span>
+                <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
+                  <span className="text-ink-600">Cumulative Prescriptions</span>
+                  <span className="font-bold text-success">{timeline.filter((t: any) => t.prescription).length || 2} E-Prescriptions</span>
                 </div>
-                <div className="flex justify-between items-center rounded-lg bg-[#F8FAFC] p-2.5 border border-[#E2E8F0]">
-                  <span className="text-[#64748B]">Diagnostic Lab Streams</span>
-                  <span className="font-bold text-[#7C3AED]">{timeline.reduce((acc: number, t: any) => acc + (t.labReports?.length || 0), 0) || 2} Reports</span>
+                <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
+                  <span className="text-ink-600">Diagnostic Lab Streams</span>
+                  <span className="font-bold text-audit">{timeline.reduce((acc: number, t: any) => acc + (t.labReports?.length || 0), 0) || 2} Reports</span>
                 </div>
               </div>
             </Card>
 
             {/* Diagnostic Quick Filter Card */}
             <Card className="p-5 space-y-3">
-              <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+              <div className="flex items-center justify-between border-b border-hair pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#ECFDF5] text-[#059669]">
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success">
                     <Icon.Flask size={16} />
                   </div>
-                  <h3 className="font-display text-sm font-bold text-[#0F172A]">Diagnostic Laboratory Archive</h3>
+                  <h3 className="font-display text-sm font-bold text-ink-900">Diagnostic Laboratory Archive</h3>
                 </div>
               </div>
 
               <div className="space-y-2 text-xs">
-                <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-2.5">
-                  <p className="font-semibold text-[#0F172A]">Fast Blood Glucose &amp; HbA1c</p>
-                  <p className="text-[11px] text-[#059669] font-medium">5.8% (Optimal Glycemic Control)</p>
-                  <p className="text-[10px] text-[#94A3B8] font-mono mt-0.5">Square Diagnostics • 10 Aug 2026</p>
+                <div className="rounded-lg border border-hair bg-canvas p-2.5">
+                  <p className="font-semibold text-ink-900">Fast Blood Glucose &amp; HbA1c</p>
+                  <p className="text-[11px] text-success font-medium">5.8% (Optimal Glycemic Control)</p>
+                  <p className="text-[10px] text-ink-400 font-mono mt-0.5">Square Diagnostics • 10 Aug 2026</p>
                 </div>
-                <div className="rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] p-2.5">
-                  <p className="font-semibold text-[#0F172A]">12-Lead Resting Electrocardiogram (ECG)</p>
-                  <p className="text-[11px] text-[#059669] font-medium">Normal Sinus Rhythm • 74 bpm</p>
-                  <p className="text-[10px] text-[#94A3B8] font-mono mt-0.5">NICVD Lab 3 • 10 Aug 2026</p>
+                <div className="rounded-lg border border-hair bg-canvas p-2.5">
+                  <p className="font-semibold text-ink-900">12-Lead Resting Electrocardiogram (ECG)</p>
+                  <p className="text-[11px] text-success font-medium">Normal Sinus Rhythm • 74 bpm</p>
+                  <p className="text-[10px] text-ink-400 font-mono mt-0.5">NICVD Lab 3 • 10 Aug 2026</p>
                 </div>
               </div>
             </Card>

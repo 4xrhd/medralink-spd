@@ -125,21 +125,21 @@ export const Navbar: React.FC = () => {
       case 'DOCTOR':
         return (
           <Pill tone="blue" className="hidden sm:inline-flex whitespace-nowrap">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#2563EB]" />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-600" />
             BMDC Verified • Active Session
           </Pill>
         );
       case 'PATIENT':
         return (
           <Pill tone="emerald" className="hidden sm:inline-flex whitespace-nowrap">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#059669]" />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
             Patient Health Record
           </Pill>
         );
       case 'ADMIN':
         return (
           <Pill tone="purple" className="hidden sm:inline-flex whitespace-nowrap">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#7C3AED]" />
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-audit" />
             Enterprise Governance
           </Pill>
         );
@@ -165,7 +165,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 h-[72px] border-b border-[#E2E8F0] bg-white/95 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+      <header className="sticky top-0 z-50 h-[72px] border-b border-hair bg-white/95 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
       <div className="mx-auto flex h-full max-w-[1720px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12">
         {/* Brand Logo & Status */}
         <div className="flex shrink-0 items-center gap-3">
@@ -174,11 +174,11 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
             aria-label="MedraLink Home"
           >
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#1B365D] text-white shadow-sm">
+            <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-700 text-white shadow-sm">
               <Icon.Cross size={18} />
             </div>
-            <span className="font-display text-lg font-extrabold tracking-tight text-[#0F172A]">
-              Medra<span className="text-[#2563EB]">Link</span>
+            <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
+              Medra<span className="text-primary-600">Link</span>
             </span>
           </Link>
           {getRoleBadge()}
@@ -193,8 +193,8 @@ export const Navbar: React.FC = () => {
                   to="/doctor"
                   className={`whitespace-nowrap rounded-xl px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all ${
                     location.pathname === '/doctor'
-                      ? 'bg-[#EFF6FF] text-[#1D4ED8] shadow-xs'
-                      : 'text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]'
+                      ? 'bg-primary-50 text-primary-700 shadow-xs'
+                      : 'text-ink-600 hover:bg-slate-100 hover:text-ink-900'
                   }`}
                 >
                   Workstation
@@ -203,8 +203,8 @@ export const Navbar: React.FC = () => {
                   to="/doctor/new-consultation"
                   className={`whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
                     location.pathname === '/doctor/new-consultation'
-                      ? 'bg-[#1B365D] text-white shadow-sm ring-2 ring-[#2563EB]/40'
-                      : 'bg-[#1B365D] text-white shadow-sm hover:bg-[#16294a]'
+                      ? 'bg-primary-700 text-white shadow-sm ring-2 ring-primary-600/40'
+                      : 'bg-primary-700 text-white shadow-sm hover:bg-primary-800'
                   }`}
                 >
                   <Icon.Stethoscope size={16} />
@@ -219,8 +219,8 @@ export const Navbar: React.FC = () => {
                   to="/patient"
                   className={`whitespace-nowrap rounded-xl px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all ${
                     location.pathname === '/patient'
-                      ? 'bg-[#EFF6FF] text-[#1D4ED8] shadow-xs'
-                      : 'text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]'
+                      ? 'bg-primary-50 text-primary-700 shadow-xs'
+                      : 'text-ink-600 hover:bg-slate-100 hover:text-ink-900'
                   }`}
                 >
                   My Health Record
@@ -229,8 +229,8 @@ export const Navbar: React.FC = () => {
                   to={user.patientId ? `/patient/timeline/${user.patientId}` : '/patient'}
                   className={`whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
                     location.pathname.startsWith('/patient/timeline')
-                      ? 'bg-[#ECFDF5] text-[#059669] ring-1 ring-[#A7F3D0]'
-                      : 'bg-[#EFF6FF] text-[#1D4ED8] hover:bg-blue-100'
+                      ? 'bg-emerald-50 text-success ring-1 ring-emerald-200'
+                      : 'bg-primary-50 text-primary-700 hover:bg-blue-100'
                   }`}
                 >
                   <Icon.Clock size={15} />
@@ -245,8 +245,8 @@ export const Navbar: React.FC = () => {
                   to="/admin"
                   className={`whitespace-nowrap rounded-xl px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all ${
                     location.pathname === '/admin'
-                      ? 'bg-[#EFF6FF] text-[#1D4ED8] shadow-xs'
-                      : 'text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]'
+                      ? 'bg-primary-50 text-primary-700 shadow-xs'
+                      : 'text-ink-600 hover:bg-slate-100 hover:text-ink-900'
                   }`}
                 >
                   Governance Console
@@ -255,8 +255,8 @@ export const Navbar: React.FC = () => {
                   to="/admin/audit-logs"
                   className={`whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
                     location.pathname === '/admin/audit-logs'
-                      ? 'bg-[#F5F3FF] text-[#7C3AED] ring-1 ring-[#DDD6FE]'
-                      : 'bg-[#F5F3FF] text-[#7C3AED] hover:bg-purple-100'
+                      ? 'bg-violet-50 text-audit ring-1 ring-violet-200'
+                      : 'bg-violet-50 text-audit hover:bg-purple-100'
                   }`}
                 >
                   <Icon.Shield size={15} />
@@ -269,7 +269,7 @@ export const Navbar: React.FC = () => {
           <nav className="hidden sm:flex items-center">
             <Link
               to="/"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#475569] transition-colors hover:text-[#1B365D]"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-600 transition-colors hover:text-primary-700"
             >
               <Icon.Arrow size={14} className="rotate-180" /> Return to Platform Overview
             </Link>
@@ -281,7 +281,7 @@ export const Navbar: React.FC = () => {
                 key={label}
                 href={hash}
                 onClick={(e) => handleNavAnchor(e, hash)}
-                className="whitespace-nowrap text-sm font-medium text-[#475569] transition-colors hover:text-[#1B365D]"
+                className="whitespace-nowrap text-sm font-medium text-ink-600 transition-colors hover:text-primary-700"
               >
                 {label}
               </a>
@@ -305,13 +305,13 @@ export const Navbar: React.FC = () => {
                   }}
                   className={`relative grid h-9 w-9 place-items-center rounded-xl border transition-colors ${
                     showNotifications
-                      ? 'border-[#2563EB] bg-[#EFF6FF] text-[#2563EB]'
-                      : 'border-[#E2E8F0] text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]'
+                      ? 'border-primary-600 bg-primary-50 text-primary-600'
+                      : 'border-hair text-ink-600 hover:bg-slate-100 hover:text-ink-900'
                   }`}
                 >
                   <Icon.Bell size={18} />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#DC2626] text-[9px] font-bold text-white ring-2 ring-white">
+                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-critical text-[9px] font-bold text-white ring-2 ring-white">
                       {unreadCount}
                     </span>
                   )}
@@ -319,10 +319,10 @@ export const Navbar: React.FC = () => {
 
                 {/* Notifications Dropdown */}
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-[#E2E8F0] bg-white p-3 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-2.5 px-1">
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-hair bg-white p-3 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="flex items-center justify-between border-b border-hair pb-2.5 px-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-display text-sm font-bold text-[#0F172A]">
+                        <span className="font-display text-sm font-bold text-ink-900">
                           Clinical Alerts
                         </span>
                         {unreadCount > 0 && (
@@ -336,7 +336,7 @@ export const Navbar: React.FC = () => {
                           <button
                             type="button"
                             onClick={markAllAsRead}
-                            className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
+                            className="text-[11px] font-semibold text-primary-600 hover:underline cursor-pointer"
                           >
                             Mark all read
                           </button>
@@ -363,7 +363,7 @@ export const Navbar: React.FC = () => {
                         onClick={() => setActiveFilter('all')}
                         className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
                           activeFilter === 'all'
-                            ? 'bg-[#1B365D] text-white shadow-xs'
+                            ? 'bg-primary-700 text-white shadow-xs'
                             : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                         }`}
                       >
@@ -374,7 +374,7 @@ export const Navbar: React.FC = () => {
                         onClick={() => setActiveFilter('unread')}
                         className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                           activeFilter === 'unread'
-                            ? 'bg-[#1B365D] text-white shadow-xs'
+                            ? 'bg-primary-700 text-white shadow-xs'
                             : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                         }`}
                       >
@@ -394,7 +394,7 @@ export const Navbar: React.FC = () => {
                     </div>
 
                     {/* Notifications List */}
-                    <div className="mt-2 divide-y divide-[#F1F5F9] max-h-72 overflow-y-auto">
+                    <div className="mt-2 divide-y divide-primary-50/60 max-h-72 overflow-y-auto">
                       {filteredNotifications.length === 0 ? (
                         <div className="py-8 px-4 text-center space-y-2">
                           <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-400">
@@ -460,21 +460,21 @@ export const Navbar: React.FC = () => {
 
                               <div className="flex-1 min-w-0 pr-6">
                                 <div className="flex items-start justify-between gap-1">
-                                  <p className="text-xs font-semibold text-[#0F172A] truncate">
+                                  <p className="text-xs font-semibold text-ink-900 truncate">
                                     {item.title}
                                   </p>
-                                  <span className="text-[10px] font-medium text-[#94A3B8] shrink-0">
+                                  <span className="text-[10px] font-medium text-ink-400 shrink-0">
                                     {formatRelativeTime(item.created_at)}
                                   </span>
                                 </div>
-                                <p className="mt-0.5 text-[11px] text-[#475569] leading-relaxed line-clamp-2">
+                                <p className="mt-0.5 text-[11px] text-ink-600 leading-relaxed line-clamp-2">
                                   {item.message}
                                 </p>
                               </div>
 
                               {/* Unread dot indicator */}
                               {isUnread && (
-                                <span className="absolute top-3 right-2 h-2 w-2 rounded-full bg-[#2563EB] group-hover:hidden" />
+                                <span className="absolute top-3 right-2 h-2 w-2 rounded-full bg-primary-600 group-hover:hidden" />
                               )}
 
                               {/* Dismiss action button */}
@@ -497,7 +497,7 @@ export const Navbar: React.FC = () => {
                     </div>
 
                     {/* Popover Footer */}
-                    <div className="mt-2.5 border-t border-[#E2E8F0] pt-2 px-1 flex items-center justify-between text-[11px]">
+                    <div className="mt-2.5 border-t border-hair pt-2 px-1 flex items-center justify-between text-[11px]">
                       <button
                         type="button"
                         onClick={() => {
@@ -526,16 +526,16 @@ export const Navbar: React.FC = () => {
                     setShowProfileMenu(!showProfileMenu);
                     setShowNotifications(false);
                   }}
-                  className="flex items-center gap-2 rounded-full border border-[#E2E8F0] bg-white p-1 sm:pr-3 shadow-xs hover:border-[#cbd5e1] transition-all"
+                  className="flex items-center gap-2 rounded-full border border-hair bg-white p-1 sm:pr-3 shadow-xs hover:border-hair-strong transition-all"
                   aria-expanded={showProfileMenu}
                   aria-label="User account menu"
                 >
-                  <div className="grid h-8 w-8 place-items-center rounded-full bg-[#1B365D] text-xs font-bold text-white shadow-xs">
+                  <div className="grid h-8 w-8 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white shadow-xs">
                     {initials}
                   </div>
                   <div className="hidden leading-tight sm:block text-left">
-                    <p className="text-xs font-semibold text-[#0F172A]">{user.fullName}</p>
-                    <p className="font-mono text-[10px] text-[#94A3B8]">
+                    <p className="text-xs font-semibold text-ink-900">{user.fullName}</p>
+                    <p className="font-mono text-[10px] text-ink-400">
                       {user.role === 'DOCTOR'
                         ? user.doctorProfile?.bmdcLicenseNumber || user.doctorUid || 'BMDC Verified'
                         : user.role === 'PATIENT'
@@ -543,20 +543,20 @@ export const Navbar: React.FC = () => {
                         : 'SECURITY OFFICER'}
                     </p>
                   </div>
-                  <Icon.Chevron size={14} className="hidden sm:block text-[#94A3B8]" />
+                  <Icon.Chevron size={14} className="hidden sm:block text-ink-400" />
                 </button>
 
                 {/* Profile Dropdown Menu */}
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-[#E2E8F0] bg-white p-2 shadow-xl z-50">
-                    <div className="border-b border-[#E2E8F0] p-3">
-                      <p className="text-xs font-bold text-[#0F172A]">{user.fullName}</p>
-                      <p className="text-[11px] text-[#475569]">{user.email || user.role}</p>
+                  <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-hair bg-white p-2 shadow-xl z-50">
+                    <div className="border-b border-hair p-3">
+                      <p className="text-xs font-bold text-ink-900">{user.fullName}</p>
+                      <p className="text-[11px] text-ink-600">{user.email || user.role}</p>
                       <div className="mt-2 flex items-center gap-1.5">
                         <Pill tone={user.role === 'DOCTOR' ? 'blue' : user.role === 'PATIENT' ? 'emerald' : 'purple'}>
                           {user.role}
                         </Pill>
-                        <span className="text-[10px] font-mono text-[#94A3B8]">
+                        <span className="text-[10px] font-mono text-ink-400">
                           {user.role === 'DOCTOR'
                             ? user.doctorProfile?.bmdcLicenseNumber || user.doctorUid || 'BMDC Verified'
                             : user.role === 'PATIENT'
@@ -571,13 +571,13 @@ export const Navbar: React.FC = () => {
                         <>
                           <Link
                             to="/doctor"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
+                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                           >
                             <Icon.Stethoscope size={15} /> Clinical Workstation
                           </Link>
                           <Link
                             to="/doctor/new-consultation"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
+                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                           >
                             <Icon.Plus size={15} /> Open New Consultation
                           </Link>
@@ -588,13 +588,13 @@ export const Navbar: React.FC = () => {
                         <>
                           <Link
                             to="/patient"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
+                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                           >
                             <Icon.User size={15} /> My Health Record
                           </Link>
                           <Link
                             to={user.patientId ? `/patient/timeline/${user.patientId}` : '/patient'}
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
+                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                           >
                             <Icon.Clock size={15} /> Medical Timeline
                           </Link>
@@ -605,13 +605,13 @@ export const Navbar: React.FC = () => {
                         <>
                           <Link
                             to="/admin"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
+                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                           >
                             <Icon.Shield size={15} /> Governance Console
                           </Link>
                           <Link
                             to="/admin/audit-logs"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
+                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                           >
                             <Icon.Lock size={15} /> Cryptographic Audit Trail
                           </Link>
@@ -620,7 +620,7 @@ export const Navbar: React.FC = () => {
 
                       <Link
                         to="/"
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                       >
                         <Icon.Cross size={15} /> System Overview
                       </Link>
@@ -631,17 +631,17 @@ export const Navbar: React.FC = () => {
                           setShowSettingsModal(true);
                           setShowProfileMenu(false);
                         }}
-                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A] cursor-pointer"
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900 cursor-pointer"
                       >
                         <Icon.Settings size={15} /> Notification Preferences
                       </button>
                     </div>
 
-                    <div className="border-t border-[#E2E8F0] pt-1">
+                    <div className="border-t border-hair pt-1">
                       <button
                         type="button"
                         onClick={handleLogout}
-                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-[#DC2626] hover:bg-rose-50"
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-critical hover:bg-rose-50"
                       >
                         <Icon.LogOut size={15} /> Sign Out
                       </button>
@@ -654,7 +654,7 @@ export const Navbar: React.FC = () => {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="hidden sm:grid h-9 w-9 place-items-center rounded-xl border border-[#E2E8F0] text-[#475569] transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-[#DC2626]"
+                className="hidden sm:grid h-9 w-9 place-items-center rounded-xl border border-hair text-ink-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-critical"
                 title="Sign Out of Session"
                 aria-label="Sign Out of Session"
               >
@@ -665,14 +665,14 @@ export const Navbar: React.FC = () => {
             location.pathname === '/login' ? (
               <Link
                 to="/register"
-                className="whitespace-nowrap rounded-xl bg-[#1B365D] px-3.5 py-1.5 text-xs sm:text-sm sm:px-4 sm:py-2 font-semibold text-white shadow-sm transition-colors hover:bg-[#16294a]"
+                className="whitespace-nowrap rounded-xl bg-primary-700 px-3.5 py-1.5 text-xs sm:text-sm sm:px-4 sm:py-2 font-semibold text-white shadow-sm transition-colors hover:bg-primary-800"
               >
                 Register Clinic
               </Link>
             ) : (
               <Link
                 to="/login"
-                className="whitespace-nowrap rounded-xl border border-[#E2E8F0] bg-white px-3.5 py-1.5 text-xs sm:text-sm sm:px-4 sm:py-2 font-semibold text-[#1B365D] transition-colors hover:bg-slate-50"
+                className="whitespace-nowrap rounded-xl border border-hair bg-white px-3.5 py-1.5 text-xs sm:text-sm sm:px-4 sm:py-2 font-semibold text-primary-700 transition-colors hover:bg-slate-50"
               >
                 Portal Login
               </Link>
@@ -682,13 +682,13 @@ export const Navbar: React.FC = () => {
               {/* Logged Out CTAs */}
               <Link
                 to="/login"
-                className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs sm:text-sm sm:px-3.5 sm:py-2 font-semibold text-[#1B365D] transition-colors hover:bg-slate-100"
+                className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs sm:text-sm sm:px-3.5 sm:py-2 font-semibold text-primary-700 transition-colors hover:bg-slate-100"
               >
                 Portal Login
               </Link>
               <Link
                 to="/register"
-                className="hidden sm:inline-flex whitespace-nowrap rounded-lg bg-[#1B365D] px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#16294a]"
+                className="hidden sm:inline-flex whitespace-nowrap rounded-lg bg-primary-700 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-800"
               >
                 Register Clinic
               </Link>
@@ -700,7 +700,7 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="grid h-9 w-9 place-items-center rounded-xl border border-[#E2E8F0] text-[#475569] hover:bg-slate-100 xl:hidden transition-colors"
+              className="grid h-9 w-9 place-items-center rounded-xl border border-hair text-ink-600 hover:bg-slate-100 xl:hidden transition-colors"
               aria-label="Toggle Navigation Menu"
               aria-expanded={mobileMenuOpen}
             >
@@ -712,17 +712,17 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile/Tablet Drawer */}
       {mobileMenuOpen && (
-        <div className="border-b border-[#E2E8F0] bg-white px-4 py-5 shadow-xl xl:hidden">
+        <div className="border-b border-hair bg-white px-4 py-5 shadow-xl xl:hidden">
           {user ? (
             <div className="space-y-4">
               {/* User Identity Box */}
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 border border-[#E2E8F0]">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-[#1B365D] font-bold text-white">
+              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 border border-hair">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-700 font-bold text-white">
                   {initials}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-[#0F172A]">{user.fullName}</p>
-                  <p className="text-xs text-[#475569]">
+                  <p className="text-sm font-bold text-ink-900">{user.fullName}</p>
+                  <p className="text-xs text-ink-600">
                     {user.role} • {user.doctorUid || user.patientUid || user.email}
                   </p>
                 </div>
@@ -734,13 +734,13 @@ export const Navbar: React.FC = () => {
                   <>
                     <Link
                       to="/doctor"
-                      className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold text-[#0F172A] hover:bg-slate-100"
+                      className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-slate-100"
                     >
                       Clinical Workstation
                     </Link>
                     <Link
                       to="/doctor/new-consultation"
-                      className="flex items-center gap-2 rounded-xl bg-[#1B365D] px-3.5 py-2.5 text-sm font-semibold text-white"
+                      className="flex items-center gap-2 rounded-xl bg-primary-700 px-3.5 py-2.5 text-sm font-semibold text-white"
                     >
                       <Icon.Stethoscope size={16} /> Open New Consultation
                     </Link>
@@ -751,13 +751,13 @@ export const Navbar: React.FC = () => {
                   <>
                     <Link
                       to="/patient"
-                      className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold text-[#0F172A] hover:bg-slate-100"
+                      className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-slate-100"
                     >
                       My Health Record
                     </Link>
                     <Link
                       to={user.patientId ? `/patient/timeline/${user.patientId}` : '/patient'}
-                      className="flex items-center gap-2 rounded-xl bg-[#EFF6FF] px-3.5 py-2.5 text-sm font-semibold text-[#1D4ED8]"
+                      className="flex items-center gap-2 rounded-xl bg-primary-50 px-3.5 py-2.5 text-sm font-semibold text-primary-700"
                     >
                       <Icon.Clock size={16} /> Medical Timeline
                     </Link>
@@ -768,13 +768,13 @@ export const Navbar: React.FC = () => {
                   <>
                     <Link
                       to="/admin"
-                      className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold text-[#0F172A] hover:bg-slate-100"
+                      className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-slate-100"
                     >
                       Governance Console
                     </Link>
                     <Link
                       to="/admin/audit-logs"
-                      className="flex items-center gap-2 rounded-xl bg-[#F5F3FF] px-3.5 py-2.5 text-sm font-semibold text-[#7C3AED]"
+                      className="flex items-center gap-2 rounded-xl bg-violet-50 px-3.5 py-2.5 text-sm font-semibold text-audit"
                     >
                       <Icon.Shield size={16} /> Audit Trail
                     </Link>
@@ -783,18 +783,18 @@ export const Navbar: React.FC = () => {
 
                 <Link
                   to="/"
-                  className="block rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
+                  className="block rounded-xl px-3.5 py-2.5 text-sm font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                 >
                   Platform Home
                 </Link>
               </div>
 
               {/* Sign Out Button */}
-              <div className="border-t border-[#E2E8F0] pt-3">
+              <div className="border-t border-hair pt-3">
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-[#DC2626] hover:bg-rose-100"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-critical hover:bg-rose-100"
                 >
                   <Icon.LogOut size={16} /> Sign Out of Platform
                 </button>
@@ -809,7 +809,7 @@ export const Navbar: React.FC = () => {
                     key={label}
                     href={hash}
                     onClick={(e) => handleNavAnchor(e, hash)}
-                    className="block rounded-xl px-3.5 py-2 text-sm font-medium text-[#475569] hover:bg-slate-100 hover:text-[#0F172A]"
+                    className="block rounded-xl px-3.5 py-2 text-sm font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                   >
                     {label}
                   </a>
@@ -817,16 +817,16 @@ export const Navbar: React.FC = () => {
               </div>
 
               {/* Public Auth Actions */}
-              <div className="grid grid-cols-2 gap-2.5 border-t border-[#E2E8F0] pt-4">
+              <div className="grid grid-cols-2 gap-2.5 border-t border-hair pt-4">
                 <Link
                   to="/login"
-                  className="flex items-center justify-center rounded-xl border border-[#E2E8F0] bg-white py-2.5 text-center text-sm font-semibold text-[#1B365D] hover:bg-slate-50"
+                  className="flex items-center justify-center rounded-xl border border-hair bg-white py-2.5 text-center text-sm font-semibold text-primary-700 hover:bg-slate-50"
                 >
                   Portal Login
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center justify-center rounded-xl bg-[#1B365D] py-2.5 text-center text-sm font-semibold text-white hover:bg-[#16294a]"
+                  className="flex items-center justify-center rounded-xl bg-primary-700 py-2.5 text-center text-sm font-semibold text-white hover:bg-primary-800"
                 >
                   Register Clinic
                 </Link>
