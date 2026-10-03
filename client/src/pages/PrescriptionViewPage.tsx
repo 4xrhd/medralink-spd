@@ -78,23 +78,23 @@ export const PrescriptionViewPage: React.FC = () => {
         month: 'long',
         year: 'numeric',
       })
-    : '—';
+    : '-';
 
   const doctorName = data.doctor_name || 'Consulting Physician';
-  const doctorLicense = data.bmdc_license_number || '—';
+  const doctorLicense = data.bmdc_license_number || '-';
   const hospitalAffiliation = data.hospital_affiliation || 'Clinical Health Centre';
   const chamberDetails = data.chamber_details || 'Outpatient Department';
-  const doctorPhone = data.doctor_phone || '—';
+  const doctorPhone = data.doctor_phone || '-';
   const qualifications = data.qualifications || '';
   const specialization = data.specialization || 'Clinical Medicine';
 
   const patientName = data.patient_name || 'Patient';
-  const patientUid = data.patient_uid || '—';
-  const gender = data.gender || '—';
-  const bloodGroup = data.blood_group || '—';
+  const patientUid = data.patient_uid || '-';
+  const gender = data.gender || '-';
+  const bloodGroup = data.blood_group || '-';
   const age = data.date_of_birth
     ? `${new Date().getFullYear() - new Date(data.date_of_birth).getFullYear()} Yrs`
-    : '—';
+    : '-';
 
   const items = Array.isArray(data.items) ? data.items : [];
 
@@ -164,14 +164,14 @@ export const PrescriptionViewPage: React.FC = () => {
             </div>
             <div>
               <p className="font-display text-base sm:text-lg font-extrabold leading-tight">MedraLink Clinical Health System</p>
-              <p className="text-[11px] sm:text-xs text-blue-200">National Digital E-Prescription Registry</p>
+              <p className="text-[11px] sm:text-xs text-primary-200">National Digital E-Prescription Registry</p>
             </div>
           </div>
           <div className="text-left sm:text-right">
             <span className="rounded-md bg-white/15 px-2 py-1 font-mono text-xs font-semibold">
               Rx ID: {data.prescription_uid}
             </span>
-            <p className="mt-1.5 text-xs text-blue-200">Issued: {issueDateFormatted}</p>
+            <p className="mt-1.5 text-xs text-primary-200">Issued: {issueDateFormatted}</p>
           </div>
         </div>
 
@@ -218,7 +218,7 @@ export const PrescriptionViewPage: React.FC = () => {
               <p className="text-ink-600">
                 <span className="font-semibold text-ink-900">Vitals: </span>
                 <span className="tabular">
-                  BP: {data.vitals.systolic_bp && data.vitals.diastolic_bp ? `${data.vitals.systolic_bp}/${data.vitals.diastolic_bp} mmHg` : '—'}
+                  BP: {data.vitals.systolic_bp && data.vitals.diastolic_bp ? `${data.vitals.systolic_bp}/${data.vitals.diastolic_bp} mmHg` : '-'}
                   {data.vitals.heart_rate ? ` | Pulse: ${data.vitals.heart_rate} bpm` : ''}
                   {data.vitals.temperature ? ` | Temp: ${data.vitals.temperature}°C` : ''}
                   {data.vitals.weight_kg ? ` | Weight: ${data.vitals.weight_kg} kg` : ''}

@@ -99,9 +99,18 @@ export const DoctorDashboard: React.FC = () => {
   };
 
   const doctorName = user?.fullName || 'Physician';
-  const doctorLicense = user?.doctorProfile?.bmdcLicenseNumber || '—';
+  const doctorLicense = user?.doctorProfile?.bmdcLicenseNumber || '-';
   const hospitalName = user?.doctorProfile?.hospitalAffiliation || 'MedraLink Clinical Network';
   const departmentName = user?.doctorProfile?.specialization || 'Clinical Medicine';
+
+  const currentHour = new Date().getHours();
+  const greeting = currentHour < 12 ? 'Good morning' : currentHour < 17 ? 'Good afternoon' : 'Good evening';
+  const currentDateStr = new Date().toLocaleDateString(undefined, {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 
   return (
     <div className="min-h-screen bg-canvas pb-16">
@@ -113,7 +122,12 @@ export const DoctorDashboard: React.FC = () => {
               <Icon.Stethoscope size={22} />
             </div>
             <div>
-              <p className="font-display text-lg font-bold text-ink-900">{doctorName}</p>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-primary-600 uppercase tracking-wider">{greeting}</span>
+                <span className="text-[11px] text-ink-400">•</span>
+                <span className="text-[11px] text-ink-600">{currentDateStr}</span>
+              </div>
+              <h1 className="font-display text-lg font-bold text-ink-900">{doctorName}</h1>
               <p className="text-xs text-ink-600">
                 BMDC License: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span> • {hospitalName}
               </p>

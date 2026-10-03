@@ -37,8 +37,8 @@ export const PatientDashboard: React.FC = () => {
 
   const patientId = user?.patientId || data?.patient?.id;
   const fullName = user?.fullName || data?.patient?.full_name || 'Patient';
-  const patientUid = user?.patientUid || data?.patient?.patient_uid || '—';
-  const bloodGroup = data?.patient?.blood_group || '—';
+  const patientUid = user?.patientUid || data?.patient?.patient_uid || '-';
+  const bloodGroup = data?.patient?.blood_group || '-';
   const initials = fullName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
 
   const allergies = data?.allergies || [];
@@ -97,33 +97,33 @@ export const PatientDashboard: React.FC = () => {
                       <span>{patientUid}</span>
                       <Icon.Copy size={11} className="opacity-70" />
                     </button>
-                    <span className="text-sm text-blue-100">
-                      {data?.patient?.gender || '—'} •{' '}
+                    <span className="text-sm text-primary-100">
+                      {data?.patient?.gender || '-'} •{' '}
                       {data?.patient?.date_of_birth
                         ? `${new Date().getFullYear() - new Date(data.patient.date_of_birth).getFullYear()} Yrs`
-                        : '—'}
+                        : '-'}
                     </span>
                     <Badge tone="crimson" size="sm" className="font-bold">
-                      {bloodGroup !== '—' ? `${bloodGroup} Blood Group` : 'Blood Group N/A'}
+                      {bloodGroup !== '-' ? `${bloodGroup} Blood Group` : 'Blood Group N/A'}
                     </Badge>
                   </div>
                 </div>
               </div>
 
               {/* 2xl Demographic Cluster */}
-              <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-blue-100">
+              <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-primary-100">
                 <div>
-                  <span className="text-blue-200 font-medium block text-xs">National ID (NID)</span>
-                  <span className="font-mono font-bold text-white text-sm">{data?.patient?.nid_or_bid || '—'}</span>
+                  <span className="text-primary-200 font-medium block text-xs">National ID (NID)</span>
+                  <span className="font-mono font-bold text-white text-sm">{data?.patient?.nid_or_bid || '-'}</span>
                 </div>
                 <div>
-                  <span className="text-blue-200 font-medium block text-xs">Attending Physician</span>
+                  <span className="text-primary-200 font-medium block text-xs">Attending Physician</span>
                   <span className="font-semibold text-white text-sm">
                     {data?.recentPrescriptions?.[0]?.doctor_name || 'Primary Care Physician'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-blue-200 font-medium block text-xs">Primary Facility</span>
+                  <span className="text-primary-200 font-medium block text-xs">Primary Facility</span>
                   <span className="font-semibold text-white text-sm">
                     {data?.recentPrescriptions?.[0]?.hospital_affiliation || 'MedraLink Network Clinic'}
                   </span>
@@ -132,49 +132,49 @@ export const PatientDashboard: React.FC = () => {
 
               {/* Emergency Contact */}
               <div className="rounded-xl border border-white/20 bg-white/10 p-4 text-left backdrop-blur-xs">
-                <p className="text-xs font-medium text-blue-200">
+                <p className="text-xs font-medium text-primary-200">
                   Emergency Contact
                 </p>
                 <p className="mt-1 font-semibold text-white flex items-center gap-1.5">
-                  <Icon.User size={14} className="text-blue-200 shrink-0" />
+                  <Icon.User size={14} className="text-primary-200 shrink-0" />
                   <span>{data?.patient?.emergency_contact_name || 'Not provided'}</span>{' '}
                   {data?.patient?.emergency_contact_relation && (
-                    <span className="font-normal text-blue-200 text-xs">
+                    <span className="font-normal text-primary-200 text-xs">
                       ({data.patient.emergency_contact_relation})
                     </span>
                   )}
                 </p>
-                <p className="font-mono text-sm text-blue-100 mt-1 flex items-center gap-1.5">
-                  <span className="text-xs text-blue-300">📞</span>
-                  <span>{data?.patient?.emergency_contact_phone || '—'}</span>
+                <p className="font-mono text-sm text-primary-100 mt-1 flex items-center gap-1.5">
+                  <span className="text-xs text-primary-300">📞</span>
+                  <span>{data?.patient?.emergency_contact_phone || '-'}</span>
                 </p>
               </div>
             </div>
           </div>
 
           {/* Safety Alert Strip with high-contrast medical badges */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-amber-200 bg-amber-50 px-6 py-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-rose-200 bg-rose-50/70 px-6 py-3.5">
             <div className="flex items-center gap-2 shrink-0">
-              <Icon.Alert size={18} className="text-warning shrink-0" />
-              <span className="text-xs font-semibold text-amber-800">Clinical Safety:</span>
+              <Icon.Alert size={18} className="text-critical shrink-0" />
+              <span className="text-xs font-semibold text-rose-900">Clinical Safety:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-medium text-amber-900">Allergies:</span>
+              <span className="font-medium text-rose-950">Allergies:</span>
               {allergies && allergies.length > 0 ? (
                 allergies.map((a: any, idx: number) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-amber-200 px-2 py-0.5 font-semibold text-amber-800 border border-amber-300"
+                    className="inline-flex items-center gap-1 rounded-md bg-rose-100 px-2 py-0.5 font-semibold text-rose-800 border border-rose-300"
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-critical" />
                     {a.allergen} ({a.severity})
                   </span>
                 ))
               ) : (
-                <span className="text-amber-800 font-medium">None Recorded</span>
+                <span className="text-rose-800 font-medium">None Recorded</span>
               )}
-              <span className="hidden sm:inline text-warning">•</span>
-              <span className="font-medium text-amber-900">Chronic Conditions:</span>
+              <span className="hidden sm:inline text-rose-300">•</span>
+              <span className="font-medium text-ink-900">Chronic Conditions:</span>
               {conditions && conditions.length > 0 ? (
                 conditions.map((c: any, idx: number) => (
                   <span
@@ -274,33 +274,33 @@ export const PatientDashboard: React.FC = () => {
                 value={
                   data?.latestVitals?.systolic_bp && data?.latestVitals?.diastolic_bp
                     ? `${data.latestVitals.systolic_bp}/${data.latestVitals.diastolic_bp}`
-                    : '—'
+                    : '-'
                 }
                 tone={data?.latestVitals?.systolic_bp ? 'amber' : 'slate'}
               />
               <VitalPill
                 label="Heart Rate"
-                value={data?.latestVitals?.heart_rate ? `${data.latestVitals.heart_rate} bpm` : '—'}
+                value={data?.latestVitals?.heart_rate ? `${data.latestVitals.heart_rate} bpm` : '-'}
                 tone="slate"
               />
               <VitalPill
                 label="Body Temp"
-                value={data?.latestVitals?.temperature ? `${data.latestVitals.temperature}°C` : '—'}
+                value={data?.latestVitals?.temperature ? `${data.latestVitals.temperature}°C` : '-'}
                 tone="slate"
               />
               <VitalPill
                 label="Oxygen (SpO₂)"
-                value={data?.latestVitals?.spo2 ? `${data.latestVitals.spo2}%` : '—'}
+                value={data?.latestVitals?.spo2 ? `${data.latestVitals.spo2}%` : '-'}
                 tone={data?.latestVitals?.spo2 ? 'emerald' : 'slate'}
               />
               <VitalPill
                 label="Body Weight"
-                value={data?.latestVitals?.weight_kg ? `${data.latestVitals.weight_kg} kg` : '—'}
+                value={data?.latestVitals?.weight_kg ? `${data.latestVitals.weight_kg} kg` : '-'}
                 tone="slate"
               />
               <VitalPill
                 label="BMI Index"
-                value={data?.latestVitals?.bmi ? `${data.latestVitals.bmi}` : '—'}
+                value={data?.latestVitals?.bmi ? `${data.latestVitals.bmi}` : '-'}
                 tone={data?.latestVitals?.bmi ? 'amber' : 'slate'}
               />
             </div>

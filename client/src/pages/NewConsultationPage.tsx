@@ -54,7 +54,7 @@ export const NewConsultationPage: React.FC = () => {
   const bmi = useMemo(() => {
     const w = parseFloat(String(weightKg));
     const h = parseFloat(String(heightCm)) / 100;
-    if (!w || !h || h <= 0) return '—';
+    if (!w || !h || h <= 0) return '-';
     return (w / (h * h)).toFixed(1);
   }, [weightKg, heightCm]);
 

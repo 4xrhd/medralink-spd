@@ -351,12 +351,12 @@ export const AdminDashboard: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-primary-50/60">
                 {filteredAuditLogs.map((l, i) => {
-                  const hash = l.integrity_hash || l.hash || '—';
-                  const isCopied = copiedHash === hash && hash !== '—';
+                  const hash = l.integrity_hash || l.hash || '-';
+                  const isCopied = copiedHash === hash && hash !== '-';
                   return (
                     <tr key={l.id || i} className="hover:bg-canvas transition-colors">
                       <td className="tabular whitespace-nowrap px-6 py-3 text-ink-600">
-                        {l.created_at ? new Date(l.created_at).toLocaleString() : '—'}
+                        {l.created_at ? new Date(l.created_at).toLocaleString() : '-'}
                       </td>
                       <td className="px-3 py-3">
                         <span className="font-sans">
@@ -368,11 +368,11 @@ export const AdminDashboard: React.FC = () => {
                       </td>
                       <td className="px-3 py-3 font-semibold text-primary-700">{l.action}</td>
                       <td className="px-3 py-3 text-audit font-semibold">{l.resource}</td>
-                      <td className="px-3 py-3 font-sans text-ink-600">{l.details || l.context || '—'}</td>
+                      <td className="px-3 py-3 font-sans text-ink-600">{l.details || l.context || '-'}</td>
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-2">
                           <span className="text-ink-900 select-all">{hash}</span>
-                          {hash !== '—' && (
+                          {hash !== '-' && (
                             <button
                               onClick={() => copy(hash)}
                               type="button"

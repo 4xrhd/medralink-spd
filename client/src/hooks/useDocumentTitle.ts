@@ -11,7 +11,7 @@ export function useDocumentTitle(title: string, retainOnUnmount: boolean = false
   useEffect(() => {
     const formattedTitle = title.trim()
       ? `${title.trim()} | MedraLink Enterprise Health`
-      : 'MedraLink — Unified Healthcare & Prescription Integrity Network';
+      : 'MedraLink - Unified Healthcare & Prescription Integrity Network';
 
     document.title = formattedTitle;
 

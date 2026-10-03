@@ -11,7 +11,7 @@ function TimelineMarker({ active }: { active?: boolean }) {
     <div className="relative flex flex-col items-center">
       <div
         className={`z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-white ${
-          active ? "bg-primary-600 shadow-[0_0_0_4px_rgba(37,99,235,0.2)]" : "bg-ink-400"
+          active ? "bg-primary-600 shadow-[0_0_0_4px_rgba(13,148,136,0.25)]" : "bg-ink-400"
         }`}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-white" />
@@ -75,7 +75,7 @@ export const PatientTimelinePage: React.FC = () => {
 
   const { patient, allergies, conditions, timeline } = data;
   const fullName = patient?.full_name || 'Patient Record';
-  const patientUid = patient?.patient_uid || '—';
+  const patientUid = patient?.patient_uid || '-';
   const initials = fullName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
 
   const toggleReport = (reportId: string) => {
@@ -126,11 +126,11 @@ export const PatientTimelinePage: React.FC = () => {
                     <span className="rounded-md bg-white/15 px-2 py-0.5 font-mono text-xs">
                       {patientUid}
                     </span>
-                    <span className="text-sm text-blue-100">
-                      {patient?.gender || '—'} •{' '}
+                    <span className="text-sm text-primary-100">
+                      {patient?.gender || '-'} •{' '}
                       {patient?.date_of_birth
                         ? `${new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()} Yrs`
-                        : '—'}
+                        : '-'}
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-critical px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
                       {patient?.blood_group ? `${patient.blood_group} Blood Group` : 'Blood Group N/A'}
@@ -140,19 +140,19 @@ export const PatientTimelinePage: React.FC = () => {
               </div>
 
               {/* 2xl Demographic Cluster */}
-              <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-blue-100">
+              <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-primary-100">
                 <div>
-                  <span className="text-blue-200 font-medium block text-xs">National ID (NID)</span>
-                  <span className="font-mono font-bold text-white text-sm">{patient?.nid_or_bid || '—'}</span>
+                  <span className="text-primary-200 font-medium block text-xs">National ID (NID)</span>
+                  <span className="font-mono font-bold text-white text-sm">{patient?.nid_or_bid || '-'}</span>
                 </div>
                 <div>
-                  <span className="text-blue-200 font-medium block text-xs">Attending Physician</span>
+                  <span className="text-primary-200 font-medium block text-xs">Attending Physician</span>
                   <span className="font-semibold text-white text-sm">
                     {timeline?.[0]?.doctor_name ? `${timeline[0].doctor_name}` : 'Consulting Clinician'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-blue-200 font-medium block text-xs">Primary Facility</span>
+                  <span className="text-primary-200 font-medium block text-xs">Primary Facility</span>
                   <span className="font-semibold text-white text-sm">
                     {timeline?.[0]?.hospital_affiliation || 'MedraLink Network Clinic'}
                   </span>
@@ -161,49 +161,49 @@ export const PatientTimelinePage: React.FC = () => {
 
               {/* Emergency Contact */}
               <div className="rounded-xl border border-white/20 bg-white/10 p-4 text-left backdrop-blur-xs">
-                <p className="text-xs font-medium text-blue-200">
+                <p className="text-xs font-medium text-primary-200">
                   Emergency Contact
                 </p>
                 <p className="mt-1 font-semibold text-white flex items-center gap-1.5">
-                  <Icon.User size={14} className="text-blue-200 shrink-0" />
+                  <Icon.User size={14} className="text-primary-200 shrink-0" />
                   <span>{patient?.emergency_contact_name || 'Not provided'}</span>{' '}
                   {patient?.emergency_contact_relation && (
-                    <span className="font-normal text-blue-200 text-xs">
+                    <span className="font-normal text-primary-200 text-xs">
                       ({patient.emergency_contact_relation})
                     </span>
                   )}
                 </p>
-                <p className="font-mono text-sm text-blue-100 mt-1 flex items-center gap-1.5">
-                  <span className="text-xs text-blue-300">📞</span>
-                  <span>{patient?.emergency_contact_phone || '—'}</span>
+                <p className="font-mono text-sm text-primary-100 mt-1 flex items-center gap-1.5">
+                  <span className="text-xs text-primary-300">📞</span>
+                  <span>{patient?.emergency_contact_phone || '-'}</span>
                 </p>
               </div>
             </div>
           </div>
 
           {/* Safety Alert Strip with high-contrast medical badges */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-amber-200 bg-amber-50 px-6 py-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-rose-200 bg-rose-50/70 px-6 py-3.5">
             <div className="flex items-center gap-2 shrink-0">
-              <Icon.Alert size={18} className="text-warning shrink-0" />
-              <span className="text-xs font-semibold text-amber-800">Clinical Safety:</span>
+              <Icon.Alert size={18} className="text-critical shrink-0" />
+              <span className="text-xs font-semibold text-rose-900">Clinical Safety:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-medium text-amber-900">Allergies:</span>
+              <span className="font-medium text-rose-950">Allergies:</span>
               {allergies && allergies.length > 0 ? (
                 allergies.map((a: any, idx: number) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-amber-200 px-2 py-0.5 font-semibold text-amber-800 border border-amber-300"
+                    className="inline-flex items-center gap-1 rounded-md bg-rose-100 px-2 py-0.5 font-semibold text-rose-800 border border-rose-300"
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-critical" />
                     {a.allergen} ({a.severity})
                   </span>
                 ))
               ) : (
-                <span className="text-amber-800 font-medium">No known drug allergies (NKDA)</span>
+                <span className="text-rose-800 font-medium">No known drug allergies (NKDA)</span>
               )}
-              <span className="hidden sm:inline text-warning">•</span>
-              <span className="font-medium text-amber-900">Chronic Conditions:</span>
+              <span className="hidden sm:inline text-rose-300">•</span>
+              <span className="font-medium text-ink-900">Chronic Conditions:</span>
               {conditions && conditions.length > 0 ? (
                 conditions.map((c: any, idx: number) => (
                   <span
@@ -286,7 +286,7 @@ export const PatientTimelinePage: React.FC = () => {
                           <p className="mt-1.5 text-sm text-ink-600">
                             {record.doctor_name}{' '}
                             <span className="text-ink-600">
-                              ({record.doctor_qualifications || record.doctor_specialization || 'MBBS, FCPS Cardiology — NICVD'})
+                              ({record.doctor_qualifications || record.doctor_specialization || 'MBBS, FCPS Cardiology - NICVD'})
                             </span>
                           </p>
                           <p className="text-sm text-ink-600">
