@@ -1,40 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Figtree:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Surfaces */
-  --surface-canvas: #F8FAFC;
-  --surface-card: #FFFFFF;
-  --surface-subtle: #F1F5F9;
-  --surface-muted: #E2E8F0;
+  /* Healthcare theme tokens (RGB channels for Tailwind alpha support) */
+  --c-primary-50: 240 253 250;
+  --c-primary-100: 204 251 241;
+  --c-primary-200: 153 246 228;
+  --c-primary-500: 20 184 166;
+  --c-primary-600: 13 148 136;
+  --c-primary-700: 15 118 110;
+  --c-primary-800: 17 94 89;
+  --c-primary-900: 19 78 74;
+  --c-care-500: 56 189 248;
+  --c-ink-900: 11 43 51;
+  --c-ink-600: 71 91 99;
+  --c-ink-400: 138 155 163;
+  --c-canvas: 247 251 251;
+  --c-surface: 255 255 255;
+  --c-hair: 227 238 238;
+  --c-hair-strong: 200 218 218;
+  --c-critical: 225 29 72;
+  --c-warning: 217 119 6;
+  --c-success: 22 163 74;
+  --c-audit: 124 58 237;
 
-  /* Typography Colors */
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-tertiary: #64748B;
-  --text-muted: #94A3B8;
-
-  /* Clinical Brand Accents */
-  --color-navy: #1B365D;
-  --color-clinical: #2563EB;
-  --color-emerald: #059669;
-  --color-crimson: #DC2626;
-  --color-amber: #D97706;
-  --color-purple: #7C3AED;
-
-  /* Borders */
-  --border-subtle: #E2E8F0;
-  --border-medium: #CBD5E1;
-  --border-strong: #94A3B8;
-
-  /* Elevation Shadows */
-  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
-  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-  --shadow-card-hover: 0 4px 12px 0 rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --shadow-elevated: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
+  /* Legacy aliases kept for any remaining plain CSS usage */
+  --surface-canvas: rgb(var(--c-canvas));
+  --text-primary: rgb(var(--c-ink-900));
 }
 
 html {
@@ -51,7 +46,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid #2563EB;
+  outline: 2px solid rgb(var(--c-primary-600));
   outline-offset: 2px;
 }
 
@@ -60,8 +55,23 @@ body {
 }
 
 ::selection {
-  background: #DBEAFE;
-  color: #1B365D;
+  background: rgb(var(--c-primary-100));
+  color: rgb(var(--c-ink-900));
+}
+
+/* Soft clinical dot-grid backdrop for hero / auth panels */
+.bg-care-grid {
+  background-image: radial-gradient(rgb(var(--c-primary-600) / 0.10) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Hide scrollbars until scrolling */

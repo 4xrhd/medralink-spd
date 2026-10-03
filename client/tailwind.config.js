@@ -1,4 +1,18 @@
 /** @type {import('tailwindcss').Config} */
+const v = (name) => `rgb(var(--c-${name}) / <alpha-value>)`;
+
+const primary = {
+  50: v('primary-50'),
+  100: v('primary-100'),
+  200: v('primary-200'),
+  500: v('primary-500'),
+  600: v('primary-600'),
+  700: v('primary-700'),
+  800: v('primary-800'),
+  900: v('primary-900'),
+  DEFAULT: v('primary-600'),
+};
+
 export default {
   content: [
     "./index.html",
@@ -8,7 +22,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+        display: ['Figtree', 'Inter', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
@@ -17,65 +31,60 @@ export default {
         'lg': '12px',
         'xl': '16px',
         '2xl': '20px',
-        '3xl': '24px',
+        '3xl': '28px',
       },
       boxShadow: {
-        'subtle': '0 1px 2px 0 rgba(0, 0, 0, 0.04)',
-        'card': '0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04)',
-        'card-hover': '0 4px 12px 0 rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04)',
-        'elevated': '0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.06)',
+        'subtle': '0 1px 2px 0 rgb(11 43 51 / 0.04)',
+        'card': '0 1px 3px 0 rgb(13 148 136 / 0.06), 0 1px 2px -1px rgb(11 43 51 / 0.04)',
+        'card-hover': '0 12px 28px -8px rgb(13 148 136 / 0.22), 0 4px 8px -4px rgb(11 43 51 / 0.06)',
+        'elevated': '0 20px 40px -12px rgb(13 148 136 / 0.25), 0 8px 16px -8px rgb(11 43 51 / 0.08)',
       },
       colors: {
-        navy: {
-          DEFAULT: '#1B365D',
-          hover: '#152a48',
-          700: '#16294a',
+        // Healthcare theme
+        primary,
+        care: { 500: v('care-500'), DEFAULT: v('care-500') },
+        ink: { 900: v('ink-900'), 600: v('ink-600'), 400: v('ink-400'), DEFAULT: v('ink-900'), 2: v('ink-600'), 3: v('ink-400') },
+        canvas: v('canvas'),
+        surface: v('surface'),
+        hair: { DEFAULT: v('hair'), strong: v('hair-strong') },
+        critical: { DEFAULT: v('critical') },
+        warning: { DEFAULT: v('warning') },
+        success: { DEFAULT: v('success') },
+        audit: { DEFAULT: v('audit') },
+
+        // Legacy aliases (mapped to the healthcare palette)
+        navy: { DEFAULT: v('primary-700'), hover: v('primary-800'), 700: v('primary-800') },
+        clinical: { DEFAULT: v('primary-600'), hover: v('primary-700'), light: v('primary-50') },
+        brand: { ...primary, navy: v('primary-700'), slate: v('primary-600'), accent: v('success') },
+        emerald: { DEFAULT: '#059669', hover: '#047857', light: '#ECFDF5' },
+        crimson: { DEFAULT: '#E11D48', hover: '#BE123C', light: '#FFF1F2' },
+        amber: { DEFAULT: '#D97706', hover: '#B45309', light: '#FEF3C7' },
+        purple: { DEFAULT: '#7C3AED', hover: '#6D28D9', light: '#F5F3FF' },
+      },
+      keyframes: {
+        'ecg-draw': {
+          from: { strokeDashoffset: '1200' },
+          to: { strokeDashoffset: '0' },
         },
-        clinical: {
-          DEFAULT: '#2563EB',
-          hover: '#1D4ED8',
-          light: '#EFF6FF',
+        'fade-up': {
+          from: { opacity: '0', transform: 'translateY(14px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
-        emerald: {
-          DEFAULT: '#059669',
-          hover: '#047857',
-          light: '#ECFDF5',
+        'float-soft': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
         },
-        crimson: {
-          DEFAULT: '#DC2626',
-          hover: '#B91C1C',
-          light: '#FEF2F2',
+        'pulse-ring': {
+          '0%': { transform: 'scale(0.9)', opacity: '0.7' },
+          '100%': { transform: 'scale(1.6)', opacity: '0' },
         },
-        amber: {
-          DEFAULT: '#D97706',
-          hover: '#B45309',
-          light: '#FEF3C7',
-        },
-        purple: {
-          DEFAULT: '#7C3AED',
-          hover: '#6D28D9',
-          light: '#F5F3FF',
-        },
-        canvas: '#F8FAFC',
-        ink: {
-          DEFAULT: '#0F172A',
-          2: '#475569',
-          3: '#94A3B8',
-        },
-        hair: '#E2E8F0',
-        brand: {
-          50: '#f0f7ff',
-          100: '#e0effe',
-          500: '#2563eb',
-          600: '#1d4ed8',
-          700: '#1e40af',
-          800: '#1e3a8a',
-          900: '#172554',
-          navy: '#1B365D',
-          slate: '#2B6CB0',
-          accent: '#059669',
-        }
-      }
+      },
+      animation: {
+        'ecg-draw': 'ecg-draw 2.6s ease-out forwards',
+        'fade-up': 'fade-up 0.6s ease-out both',
+        'float-soft': 'float-soft 6s ease-in-out infinite',
+        'pulse-ring': 'pulse-ring 2s ease-out infinite',
+      },
     },
   },
   plugins: [],
