@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import { Card, Icon, Pill, Badge, Button, VitalPill } from '../ui/primitives.js';
+import { Card, Icon, Pill, Button, VitalPill } from '../ui/primitives.js';
 
 export const LandingPage: React.FC = () => {
   useDocumentTitle('Unified Prescription & Health Network');
@@ -186,7 +186,6 @@ export const LandingPage: React.FC = () => {
       {/* Problem vs MedraLink Grid */}
       <section id="solutions" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <div className="max-w-2xl">
-          <Badge tone="blue" size="sm" className="mb-2">The Healthcare Challenge</Badge>
           <h2 className="mt-2 font-display text-4xl font-bold tracking-tight text-[#0F172A]">
             From fragmented records to one continuous timeline
           </h2>
@@ -249,10 +248,6 @@ export const LandingPage: React.FC = () => {
       {/* Role-based clinical workspaces */}
       <section id="clinical-architecture" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <div className="text-center max-w-2xl mx-auto">
-          <Badge tone="blue" size="sm" className="mb-3 inline-flex items-center gap-1.5">
-            <Icon.Lock size={12} />
-            <span>Role-Scoped Workspaces</span>
-          </Badge>
           <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#0F172A]">
             Role-based clinical workspaces
           </h2>
