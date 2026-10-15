@@ -61,32 +61,32 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       <div
         aria-live="polite"
         role="status"
-        className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"
+        className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-[9999] flex flex-col gap-2.5 max-w-[calc(100vw-2rem)] sm:max-w-sm w-full pointer-events-none"
       >
         {toasts.map((toast) => {
           const styleByType: Record<ToastType, { bg: string; border: string; text: string; icon: React.ReactNode }> = {
             success: {
               bg: 'bg-emerald-50',
               border: 'border-emerald-200',
-              text: 'text-emerald-800',
+              text: 'text-emerald-900',
               icon: <Icon.Check size={18} className="text-success shrink-0 mt-0.5" />,
             },
             error: {
               bg: 'bg-rose-50',
               border: 'border-rose-200',
-              text: 'text-rose-800',
+              text: 'text-rose-900',
               icon: <Icon.Alert size={18} className="text-critical shrink-0 mt-0.5" />,
             },
             warning: {
               bg: 'bg-amber-50',
               border: 'border-amber-200',
-              text: 'text-amber-800',
+              text: 'text-amber-950',
               icon: <Icon.Alert size={18} className="text-warning shrink-0 mt-0.5" />,
             },
             info: {
               bg: 'bg-primary-50',
               border: 'border-primary-100',
-              text: 'text-primary-800',
+              text: 'text-primary-900',
               icon: <Icon.Shield size={18} className="text-primary-600 shrink-0 mt-0.5" />,
             },
           };
@@ -105,7 +105,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               <button
                 type="button"
                 onClick={() => removeToast(toast.id)}
-                className="text-slate-400 hover:text-slate-600 transition-colors p-0.5"
+                className="text-ink-400 hover:text-ink-900 transition-colors p-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
                 aria-label="Dismiss notification"
               >
                 <Icon.X size={14} />

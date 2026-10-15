@@ -1,4 +1,4 @@
-# 🏥 MedraLink | Enterprise Electronic Medical Record (EMR) Platform
+# 🏥 MedraLink | Enterprise Electronic Medical Record (EMR) Platform | Web Version
 
 [![CI/CD Pipeline](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-blue?style=flat-square&logo=githubactions)](https://github.com/4xrhd/medralink-spd/actions)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D20.0.0-green?style=flat-square&logo=node.js)](https://nodejs.org/)
@@ -8,12 +8,15 @@
 
 ---
 
+**Notice:** This documentation and directory apply exclusively to the **Web Version** of the MedraLink prototype. Mobile applications and other client interfaces are maintained separately.
+
 ## 📌 System Overview
 
-**MedraLink** is an enterprise-grade Electronic Medical Record (EMR) and clinical consultation management platform built to unify fragmented healthcare workflows. It integrates patient demographics, BMDC-verified physician credentialing, clinical consultation notes, ICD-10 diagnostic coding, real-time vital telemetry, dynamic PDF electronic prescriptions, and diagnostic lab report management into a cohesive, longitudinal medical record timeline.
+**MedraLink** is an enterprise-grade Electronic Medical Record (EMR) and clinical consultation management platform built to unify fragmented healthcare workflows. It integrates patient demographics, BMDC-verified physician credentialing, clinical consultation notes, ICD-10 diagnostic coding, real-time vital telemetry, dynamic PDF electronic prescriptions, diagnostic lab report management, and emergency nearby hospital search into a cohesive, longitudinal medical record ecosystem.
 
 ### Key Architectural Highlights
 - **High-Performance 3-Tier Architecture:** React 18 TypeScript SPA (Vite + Tailwind CSS) with Express.js REST API and 3NF-normalized PostgreSQL/SQLite persistence.
+- **Emergency Hospital Locator:** Integrated Google Maps Platform (Maps JavaScript API & Places Service) for real-time GPS geolocation, interactive numbered markers, turn-by-turn navigation, and toll-free emergency hotline dispatch (16263).
 - **Single-Service Cloud Deployable:** The Express server automatically compiles and statically serves the SPA client in production with HTML5 history pushState fallback, enabling single-container deployments on Render, Railway, Fly.io, or VPS instances.
 - **Regulatory-Grade Security:** Granular Role-Based Access Control (RBAC), Helmet CSP hardening, Gzip/Brotli compression, Morgan request logging, rate limiting (auth + general API), parameterized SQL execution, and an immutable SHA-256 cryptographic audit trail.
 - **Dual Database Engine Support:** Instant zero-config embedded SQLite for rapid development and testing; enterprise connection-pooled PostgreSQL with auto-SSL detection for production cloud deployments.
@@ -27,7 +30,7 @@ The application includes pre-seeded accounts and a sticky **1-Click Role Switche
 | Role | Name & Identifier | Demo Email | Password | Primary Capabilities |
 | :--- | :--- | :--- | :--- | :--- |
 | **Doctor** | Dr. Ahmed Tariq (`DOC-2001`) | `dr.ahmed@medralink.com` | `doctor123` | Patient lookup, clinical consultation workspace, ICD-10 codification, digital prescription generator, PDF export. |
-| **Patient** | Rahim Ahmed (`P-1001`) | `rahim@gmail.com` | `patient123` | Interactive Longitudinal Medical Timeline, prescription history, vital sign telemetry, lab report viewer. |
+| **Patient** | Rahim Ahmed (`P-1001`) | `rahim@gmail.com` | `patient123` | Interactive Longitudinal Medical Timeline, prescription history, vital sign telemetry, lab report viewer, emergency nearby hospital search. |
 | **Administrator** | System Administrator (`ADMIN`) | `admin@medralink.com` | `admin123` | Doctor BMDC license verification, patient registry overview, tamper-evident audit ledger inspection. |
 
 ---
@@ -185,6 +188,17 @@ cd prototype/client
 npm run dev
 ```
 
+### 🗺️ Emergency Hospital Search Setup (Google Maps Platform)
+
+The `/hospitals` emergency locator utilizes Google Maps JavaScript API and Places API:
+
+1. Obtain a Google Maps API Key with **Maps JavaScript API** and **Places API** enabled from the [Google Cloud Console](https://console.cloud.google.com).
+2. Configure your key in `prototype/client/.env`:
+   ```env
+   VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+   ```
+3. Restart the Vite dev server. If no key is provided, the interface displays an informative configuration guide while keeping all navigation paths responsive.
+
 ---
 
 ## 🧪 Automated Testing & Verification Suite
@@ -230,6 +244,13 @@ All endpoints are versioned under `/api/v1`:
 - `GET /api/v1/admin/doctors`: List all registered physicians and verification statuses.
 - `PATCH /api/v1/admin/doctors/:id/verify`: Verify physician BMDC license.
 - `GET /api/v1/admin/audit-logs`: Query immutable SHA-256 cryptographically chained audit trail.
+
+### Client Application Routes
+- `/login`: Public login portal and 1-click interactive demo persona switcher.
+- `/patient`: Patient Longitudinal Medical Timeline, prescription archive, vital telemetry, and lab viewer.
+- `/doctor`: Physician clinical workspace, patient search, consultation notes, ICD-10 diagnosis, and Rx generator.
+- `/admin`: Administrative governance console, BMDC physician verification, and audit trail ledger inspector.
+- `/hospitals`: Emergency nearby hospital locator with GPS auto-detection, interactive Google Map, facility cards, one-touch dialing, and turn-by-turn navigation.
 
 ---
 

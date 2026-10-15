@@ -197,7 +197,7 @@ const PAGE = {
   HEIGHT: 841.89,
   MARGIN_X: 36,
   USABLE_WIDTH: 523.28,
-  BOTTOM_LIMIT: 775,
+  BOTTOM_LIMIT: 760,
 };
 
 // ==========================================
@@ -247,7 +247,7 @@ function calculateAge(dobStr: string): string {
     const age = Math.abs(ageDt.getUTCFullYear() - 1970);
     return `${age} Yrs`;
   } catch {
-    return '—';
+    return 'N/A';
   }
 }
 
@@ -467,35 +467,35 @@ function drawVitalsGrid(
   const tiles = [
     {
       label: 'BLOOD PRESSURE',
-      value: vitals.systolicBp && vitals.diastolicBp ? `${vitals.systolicBp}/${vitals.diastolicBp}` : '—',
+      value: vitals.systolicBp && vitals.diastolicBp ? `${vitals.systolicBp}/${vitals.diastolicBp}` : 'N/A',
       unit: 'mmHg',
       status: vitals.systolicBp && vitals.systolicBp > 130 ? 'ELEVATED' : 'NORMAL',
       statusColor: vitals.systolicBp && vitals.systolicBp > 130 ? COLOR.AMBER : COLOR.EMERALD
     },
     {
       label: 'HEART RATE',
-      value: vitals.heartRate ? `${vitals.heartRate}` : '—',
+      value: vitals.heartRate ? `${vitals.heartRate}` : 'N/A',
       unit: 'bpm',
       status: 'PULSE',
       statusColor: COLOR.BLUE_ACCENT
     },
     {
       label: 'TEMPERATURE',
-      value: vitals.temperature ? `${vitals.temperature}` : '—',
+      value: vitals.temperature ? `${vitals.temperature}` : 'N/A',
       unit: '°C',
       status: vitals.temperature && vitals.temperature > 37.5 ? 'FEBRILE' : 'NORMAL',
       statusColor: vitals.temperature && vitals.temperature > 37.5 ? COLOR.CRIMSON : COLOR.EMERALD
     },
     {
       label: 'OXYGEN SAT (SpO2)',
-      value: vitals.spo2 ? `${vitals.spo2}%` : '—',
+      value: vitals.spo2 ? `${vitals.spo2}%` : 'N/A',
       unit: 'room air',
       status: vitals.spo2 && vitals.spo2 < 95 ? 'ATTENTION' : 'OPTIMAL',
       statusColor: vitals.spo2 && vitals.spo2 < 95 ? COLOR.CRIMSON : COLOR.EMERALD
     },
     {
       label: 'WEIGHT & BMI',
-      value: vitals.weightKg ? `${vitals.weightKg} kg` : '—',
+      value: vitals.weightKg ? `${vitals.weightKg} kg` : 'N/A',
       unit: vitals.bmi ? `BMI ${vitals.bmi}` : '',
       status: vitals.bmi ? `INDEX` : 'EST',
       statusColor: COLOR.SLATE_MUTED
@@ -820,39 +820,38 @@ function applyRunningHeadersAndFooters(
   for (let i = range.start; i < range.start + totalPages; i++) {
     doc.switchToPage(i);
 
-    // Running Header on subsequent pages
+    // Running Header on subsequent pages (page 2+)
     if (i > range.start) {
-      doc.save();
       doc.fillColor(COLOR.SLATE_MUTED).font('Helvetica').fontSize(7);
-      doc.text(`MedraLink EMR • ${docType} [${docId}]`, PAGE.MARGIN_X, 20);
-      doc.text(`Confidential Medical Record`, PAGE.MARGIN_X, 20, { width: PAGE.USABLE_WIDTH, align: 'right' });
-      doc.strokeColor(COLOR.BORDER_SUBTLE).lineWidth(0.5).moveTo(PAGE.MARGIN_X, 30).lineTo(PAGE.MARGIN_X + PAGE.USABLE_WIDTH, 30).stroke();
-      doc.restore();
+      doc.text(`MedraLink EMR • ${docType} [${docId}]`, PAGE.MARGIN_X, 16, { lineBreak: false });
+      doc.text(`Confidential Medical Record`, PAGE.MARGIN_X, 16, { width: PAGE.USABLE_WIDTH, align: 'right', lineBreak: false });
+      doc.strokeColor(COLOR.BORDER_SUBTLE).lineWidth(0.5).moveTo(PAGE.MARGIN_X, 26).lineTo(PAGE.MARGIN_X + PAGE.USABLE_WIDTH, 26).stroke();
     }
 
     // Running Footer on every page
-    doc.save();
-    const footerY = 812;
-    doc.strokeColor(COLOR.BORDER_SUBTLE).lineWidth(0.75).moveTo(PAGE.MARGIN_X, footerY - 6).lineTo(PAGE.MARGIN_X + PAGE.USABLE_WIDTH, footerY - 6).stroke();
+    const footerY = 790;
+    doc.strokeColor(COLOR.BORDER_SUBTLE).lineWidth(0.5).moveTo(PAGE.MARGIN_X, footerY - 5).lineTo(PAGE.MARGIN_X + PAGE.USABLE_WIDTH, footerY - 5).stroke();
 
     doc.fillColor(COLOR.SLATE_LIGHT).font('Helvetica').fontSize(6.5);
     doc.text(
       'Official verified medical document issued under Bangladesh Medical & Dental Council (BMDC) compliance framework.',
       PAGE.MARGIN_X,
-      footerY
+      footerY,
+      { lineBreak: false }
     );
     doc.text(
       'MedraLink Digital Health Infrastructure • Cryptographically Signed • Tamper-Evident',
       PAGE.MARGIN_X,
-      footerY + 9
+      footerY + 9,
+      { lineBreak: false }
     );
 
     doc.fillColor(COLOR.SLATE_MUTED).font('Helvetica-Bold').fontSize(7);
     doc.text(`Page ${i + 1} of ${totalPages}`, PAGE.MARGIN_X, footerY + 3, {
       width: PAGE.USABLE_WIDTH,
-      align: 'right'
+      align: 'right',
+      lineBreak: false
     });
-    doc.restore();
   }
 }
 
@@ -864,7 +863,7 @@ export async function generatePrescriptionPDF(data: PrescriptionData, res: Respo
   return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({
-        margin: PAGE.MARGIN_X,
+        margins: { top: 24, bottom: 20, left: PAGE.MARGIN_X, right: PAGE.MARGIN_X },
         size: 'A4',
         bufferPages: true
       });
@@ -966,7 +965,7 @@ export async function generateConsultationSummaryPDF(
   return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({
-        margin: PAGE.MARGIN_X,
+        margins: { top: 24, bottom: 20, left: PAGE.MARGIN_X, right: PAGE.MARGIN_X },
         size: 'A4',
         bufferPages: true
       });
@@ -1116,7 +1115,7 @@ export async function generatePatientHealthSummaryPDF(
   return new Promise(async (resolve, reject) => {
     try {
       const doc = new PDFDocument({
-        margin: PAGE.MARGIN_X,
+        margins: { top: 24, bottom: 20, left: PAGE.MARGIN_X, right: PAGE.MARGIN_X },
         size: 'A4',
         bufferPages: true
       });
@@ -1168,11 +1167,11 @@ export async function generatePatientHealthSummaryPDF(
   doc.fillColor(COLOR.SLATE_BODY).font('Helvetica').fontSize(8);
   doc.text(`Patient ID: ${data.patient.patientUid}  |  Gender: ${data.patient.gender}  |  Age: ${age} (DOB: ${formatDate(data.patient.dateOfBirth)})`, x + 12, currentY + 22);
 
-  doc.text(`Address: ${data.patient.address || '—'}, ${data.patient.city || ''}  |  Contact: ${data.patient.phone || '—'}`, x + 12, currentY + 34);
+  doc.text(`Address: ${data.patient.address || 'N/A'}, ${data.patient.city || ''}  |  Contact: ${data.patient.phone || 'N/A'}`, x + 12, currentY + 34);
 
   if (data.patient.emergencyContactName) {
     doc.fillColor(COLOR.SLATE_MUTED).font('Helvetica').fontSize(7.5);
-    doc.text(`Emergency Contact: ${data.patient.emergencyContactName} (${data.patient.emergencyContactRelation || 'Next of kin'} - ${data.patient.emergencyContactPhone || '—'})`, x + 12, currentY + 48);
+    doc.text(`Emergency Contact: ${data.patient.emergencyContactName} (${data.patient.emergencyContactRelation || 'Next of kin'} - ${data.patient.emergencyContactPhone || 'N/A'})`, x + 12, currentY + 48);
   }
 
   // Blood group pill

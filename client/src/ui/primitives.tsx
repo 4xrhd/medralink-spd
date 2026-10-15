@@ -283,6 +283,17 @@ export const Icon = {
       <path d="M5 16a3 3 0 0 1 6 0M14 10h5M14 14h3" />
     </svg>
   ),
+  MapPin: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 1 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  ),
+  Navigation: ({ size, className, style }: IconProps) => (
+    <svg {...base(size)} className={className} style={style}>
+      <polygon points="3 11 22 2 13 21 11 13 3 11" />
+    </svg>
+  ),
 };
 
 /* ==========================================================================
@@ -313,7 +324,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-medium transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
+      "inline-flex items-center justify-center font-semibold transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
 
     const variants: Record<string, string> = {
       primary:
@@ -321,11 +332,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       clinical:
         "bg-primary-700 hover:bg-primary-800 text-white border border-transparent shadow-sm focus-visible:ring-primary-700",
       secondary:
-        "bg-white hover:bg-primary-50 text-ink-900 border border-hair-strong hover:border-primary-200 shadow-subtle focus-visible:ring-primary-600",
+        "bg-white hover:bg-primary-50 text-ink-900 border border-hair-strong hover:border-primary-300 shadow-subtle focus-visible:ring-primary-600",
       outline:
         "bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-200 focus-visible:ring-primary-600",
       destructive:
-        "bg-critical hover:bg-critical/90 text-white border border-transparent shadow-sm focus-visible:ring-critical",
+        "bg-critical hover:bg-rose-700 text-white border border-transparent shadow-sm focus-visible:ring-critical",
       ghost:
         "bg-transparent hover:bg-primary-50 text-ink-600 hover:text-ink-900 border border-transparent focus-visible:ring-primary-600",
       soft:
@@ -333,9 +344,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes: Record<string, string> = {
-      sm: "h-8 px-3 text-xs gap-1.5 rounded-lg",
-      md: "h-10 px-4 text-sm gap-2 rounded-xl",
-      lg: "h-12 px-5 text-base gap-2.5 rounded-xl font-semibold",
+      sm: "min-h-[36px] h-9 px-3.5 text-xs gap-1.5 rounded-lg font-semibold",
+      md: "min-h-[40px] h-10 px-4 text-sm gap-2 rounded-xl font-semibold",
+      lg: "min-h-[48px] h-12 px-5 text-base gap-2.5 rounded-xl font-semibold",
     };
 
     return (
@@ -385,18 +396,18 @@ export function Badge({
   className = "",
 }: BadgeProps) {
   const tones: Record<BadgeTone, { bg: string; dotBg: string }> = {
-    slate: { bg: "bg-slate-100 text-slate-700 border-slate-200", dotBg: "bg-slate-500" },
-    blue: { bg: "bg-primary-50 text-primary-700 border-primary-100", dotBg: "bg-primary-600" },
-    emerald: { bg: "bg-emerald-50 text-emerald-800 border-emerald-200", dotBg: "bg-success" },
-    crimson: { bg: "bg-rose-50 text-rose-800 border-rose-200", dotBg: "bg-critical" },
-    amber: { bg: "bg-amber-50 text-amber-800 border-amber-200", dotBg: "bg-warning" },
-    purple: { bg: "bg-violet-50 text-violet-700 border-violet-200", dotBg: "bg-audit" },
-    navy: { bg: "bg-primary-700 text-white border-primary-700", dotBg: "bg-white" },
+    slate: { bg: "bg-slate-100 text-slate-800 border-slate-200", dotBg: "bg-slate-600" },
+    blue: { bg: "bg-primary-50 text-primary-900 border-primary-200", dotBg: "bg-primary-600" },
+    emerald: { bg: "bg-emerald-50 text-emerald-900 border-emerald-200", dotBg: "bg-emerald-600" },
+    crimson: { bg: "bg-rose-50 text-rose-900 border-rose-200", dotBg: "bg-rose-600" },
+    amber: { bg: "bg-amber-50 text-amber-950 border-amber-200", dotBg: "bg-amber-600" },
+    purple: { bg: "bg-violet-50 text-violet-950 border-violet-200", dotBg: "bg-violet-600" },
+    navy: { bg: "bg-primary-800 text-white border-primary-800", dotBg: "bg-white" },
   };
 
   const sizes = {
-    sm: "px-2 py-0.5 text-[11px] font-medium",
-    md: "px-2.5 py-1 text-xs font-semibold",
+    sm: "px-2.5 py-0.5 text-xs font-semibold leading-normal",
+    md: "px-3 py-1 text-xs font-semibold leading-normal",
   };
 
   const current = tones[tone];
@@ -527,9 +538,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             leftIcon && "pl-10",
             rightElement && "pr-10",
             error
-              ? "border-critical focus:border-critical focus:ring-2 focus:ring-rose-50"
-              : "border-hair-strong hover:border-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50",
-            disabled && "bg-slate-50 text-slate-400 cursor-not-allowed",
+              ? "border-critical focus:border-critical focus:ring-2 focus:ring-rose-100"
+              : "border-hair-strong hover:border-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100",
+            disabled && "bg-slate-100 text-slate-500 cursor-not-allowed",
             className
           )}
           {...props}
@@ -569,16 +580,16 @@ export function FormField({
       {label && (
         <label
           htmlFor={htmlFor}
-          className="block text-xs font-semibold text-slate-700 select-none"
+          className="block text-xs font-semibold text-ink-900 select-none"
         >
           {label}
-          {required && <span className="text-critical ml-1">*</span>}
+          {required && <span className="text-critical ml-1" aria-hidden="true">*</span>}
         </label>
       )}
       {children}
       {error ? (
-        <p className="text-xs text-critical font-medium flex items-center gap-1 mt-1">
-          <Icon.Alert size={12} className="shrink-0" />
+        <p className="text-xs text-critical font-medium flex items-center gap-1.5 mt-1">
+          <Icon.Alert size={13} className="shrink-0" />
           <span>{error}</span>
         </p>
       ) : hint ? (
@@ -613,11 +624,11 @@ export function MetricCard({
   hover = true,
 }: MetricCardProps) {
   const iconTones = {
-    blue: "bg-primary-50 text-primary-600 border-primary-100",
-    emerald: "bg-emerald-50 text-success border-emerald-200",
-    navy: "bg-canvas text-primary-700 border-hair-strong",
-    purple: "bg-violet-50 text-audit border-violet-200",
-    amber: "bg-amber-50 text-warning border-amber-200",
+    blue: "bg-primary-50 text-primary-700 border-primary-200",
+    emerald: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    navy: "bg-canvas text-primary-800 border-hair-strong",
+    purple: "bg-violet-50 text-violet-800 border-violet-200",
+    amber: "bg-amber-50 text-amber-900 border-amber-200",
   };
 
   return (
@@ -640,11 +651,11 @@ export function MetricCard({
         )}
       </div>
       <div className="mt-4">
-        <p className="tabular font-display text-3xl font-bold tracking-tight text-ink-900">
+        <p className="tabular font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink-900">
           {value}
         </p>
-        <p className="mt-1 text-xs font-medium text-ink-600">{title}</p>
-        {subtext && <p className="mt-1 text-[11px] text-ink-400">{subtext}</p>}
+        <p className="mt-1.5 text-xs font-semibold uppercase tracking-wider text-ink-600">{title}</p>
+        {subtext && <p className="mt-1 text-xs text-ink-600">{subtext}</p>}
       </div>
     </Card>
   );
@@ -677,11 +688,11 @@ export function SectionHeader({
     >
       <div>
         <div className="flex items-center gap-2.5">
-          <h2 className="font-display text-lg font-bold text-ink-900">{title}</h2>
+          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">{title}</h2>
           {badge}
         </div>
         {description && (
-          <p className="mt-1 text-xs sm:text-sm text-ink-600">{description}</p>
+          <p className="mt-1 text-sm text-ink-600 leading-relaxed">{description}</p>
         )}
       </div>
       {action && <div className="flex items-center gap-2.5 shrink-0">{action}</div>}
@@ -717,9 +728,9 @@ export function EmptyState({
       <div className="mx-auto mb-3.5 grid h-12 w-12 place-items-center rounded-2xl bg-white text-ink-600 shadow-subtle border border-hair">
         {icon || <Icon.Search size={22} />}
       </div>
-      <h3 className="font-display text-sm font-bold text-ink-900">{title}</h3>
+      <h3 className="font-display text-base font-bold text-ink-900">{title}</h3>
       {description && (
-        <p className="mt-1.5 max-w-sm mx-auto text-xs text-ink-600 leading-relaxed">
+        <p className="mt-1.5 max-w-sm mx-auto text-sm text-ink-600 leading-relaxed">
           {description}
         </p>
       )}
@@ -750,16 +761,16 @@ export function VitalPill({
   };
   const valTone: Record<string, string> = {
     slate: "text-ink-900",
-    amber: "text-warning",
-    emerald: "text-success",
-    crimson: "text-critical",
+    amber: "text-amber-950",
+    emerald: "text-emerald-900",
+    crimson: "text-rose-900",
   };
   return (
-    <div className={cn("flex flex-col rounded-xl border px-3 py-2", tones[tone], className)}>
-      <span className="text-[11px] font-medium text-ink-600">
+    <div className={cn("flex flex-col rounded-xl border px-3.5 py-2.5", tones[tone], className)}>
+      <span className="text-xs font-semibold uppercase tracking-wider text-ink-600">
         {label}
       </span>
-      <span className={cn("tabular text-sm font-semibold mt-0.5", valTone[tone])}>{value}</span>
+      <span className={cn("tabular text-sm sm:text-base font-bold mt-0.5", valTone[tone])}>{value}</span>
     </div>
   );
 }

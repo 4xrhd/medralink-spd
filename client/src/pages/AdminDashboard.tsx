@@ -112,7 +112,7 @@ export const AdminDashboard: React.FC = () => {
       <section aria-label="Governance Telemetry Banner" className="border-b border-hair bg-white">
         <div className="mx-auto flex max-w-[1200px] 2xl:max-w-[1720px] flex-wrap items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12 py-5">
           <div>
-            <h1 className="font-display text-xl font-bold text-ink-900">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
               MedraLink Enterprise Governance &amp; Compliance Console
             </h1>
             <p className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-ink-600">
@@ -120,24 +120,24 @@ export const AdminDashboard: React.FC = () => {
                 <span className="h-2 w-2 rounded-full bg-success" /> Platform Health: Operational
               </span>
               <span className="text-ink-400">•</span>
-              <span className="tabular">99.99% Uptime</span>
+              <span className="tabular font-medium">99.99% Uptime</span>
               <span className="text-ink-400">•</span>
               <span>Zero Unresolved Security Alerts</span>
             </p>
           </div>
 
-          <div className="hidden 2xl:flex items-center gap-6 border-l border-slate-200 pl-6 text-xs text-ink-600">
+          <div className="hidden 2xl:flex items-center gap-6 border-l border-hair pl-6 text-xs text-ink-600">
             <div>
-              <span className="text-[11px] font-medium text-slate-500 block">Data Center Node</span>
-              <span className="font-semibold text-slate-900">Dhaka Central Colo-1 (Active)</span>
+              <span className="text-xs font-medium text-ink-600 block">Data Center Node</span>
+              <span className="text-sm font-semibold text-ink-900">Dhaka Central Colo-1 (Active)</span>
             </div>
             <div>
-              <span className="text-[11px] font-medium text-slate-500 block">Cryptographic Keyring</span>
-              <span className="font-mono text-audit font-bold">HSM-256 Validated • FIPS 140-2</span>
+              <span className="text-xs font-medium text-ink-600 block">Cryptographic Keyring</span>
+              <span className="font-mono text-sm text-audit font-bold">HSM-256 Validated • FIPS 140-2</span>
             </div>
             <div>
-              <span className="text-[11px] font-medium text-slate-500 block">Regulatory Compliance</span>
-              <span className="font-semibold text-success">BMDC Form-C &amp; DGDA Audited</span>
+              <span className="text-xs font-medium text-ink-600 block">Regulatory Compliance</span>
+              <span className="text-sm font-semibold text-success">BMDC Form-C &amp; DGDA Audited</span>
             </div>
           </div>
 
@@ -149,8 +149,8 @@ export const AdminDashboard: React.FC = () => {
               loading="lazy"
             />
             <div className="text-right">
-              <p className="font-mono text-[11px] font-bold tracking-tight text-primary-700">LEDGER: SYNCHRONIZED</p>
-              <p className="text-[10px] font-medium text-success">SHA-256 Validated • 256-Bit</p>
+              <p className="font-mono text-xs font-bold tracking-tight text-primary-700">LEDGER: SYNCHRONIZED</p>
+              <p className="text-xs font-medium text-success">SHA-256 Validated • 256-Bit</p>
             </div>
           </div>
         </div>
@@ -200,10 +200,10 @@ export const AdminDashboard: React.FC = () => {
         <Card className="overflow-hidden p-0">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hair px-4 py-4 sm:px-6">
             <div>
-              <h2 className="font-display text-lg font-bold text-ink-900">
+              <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">
                 Physician Credential Verification &amp; Onboarding
               </h2>
-              <p className="text-sm text-ink-600">
+              <p className="mt-0.5 text-sm text-ink-600">
                 Approve or revoke BMDC accreditation with instant cryptographic validation status.
               </p>
             </div>
@@ -215,7 +215,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="overflow-x-auto" aria-label="Physician credential table">
             <table className="min-w-[900px] w-full text-sm">
               <thead>
-                <tr className="border-b border-hair bg-canvas text-left text-xs font-semibold text-slate-600">
+                <tr className="border-b border-hair bg-canvas text-left text-xs font-semibold uppercase tracking-wider text-ink-600">
                   <th className="px-6 py-3 font-semibold">Doctor Name &amp; UID</th>
                   <th className="px-4 py-3 font-semibold">BMDC License</th>
                   <th className="px-4 py-3 font-semibold">Specialization</th>
@@ -224,16 +224,16 @@ export const AdminDashboard: React.FC = () => {
                   <th className="px-6 py-3 text-right font-semibold">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-primary-50/60">
+              <tbody className="divide-y divide-hair">
                 {doctors.map((doc) => {
                   const isAccredited = Boolean(doc.is_verified);
                   return (
                     <tr key={doc.id} className="hover:bg-canvas transition-colors">
                       <td className="px-6 py-3.5">
                         <p className="font-semibold text-ink-900">{doc.full_name}</p>
-                        <p className="font-mono text-[11px] text-ink-600">{doc.doctor_uid || doc.id}</p>
+                        <p className="font-mono text-xs text-ink-500">{doc.doctor_uid || doc.id}</p>
                       </td>
-                      <td className="px-4 py-3.5 font-mono text-ink-600">{doc.bmdc_license_number}</td>
+                      <td className="px-4 py-3.5 font-mono text-xs font-medium text-ink-600">{doc.bmdc_license_number}</td>
                       <td className="px-4 py-3.5 text-ink-600">{doc.specialization}</td>
                       <td className="px-4 py-3.5 text-ink-600">{doc.hospital_affiliation}</td>
                       <td className="px-4 py-3.5">
@@ -276,7 +276,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="border-b border-hair px-4 py-4 sm:px-6">
             <div className="flex flex-wrap items-center gap-2">
               <Icon.Shield size={18} className="text-audit" />
-              <h2 className="font-display text-lg font-bold text-ink-900">
+              <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">
                 Cryptographic Audit Trail Inspector
               </h2>
               <Pill tone="purple">Append-Only SHA-256</Pill>
@@ -340,7 +340,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="overflow-x-auto" aria-label="Cryptographic audit entries">
             <table className="min-w-[1050px] w-full font-mono text-xs">
               <thead>
-                <tr className="border-b border-hair bg-canvas text-left font-sans text-xs font-semibold text-slate-600">
+                <tr className="border-b border-hair bg-canvas text-left font-sans text-xs font-semibold text-ink-600">
                   <th className="px-6 py-2.5 font-semibold">Timestamp</th>
                   <th className="px-3 py-2.5 font-semibold">Actor Role</th>
                   <th className="px-3 py-2.5 font-semibold">Action</th>
@@ -349,7 +349,7 @@ export const AdminDashboard: React.FC = () => {
                   <th className="px-6 py-2.5 font-semibold">SHA-256 Integrity Hash</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-primary-50/60">
+              <tbody className="divide-y divide-hair">
                 {filteredAuditLogs.map((l, i) => {
                   const hash = l.integrity_hash || l.hash || '-';
                   const isCopied = copiedHash === hash && hash !== '-';

@@ -83,8 +83,8 @@ export const PatientDashboard: React.FC = () => {
                   {initials}
                 </div>
                 <div>
-                  <h1 className="font-display text-2xl font-bold">{fullName}</h1>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white">{fullName}</h1>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -259,7 +259,7 @@ export const PatientDashboard: React.FC = () => {
                 <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-600">
                   <Icon.Pulse size={16} />
                 </div>
-                <h3 className="font-display text-base font-bold text-ink-900">Recent Clinical Biometrics</h3>
+                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Recent Clinical Biometrics</h2>
               </div>
               {data?.latestVitals?.visit_date && (
                 <span className="font-mono text-xs font-medium text-ink-600">
@@ -313,7 +313,7 @@ export const PatientDashboard: React.FC = () => {
                 <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success">
                   <Icon.Pill size={16} />
                 </div>
-                <h3 className="font-display text-base font-bold text-ink-900">Active Electronic Prescriptions</h3>
+                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Active Electronic Prescriptions</h2>
               </div>
               <Pill tone="emerald">Verified Regimens</Pill>
             </div>
@@ -406,19 +406,29 @@ export const PatientDashboard: React.FC = () => {
                 </div>
 
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs">
-                  <div className="flex items-center gap-2 text-emerald-800 font-bold">
+                  <div className="flex items-center gap-2 text-emerald-900 font-bold">
                     <Icon.Lock size={14} />
                     <span>AES-256 Health Locker</span>
                   </div>
-                  <p className="mt-1 text-success">
+                  <p className="mt-1 text-emerald-800">
                     Encrypted zero-knowledge patient consent vault active.
                   </p>
                 </div>
 
-                <div className="rounded-xl border border-hair bg-canvas p-3 text-xs">
-                  <p className="text-xs font-semibold text-slate-700">Emergency Ambulance</p>
-                  <p className="mt-1 font-mono font-bold text-critical text-sm">Call 16263 (National Health Line)</p>
-                  <p className="mt-0.5 text-ink-600">Toll-free 24/7 emergency medical triage</p>
+                <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs">
+                  <div className="flex items-center gap-2 font-bold text-rose-900 mb-2.5">
+                    <Icon.Alert size={13} className="text-rose-600 shrink-0" />
+                    <span>Emergency Services</span>
+                  </div>
+                  <Link
+                    to="/hospitals"
+                    className="flex items-center justify-center gap-2 w-full rounded-xl bg-rose-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-rose-700 active:scale-[0.98]"
+                  >
+                    <Icon.Hospital size={13} />
+                    Find Nearest Hospital
+                  </Link>
+                  <p className="mt-2.5 font-mono font-bold text-critical text-sm">Call 16263</p>
+                  <p className="mt-0.5 text-ink-600">Toll-free 24/7 national health line</p>
                 </div>
               </div>
             </Card>

@@ -68,9 +68,7 @@ export const LoginPage: React.FC = () => {
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-white backdrop-blur-sm border border-white/20 shadow-inner">
-                <Icon.Cross size={22} className="text-white" />
-              </div>
+              <img src="/logo.png" alt="MedraLink Logo" className="h-11 w-11 object-contain" />
               <div>
                 <span className="font-display text-xl font-bold tracking-tight">
                   Medra<span className="text-primary-300">Link</span>
@@ -145,9 +143,7 @@ export const LoginPage: React.FC = () => {
         {/* Right Panel - Form */}
         <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
           <div className="lg:hidden text-center mb-6">
-            <div className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-primary-700 text-white shadow-card mb-2">
-              <Icon.Cross size={24} />
-            </div>
+            <img src="/logo.png" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
               Sign in to Medra<span className="text-primary-600">Link</span>
             </h1>
@@ -158,10 +154,10 @@ export const LoginPage: React.FC = () => {
 
           <div className="max-w-md w-full mx-auto">
             <div className="hidden lg:block mb-6">
-              <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
+              <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink-900">
                 Welcome to Clinical Portal
               </h1>
-              <p className="text-sm text-ink-600 mt-1">
+              <p className="text-sm text-ink-600 mt-1.5 leading-relaxed">
                 Enter your credentials or choose a quick evaluation profile below.
               </p>
             </div>
@@ -185,13 +181,13 @@ export const LoginPage: React.FC = () => {
                     setEmail('dr.test@medralink.com');
                     setPassword('Password123!');
                   }}
-                  className={`rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center ${
+                  className={`min-h-[48px] rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1 ${
                     email === 'dr.test@medralink.com'
                       ? 'border-primary-600 bg-primary-600 text-white shadow-sm'
                       : 'border-hair-strong bg-white text-ink-900 hover:border-primary-300 hover:bg-primary-50/50'
                   }`}
                 >
-                  <div className="text-base mb-0.5">🩺</div>
+                  <div className="text-base mb-0.5" aria-hidden="true">🩺</div>
                   Doctor
                 </button>
                 <button
@@ -200,13 +196,13 @@ export const LoginPage: React.FC = () => {
                     setEmail('patient.test@medralink.com');
                     setPassword('Password123!');
                   }}
-                  className={`rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center ${
+                  className={`min-h-[48px] rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-1 ${
                     email === 'patient.test@medralink.com'
                       ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm'
                       : 'border-hair-strong bg-white text-ink-900 hover:border-emerald-300 hover:bg-emerald-50/50'
                   }`}
                 >
-                  <div className="text-base mb-0.5">👤</div>
+                  <div className="text-base mb-0.5" aria-hidden="true">👤</div>
                   Patient
                 </button>
                 <button
@@ -215,13 +211,13 @@ export const LoginPage: React.FC = () => {
                     setEmail('admin@medralink.com');
                     setPassword('admin123');
                   }}
-                  className={`rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center ${
+                  className={`min-h-[48px] rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1 ${
                     email === 'admin@medralink.com'
                       ? 'border-violet-600 bg-violet-600 text-white shadow-sm'
                       : 'border-hair-strong bg-white text-ink-900 hover:border-violet-300 hover:bg-violet-50/50'
                   }`}
                 >
-                  <div className="text-base mb-0.5">🛡️</div>
+                  <div className="text-base mb-0.5" aria-hidden="true">🛡️</div>
                   Admin
                 </button>
               </div>

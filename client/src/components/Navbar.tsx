@@ -174,9 +174,7 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
             aria-label="MedraLink Home"
           >
-            <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-600 text-white shadow-sm">
-              <Icon.Cross size={18} />
-            </div>
+            <img src="/logo.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
             <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
               Medra<span className="text-primary-600">Link</span>
             </span>
@@ -235,6 +233,18 @@ export const Navbar: React.FC = () => {
                 >
                   <Icon.Clock size={15} />
                   <span>Medical Timeline</span>
+                </Link>
+                <Link
+                  to="/hospitals"
+                  className={`whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all ${
+                    location.pathname === '/hospitals'
+                      ? 'bg-rose-100 text-rose-700 ring-1 ring-rose-300'
+                      : 'text-rose-600 hover:bg-rose-50 hover:text-rose-700'
+                  }`}
+                  aria-label="Find emergency hospitals near you"
+                >
+                  <Icon.Hospital size={15} />
+                  <span>Hospitals</span>
                 </Link>
               </>
             )}
@@ -319,7 +329,7 @@ export const Navbar: React.FC = () => {
 
                 {/* Notifications Dropdown */}
                 {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl border border-hair bg-white p-3 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 max-w-sm rounded-2xl border border-hair bg-white p-3 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-150">
                     <div className="flex items-center justify-between border-b border-hair pb-2.5 px-1">
                       <div className="flex items-center gap-2">
                         <span className="font-display text-sm font-bold text-ink-900">
@@ -548,7 +558,7 @@ export const Navbar: React.FC = () => {
 
                 {/* Profile Dropdown Menu */}
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-hair bg-white p-2 shadow-xl z-50">
+                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-64 max-w-xs rounded-2xl border border-hair bg-white p-2 shadow-xl z-50">
                     <div className="border-b border-hair p-3">
                       <p className="text-xs font-bold text-ink-900">{user.fullName}</p>
                       <p className="text-[11px] text-ink-600">{user.email || user.role}</p>
@@ -622,7 +632,7 @@ export const Navbar: React.FC = () => {
                         to="/"
                         className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                       >
-                        <Icon.Cross size={15} /> System Overview
+                        <img src="/logo.png" alt="Logo" className="h-4 w-4 object-contain" /> System Overview
                       </Link>
 
                       <button
@@ -700,7 +710,9 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="grid h-9 w-9 place-items-center rounded-xl border border-hair text-ink-600 hover:bg-slate-100 xl:hidden transition-colors"
+              className={`grid h-9 w-9 place-items-center rounded-xl border border-hair text-ink-600 hover:bg-slate-100 transition-colors ${
+                user ? 'md:hidden' : 'xl:hidden'
+              }`}
               aria-label="Toggle Navigation Menu"
               aria-expanded={mobileMenuOpen}
             >
@@ -712,7 +724,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile/Tablet Drawer */}
       {mobileMenuOpen && (
-        <div className="border-b border-hair bg-white px-4 py-5 shadow-xl xl:hidden">
+        <div className={`border-b border-hair bg-white px-4 py-5 shadow-xl ${user ? 'md:hidden' : 'xl:hidden'}`}>
           {user ? (
             <div className="space-y-4">
               {/* User Identity Box */}
@@ -760,6 +772,13 @@ export const Navbar: React.FC = () => {
                       className="flex items-center gap-2 rounded-xl bg-primary-50 px-3.5 py-2.5 text-sm font-semibold text-primary-700"
                     >
                       <Icon.Clock size={16} /> Medical Timeline
+                    </Link>
+                    <Link
+                      to="/hospitals"
+                      className="flex items-center gap-2 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-bold text-rose-700"
+                      aria-label="Find emergency hospitals near you"
+                    >
+                      <Icon.Hospital size={16} /> Emergency Hospitals
                     </Link>
                   </>
                 )}

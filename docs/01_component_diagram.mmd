@@ -1,0 +1,127 @@
+flowchart TB
+    %% =========================================================================
+    %% MEDRALINK - UML 2.5 COMPONENT DIAGRAM (ENTERPRISE ARCHITECTURE)
+    %% =========================================================================
+
+    %% Styling Classes
+    classDef clientStyle fill:#FFFFFF,stroke:#0F172A,stroke-width:2px,color:#0F172A;
+    classDef gatewayStyle fill:#F8FAFC,stroke:#0F172A,stroke-width:2px,color:#0F172A;
+    classDef serviceStyle fill:#FFFFFF,stroke:#1E3A8A,stroke-width:2px,color:#0F172A;
+    classDef dataStyle fill:#F8FAFC,stroke:#1E3A8A,stroke-width:2px,color:#0F172A;
+    classDef secStyle fill:#FFFFFF,stroke:#0F172A,stroke-width:2px,color:#0F172A;
+    classDef interfaceStyle fill:#FFFFFF,stroke:#1E3A8A,stroke-width:1.5px,color:#0F172A,font-size:11px;
+
+    %% 1. PRESENTATION TIER (CLIENT TIER)
+    subgraph PresentationTier["🖥️ Presentation Layer (Client Tier - Single Page Applications)"]
+        direction TB
+        subgraph UI_Modules["Frontend Clients (React 18 • TypeScript • Tailwind CSS)"]
+            direction LR
+            C_Patient["«component»\nPatient Portal Client\n• Timeline Visualizer\n• Prescription Viewer\n• Lab Report Downloader\n• Hospital Locator"]:::clientStyle
+            C_Doctor["«component»\nDoctor Consultation Workspace\n• E-Prescription Builder\n• ICD-10 Diagnosis Module\n• Clinical Vitals Logger"]:::clientStyle
+            C_Admin["«component»\nAdmin Management Console\n• User & Doctor Onboarding\n• RBAC Permission Matrix\n• System Audit Inspector"]:::clientStyle
+        end
+    end
+
+    %% 2. API GATEWAY & SECURITY PERIMETER
+    subgraph GatewayTier["🛡️ API Gateway & Security Perimeter (Reverse Proxy & Filter Chain)"]
+        direction TB
+        I_GatewayPort(["«interface»\nHTTPS / WSS (Port 443)\nRESTful JSON API"]):::interfaceStyle
+        
+        subgraph SecGateway["Security & Routing Gateway (Express.js / Nginx)"]
+            direction LR
+            C_RateLimiter["«component»\nRate Limiter &\nDDoS Shield"]:::gatewayStyle
+            C_Sanitizer["«component»\nInput Sanitizer &\nXSS / SQLi Filter"]:::gatewayStyle
+            C_AuthFilter["«component»\nJWT Authentication\n& Session Validator"]:::secStyle
+            C_RBAC_PEP["«component»\nRBAC Policy Enforcement\n(PEP Engine)"]:::secStyle
+        end
+    end
+
+    %% 3. BUSINESS LOGIC & APPLICATION SERVICES
+    subgraph AppServiceTier["⚙️ Business Logic Tier (Application & Domain Services)"]
+        direction TB
+        
+        subgraph PatientSubsystem["Patient Domain Subsystem"]
+            C_PatientSvc["«component»\nPatientManagementService\n• Demographics & Identity\n• Longitudinal Timeline Builder\n• Emergency Profile Engine"]:::serviceStyle
+        end
+
+        subgraph ClinicalSubsystem["Clinical Domain Subsystem"]
+            direction LR
+            C_ConsultSvc["«component»\nConsultationService\n• Chief Complaints\n• Vitals & Biometrics\n• ICD-10 Diagnostics"]:::serviceStyle
+            C_RxSvc["«component»\nEPrescriptionService\n• Drug Interaction Checker\n• Dosage & Regimen Engine\n• PDF / QR Code Generator"]:::serviceStyle
+            C_LabSvc["«component»\nLabDocumentService\n• MIME & Virus Scanner\n• File Chunker / Streamer\n• Report Indexer"]:::serviceStyle
+        end
+
+        subgraph CorePlatformSubsystem["Platform Core & Governance Subsystem"]
+            direction LR
+            C_AuditSvc["«component»\nAuditLoggingEngine\n• WORM Compliance Logger\n• Cryptographic Hash Chain\n• Access Traceability"]:::secStyle
+            C_NotifySvc["«component»\nNotificationService\n• WebSocket Realtime Push\n• SMS / Email Gateway\n• Critical Vitals Alert"]:::serviceStyle
+        end
+    end
+
+    %% 4. PERSISTENCE & DATA STORAGE TIER
+    subgraph PersistenceTier["🗄️ Persistence & Storage Tier"]
+        direction TB
+        
+        subgraph DataAccessLayer["Data Access & ORM Subsystem"]
+            C_ORM["«component»\nPrisma / PostgreSQL DAO Layer\n• Connection Pooling (PgBouncer)\n• ACID Transaction Manager\n• Prepared Statement Execution"]:::dataStyle
+        end
+
+        subgraph PhysicalStores["Enterprise Storage Repositories"]
+            direction LR
+            DB_Relational[("«database»\nPostgreSQL 16 Cluster\n• users & auth_credentials\n• patients & doctors\n• consultations & diagnoses\n• prescriptions & items\n• audit_trail_ledger (Append-Only)")]:::dataStyle
+            Store_Objects[("«storage»\nEncrypted File Vault\n• AES-256 GCM Object Store\n• Diagnostic Lab Scans (PDF/DICOM)\n• Digitally Signed Prescriptions")]:::dataStyle
+        end
+    end
+
+    %% 5. SECURITY PROTOCOL & REGULATORY GOVERNANCE SPECIFICATIONS
+    subgraph SecurityTier["🔒 Cross-Cutting Security Protocol & Regulatory Governance"]
+        direction LR
+        Sec_Auth["«specification»\nAuthentication & Authorization\n• Stateless RSA-256 JWT Verify\n• Argon2id Password Hashing\n• Dynamic RBAC Policy Matrix"]:::secStyle
+        Sec_Enc["«specification»\nIntegrity & Encryption\n• TLS 1.3 Strict HTTPS/WSS\n• AES-256 GCM File Vault at Rest\n• Prisma SQLi Defense"]:::secStyle
+        Sec_Audit["«specification»\nAudit & Compliance\n• WORM Append-Only Ledger\n• SHA-256 Cryptographic Chain\n• HIPAA & GDPR Traceability"]:::secStyle
+    end
+
+    %% =========================================================================
+    %% INTER-COMPONENT DEPENDENCIES & CONNECTORS
+    %% =========================================================================
+    
+    %% Client to Gateway
+    C_Patient -->|"HTTPS / REST"| I_GatewayPort
+    C_Doctor -->|"HTTPS / REST"| I_GatewayPort
+    C_Admin -->|"HTTPS / REST"| I_GatewayPort
+
+    I_GatewayPort --> C_RateLimiter
+    C_RateLimiter --> C_Sanitizer
+    C_Sanitizer --> C_AuthFilter
+    C_AuthFilter --> C_RBAC_PEP
+
+    %% Gateway to Services
+    C_RBAC_PEP -->|"Dispatches to"| C_PatientSvc
+    C_RBAC_PEP -->|"Dispatches to"| C_ConsultSvc
+    C_RBAC_PEP -->|"Dispatches to"| C_RxSvc
+    C_RBAC_PEP -->|"Dispatches to"| C_LabSvc
+
+    %% Service-to-Service Cross-Cutting Interactions
+    C_ConsultSvc -->|"Links Record"| C_PatientSvc
+    C_ConsultSvc -->|"Triggers Rx"| C_RxSvc
+    C_ConsultSvc -->|"Attaches Tests"| C_LabSvc
+    
+    C_ConsultSvc -.->|"Audit Event"| C_AuditSvc
+    C_RxSvc -.->|"Audit Event"| C_AuditSvc
+    C_LabSvc -.->|"Audit Event"| C_AuditSvc
+    C_PatientSvc -.->|"Audit Event"| C_AuditSvc
+
+    C_ConsultSvc -->|"Dispatches Alert"| C_NotifySvc
+    C_RxSvc -->|"Dispatches Alert"| C_NotifySvc
+
+    %% Services to Data Access Layer
+    C_PatientSvc --> C_ORM
+    C_ConsultSvc --> C_ORM
+    C_RxSvc --> C_ORM
+    C_LabSvc --> C_ORM
+    C_AuditSvc --> C_ORM
+
+    %% Data Access to Storage
+    C_ORM -->|"SQL Queries / Transactions"| DB_Relational
+    C_LabSvc -->|"Encrypted Binary Stream (AES-256)"| Store_Objects
+

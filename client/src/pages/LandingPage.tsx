@@ -91,23 +91,24 @@ export const LandingPage: React.FC = () => {
               <span>Connected Care for Clinicians &amp; Patients</span>
             </p>
 
-            <h1 className="mt-3 font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-ink-900 sm:text-5xl lg:text-[54px]">
+            <h1 className="mt-4 font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-ink-900 leading-[1.12] text-balance">
               Your complete health record, in one caring place.
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-600">
+            <p className="mt-5 max-w-xl text-base sm:text-lg lg:text-xl leading-relaxed text-ink-600">
               Eliminate lost paper slips and repeated diagnostic testing. MedraLink connects patients,
               verified physicians, and diagnostic clinics with one lifelong, role-secured medical timeline.
             </p>
 
             {/* Primary Action Group */}
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
               <Button
                 size="lg"
                 variant="primary"
                 onClick={handleLaunchDoctor}
                 icon={<Icon.Arrow size={16} />}
                 iconPosition="right"
+                className="w-full sm:w-auto justify-center"
               >
                 Launch Doctor Workstation
               </Button>
@@ -116,6 +117,7 @@ export const LandingPage: React.FC = () => {
                 variant="secondary"
                 onClick={handleLaunchPatient}
                 icon={<Icon.User size={16} />}
+                className="w-full sm:w-auto justify-center"
               >
                 Explore Patient Timeline
               </Button>
@@ -379,13 +381,13 @@ export const LandingPage: React.FC = () => {
         <Card id={`workspace-panel-${tab}`} role="tabpanel" className="mt-8 p-6 sm:p-8 border-hair">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hair pb-5">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-primary-600">
+              <p className="text-xs font-bold uppercase tracking-wider text-primary-700">
                 {tabs[tab].label}
               </p>
-              <h3 className="mt-1 font-display text-xl sm:text-2xl font-bold text-ink-900">
+              <h3 className="mt-1.5 font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-ink-900">
                 {content[tab].title}
               </h3>
-              <p className="mt-1 text-sm text-ink-600">
+              <p className="mt-1.5 text-sm sm:text-base text-ink-600 leading-relaxed">
                 {content[tab].subtitle}
               </p>
             </div>
@@ -517,9 +519,7 @@ export const LandingPage: React.FC = () => {
           <div className="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
             <div>
               <div className="flex items-center gap-2.5">
-                <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-600 text-white shadow-sm">
-                  <Icon.Cross size={18} />
-                </div>
+                <img src="/logo.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
                 <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
                   Medra<span className="text-primary-600">Link</span>
                 </span>

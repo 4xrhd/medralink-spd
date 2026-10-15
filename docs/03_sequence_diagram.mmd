@@ -1,0 +1,107 @@
+sequenceDiagram
+    %% =========================================================================
+    %% MEDRALINK - UML 2.5 SEQUENCE DIAGRAM (CONSULTATION, AUDIT & DISPATCH)
+    %% =========================================================================
+    autonumber
+    
+    actor Doc as 👨‍⚕️ Dr. Ahmed<br/>(Doctor)
+    participant UI as 🖥️ Doctor Workspace<br/>(React SPA)
+    participant GW as 🛡️ API Gateway &<br/>JWT Security Filter
+    participant PEP as 🔐 RBAC Policy Engine<br/>(Access Controller)
+    participant MedSvc as 🩺 Consultation Service<br/>(Business Domain)
+    participant RxSvc as 💊 Prescription Service<br/>(Regimen & Interaction)
+    participant Audit as 📝 Immutable Audit Engine<br/>(WORM Hash Logger)
+    participant DB as 🗄️ PostgreSQL 16<br/>(ACID Database)
+    participant EventBus as 🔔 WebSocket / Event Broker<br/>(Redis / Socket.IO)
+    actor Pt as 👤 Patient Portal<br/>(Mobile / Web App)
+
+    %% -------------------------------------------------------------------------
+    %% 1. INITIATION & SECURITY FILTERING
+    %% -------------------------------------------------------------------------
+    Note over Doc,UI: Phase 1: Clinical Entry & Client-Side Validation
+    Doc->>UI: Input Vitals, ICD-10 Diagnosis, Rx Items & Lab Attachments
+    activate UI
+    UI->>UI: Run Client Schema Validation (Zod / Joi)
+    UI->>GW: POST /api/v1/consultations<br/>Headers: Authorization: Bearer <JWT><br/>Payload: {patient_id, diagnosis, vitals, rx, labs}
+    activate GW
+
+    Note over GW,PEP: Phase 2: Gateway Security Verification & RBAC
+    GW->>GW: Verify RSA-256 JWT Signature & Expiry
+    GW->>PEP: checkPermission(DoctorID, PatientID, Action: "CREATE_RECORD")
+    activate PEP
+    PEP->>DB: Query Physician-Patient Relationship & Consent Matrix
+    activate DB
+    DB-->>PEP: Consent Active / Valid Session
+    deactivate DB
+    PEP-->>GW: Access Granted (Policy: PERMIT)
+    deactivate PEP
+
+    %% -------------------------------------------------------------------------
+    %% 2. BUSINESS EXECUTION & ATOMIC PERSISTENCE
+    %% -------------------------------------------------------------------------
+    Note over GW,DB: Phase 3: Business Logic & Transactional Persistence
+    GW->>MedSvc: createConsultationRecord(DoctorID, Payload)
+    activate MedSvc
+
+    MedSvc->>RxSvc: validatePrescription(Payload.rx, Payload.patient_id)
+    activate RxSvc
+    RxSvc->>RxSvc: Screen for Drug-Drug Interactions & Patient Allergies
+    RxSvc-->>MedSvc: Rx Validation OK (No Fatal Contraindications)
+    deactivate RxSvc
+
+    MedSvc->>DB: BEGIN TRANSACTION (ISOLATION LEVEL SERIALIZABLE)
+    activate DB
+    
+    MedSvc->>DB: INSERT INTO medical_records (patient_id, doctor_id, vitals, diagnosis)
+    DB-->>MedSvc: Return record_id: "REC-94821"
+    
+    MedSvc->>DB: INSERT INTO prescriptions (record_id, patient_id, issue_date)
+    DB-->>MedSvc: Return prescription_id: "RX-4029"
+    
+    MedSvc->>DB: INSERT INTO prescription_items (prescription_id, drug_name, dosage, frequency)
+    DB-->>MedSvc: Bulk Insert OK
+    
+    %% Audit Ledger Hashing
+    MedSvc->>Audit: recordAuditEvent(Action: "CONSULTATION_CREATED", User: DoctorID, Resource: "REC-94821")
+    activate Audit
+    Audit->>Audit: Compute Cryptographic SHA-256 Hash(prev_hash + entry_data)
+    Audit->>DB: INSERT INTO audit_trail_ledger (hash, actor_id, action, timestamp, ip_addr)
+    DB-->>Audit: Audit Record Persisted
+    Audit-->>MedSvc: Audit Confirmed (Hash: "8f7e2a...")
+    deactivate Audit
+
+    MedSvc->>DB: COMMIT TRANSACTION
+    DB-->>MedSvc: Transaction Committed Successfully
+    deactivate DB
+
+    %% -------------------------------------------------------------------------
+    %% 3. ASYNCHRONOUS EVENT DISPATCH & CLIENT FEEDBACK
+    %% -------------------------------------------------------------------------
+    Note over MedSvc,Pt: Phase 4: Event Emission & Real-Time Sync
+    par Asynchronous Notification Dispatch
+        MedSvc->>EventBus: publishEvent("PATIENT_RECORD_UPDATED", {patient_id, record_id})
+        activate EventBus
+        EventBus--)Pt: Push WebSocket Notification / SMS Alert ("New E-Prescription Issued")
+        deactivate EventBus
+    and Synchronous HTTP Response
+        MedSvc-->>GW: 201 Created {status: "SUCCESS", record_id: "REC-94821", pdf_url: "/api/v1/rx/RX-4029.pdf"}
+        deactivate MedSvc
+        GW-->>UI: HTTP 201 Response Payload
+        deactivate GW
+        UI-->>Doc: Render Success Banner & Update Doctor Dashboard
+        deactivate UI
+    end
+
+    %% -------------------------------------------------------------------------
+    %% 4. PATIENT RETRIEVAL & VERIFICATION
+    %% -------------------------------------------------------------------------
+    opt Patient Fetches Digitally Signed Prescription
+        Pt->>GW: GET /api/v1/prescriptions/RX-4029/pdf (Bearer PatientJWT)
+        activate GW
+        GW->>DB: SELECT prescription, items, doctor_signature
+        activate DB
+        DB-->>GW: Return Relational Tuple
+        deactivate DB
+        GW-->>Pt: Stream Streamed Binary (Signed PDF + QR Verification Code)
+        deactivate GW
+    end

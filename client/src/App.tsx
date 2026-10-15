@@ -36,6 +36,9 @@ const PrescriptionViewPage = lazy(() =>
 const AdminDashboard = lazy(() =>
   import('./pages/AdminDashboard.js').then((m) => ({ default: m.AdminDashboard }))
 );
+const HospitalSearchPage = lazy(() =>
+  import('./pages/HospitalSearchPage.js').then((m) => ({ default: m.HospitalSearchPage }))
+);
 
 export const App: React.FC = () => {
   return (
@@ -64,6 +67,9 @@ export const App: React.FC = () => {
                     {/* Public Auth Routes */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+
+                    {/* Public Emergency Hospital Search - No Auth Required */}
+                    <Route path="/hospitals" element={<HospitalSearchPage />} />
 
                     {/* Shared Official Digital Prescription Sheet */}
                     <Route path="/prescription/:id" element={<PrescriptionViewPage />} />

@@ -91,9 +91,7 @@ export const RegisterPage: React.FC = () => {
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-white backdrop-blur-sm border border-white/20 shadow-inner">
-                <Icon.Cross size={22} className="text-white" />
-              </div>
+              <img src="/logo.png" alt="MedraLink Logo" className="h-11 w-11 object-contain" />
               <div>
                 <span className="font-display text-xl font-bold tracking-tight">
                   Medra<span className="text-primary-300">Link</span>
@@ -168,9 +166,7 @@ export const RegisterPage: React.FC = () => {
         {/* Right Panel - Form */}
         <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
           <div className="lg:hidden text-center mb-6">
-            <div className="inline-grid h-12 w-12 place-items-center rounded-2xl bg-primary-700 text-white shadow-card mb-2">
-              <Icon.Cross size={24} />
-            </div>
+            <img src="/logo.png" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
               Create Medra<span className="text-primary-600">Link</span> Account
             </h1>
@@ -181,10 +177,10 @@ export const RegisterPage: React.FC = () => {
 
           <div className="max-w-xl w-full mx-auto">
             <div className="hidden lg:block mb-6">
-              <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
+              <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink-900">
                 Create your clinical account
               </h1>
-              <p className="text-sm text-ink-600 mt-1">
+              <p className="text-sm text-ink-600 mt-1.5 leading-relaxed">
                 Select your account type to begin setup.
               </p>
             </div>
@@ -194,7 +190,7 @@ export const RegisterPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setRole('PATIENT')}
-                className={`relative flex items-start gap-3.5 p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                className={`relative flex items-start gap-3.5 p-4 rounded-2xl border text-left transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 ${
                   role === 'PATIENT'
                     ? 'border-primary-600 bg-primary-50/60 ring-2 ring-primary-600/20 shadow-xs'
                     : 'border-hair bg-white hover:border-primary-200 hover:bg-slate-50/60'
@@ -229,7 +225,7 @@ export const RegisterPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setRole('DOCTOR')}
-                className={`relative flex items-start gap-3.5 p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                className={`relative flex items-start gap-3.5 p-4 rounded-2xl border text-left transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 ${
                   role === 'DOCTOR'
                     ? 'border-primary-600 bg-primary-50/60 ring-2 ring-primary-600/20 shadow-xs'
                     : 'border-hair bg-white hover:border-primary-200 hover:bg-slate-50/60'

@@ -9,6 +9,8 @@ describe('MedraLink EMR Backend API Test Suite', () => {
   let patientToken: string;
   let adminToken: string;
   let testPatientId: string;
+  let createdRecordId: string;
+  let createdRxId: string;
 
   beforeAll(async () => {
     process.env.NODE_ENV = 'test';
@@ -124,6 +126,8 @@ describe('MedraLink EMR Backend API Test Suite', () => {
       expect(res.body.success).toBe(true);
       expect(res.body.data.recordUid).toMatch(/^REC-/);
       expect(res.body.data.prescriptionUid).toMatch(/^RX-/);
+      createdRecordId = res.body.data.recordId;
+      createdRxId = res.body.data.prescriptionId;
 
       // Verify the patient timeline now includes this newly created consultation
       const timelineRes = await request(app)
@@ -135,22 +139,93 @@ describe('MedraLink EMR Backend API Test Suite', () => {
     });
   });
 
-  describe('4. Prescription PDF Generation', () => {
-    it('should stream a formatted prescription PDF', async () => {
-      const rxListRes = await request(app)
-        .get('/api/v1/prescriptions')
-        .set('Authorization', `Bearer ${doctorToken}`);
-
-      expect(rxListRes.status).toBe(200);
-      expect(rxListRes.body.data.length).toBeGreaterThan(0);
-      const rxId = rxListRes.body.data[0].id;
-
+  describe('4. Clinical PDF Generation Engine', () => {
+    it('should stream a formatted prescription PDF with Bearer token', async () => {
       const pdfRes = await request(app)
-        .get(`/api/v1/prescriptions/${rxId}/pdf`)
+        .get(`/api/v1/prescriptions/${createdRxId}/pdf`)
         .set('Authorization', `Bearer ${doctorToken}`);
 
       expect(pdfRes.status).toBe(200);
       expect(pdfRes.headers['content-type']).toBe('application/pdf');
+      expect(pdfRes.headers['content-disposition']).toMatch(/filename="MedraLink_Prescription_/);
+      expect(pdfRes.body.length).toBeGreaterThan(1000);
+    });
+
+    it('should stream a prescription PDF using direct query token parameter', async () => {
+      const pdfRes = await request(app)
+        .get(`/api/v1/prescriptions/${createdRxId}/pdf?token=${patientToken}`);
+
+      expect(pdfRes.status).toBe(200);
+      expect(pdfRes.headers['content-type']).toBe('application/pdf');
+      expect(pdfRes.body.length).toBeGreaterThan(1000);
+    });
+
+    it('should stream a formatted clinical consultation summary PDF', async () => {
+      const pdfRes = await request(app)
+        .get(`/api/v1/consultations/${createdRecordId}/pdf`)
+        .set('Authorization', `Bearer ${doctorToken}`);
+
+      expect(pdfRes.status).toBe(200);
+      expect(pdfRes.headers['content-type']).toBe('application/pdf');
+      expect(pdfRes.headers['content-disposition']).toMatch(/filename="MedraLink_Consultation_/);
+      expect(pdfRes.body.length).toBeGreaterThan(1000);
+    });
+
+    it('should stream a consultation summary PDF using direct query token parameter', async () => {
+      const pdfRes = await request(app)
+        .get(`/api/v1/consultations/${createdRecordId}/pdf?token=${patientToken}`);
+
+      expect(pdfRes.status).toBe(200);
+      expect(pdfRes.headers['content-type']).toBe('application/pdf');
+      expect(pdfRes.body.length).toBeGreaterThan(1000);
+    });
+
+    it('should stream a comprehensive longitudinal patient health dossier PDF', async () => {
+      const pdfRes = await request(app)
+        .get(`/api/v1/patients/${testPatientId}/summary/pdf`)
+        .set('Authorization', `Bearer ${doctorToken}`);
+
+      expect(pdfRes.status).toBe(200);
+      expect(pdfRes.headers['content-type']).toBe('application/pdf');
+      expect(pdfRes.headers['content-disposition']).toMatch(/filename="MedraLink_Health_Summary_/);
+      expect(pdfRes.body.length).toBeGreaterThan(1000);
+    });
+
+    it('should stream a patient health dossier PDF using direct query token parameter', async () => {
+      const pdfRes = await request(app)
+        .get(`/api/v1/patients/${testPatientId}/summary/pdf?token=${patientToken}`);
+
+      expect(pdfRes.status).toBe(200);
+      expect(pdfRes.headers['content-type']).toBe('application/pdf');
+      expect(pdfRes.body.length).toBeGreaterThan(1000);
+    });
+
+    it('should reject unauthenticated access to PDF endpoints', async () => {
+      const rxRes = await request(app).get(`/api/v1/prescriptions/${createdRxId}/pdf`);
+      expect(rxRes.status).toBe(401);
+
+      const consultRes = await request(app).get(`/api/v1/consultations/${createdRecordId}/pdf`);
+      expect(consultRes.status).toBe(401);
+
+      const summaryRes = await request(app).get(`/api/v1/patients/${testPatientId}/summary/pdf`);
+      expect(summaryRes.status).toBe(401);
+    });
+
+    it('should return 404 for non-existent consultation or prescription PDF', async () => {
+      const resRx = await request(app)
+        .get('/api/v1/prescriptions/nonexistent-rx-id/pdf')
+        .set('Authorization', `Bearer ${doctorToken}`);
+      expect(resRx.status).toBe(404);
+
+      const resConsult = await request(app)
+        .get('/api/v1/consultations/nonexistent-record-id/pdf')
+        .set('Authorization', `Bearer ${doctorToken}`);
+      expect(resConsult.status).toBe(404);
+
+      const resPatient = await request(app)
+        .get('/api/v1/patients/nonexistent-patient-id/summary/pdf')
+        .set('Authorization', `Bearer ${doctorToken}`);
+      expect(resPatient.status).toBe(404);
     });
   });
 

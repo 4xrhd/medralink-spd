@@ -134,8 +134,8 @@ export function SectionHeading({
       {eyebrow && (
         <p
           className={cn(
-            'text-sm font-semibold tracking-wide',
-            invert ? 'text-primary-200' : 'text-primary-600'
+            'text-xs sm:text-sm font-semibold uppercase tracking-wider',
+            invert ? 'text-primary-200' : 'text-primary-700'
           )}
         >
           {eyebrow}
@@ -143,14 +143,14 @@ export function SectionHeading({
       )}
       <h2
         className={cn(
-          'mt-2 font-display text-3xl font-bold tracking-tight sm:text-4xl',
+          'mt-2.5 font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-balance leading-tight',
           invert ? 'text-white' : 'text-ink-900'
         )}
       >
         {title}
       </h2>
       {subtitle && (
-        <p className={cn('mt-3 text-base leading-relaxed sm:text-lg', invert ? 'text-primary-100' : 'text-ink-600')}>
+        <p className={cn('mt-3 text-sm sm:text-base lg:text-lg leading-relaxed', invert ? 'text-primary-100' : 'text-ink-600')}>
           {subtitle}
         </p>
       )}

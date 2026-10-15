@@ -73,11 +73,11 @@ export class ErrorBoundary extends Component<Props, State> {
             </p>
 
             {this.state.error && (
-              <details className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
+              <details className="mt-4 rounded-xl border border-hair bg-canvas p-3 text-xs">
                 <summary className="cursor-pointer font-semibold text-primary-700 hover:underline select-none">
                   View Technical Diagnostics
                 </summary>
-                <div className="mt-2 font-mono text-[11px] text-critical whitespace-pre-wrap overflow-x-auto max-h-40 bg-white p-2.5 rounded border border-slate-200">
+                <div className="mt-2 font-mono text-[11px] text-critical whitespace-pre-wrap overflow-x-auto max-h-40 bg-white p-2.5 rounded border border-hair">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </div>
@@ -88,21 +88,21 @@ export class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleReset}
-                className="flex-1 rounded-xl bg-primary-700 px-4 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-primary-800 transition-colors focus-visible:ring-2 focus-visible:ring-primary-600"
+                className="flex-1 min-h-[38px] inline-flex items-center justify-center rounded-xl bg-primary-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-primary-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
               >
                 Retry Component
               </button>
               <button
                 type="button"
                 onClick={this.handleReload}
-                className="rounded-xl border border-hair bg-white px-4 py-2.5 text-xs font-semibold text-ink-600 shadow-xs hover:bg-slate-50 hover:text-ink-900 transition-colors"
+                className="min-h-[38px] inline-flex items-center justify-center rounded-xl border border-hair bg-white px-4 py-2 text-xs font-semibold text-ink-900 shadow-xs hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
               >
                 Reload Session
               </button>
               <button
                 type="button"
                 onClick={this.handleGoHome}
-                className="rounded-xl border border-hair bg-white px-4 py-2.5 text-xs font-semibold text-ink-600 shadow-xs hover:bg-slate-50 hover:text-ink-900 transition-colors"
+                className="min-h-[38px] inline-flex items-center justify-center rounded-xl border border-hair bg-white px-4 py-2 text-xs font-semibold text-ink-900 shadow-xs hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
               >
                 Safe Return
               </button>

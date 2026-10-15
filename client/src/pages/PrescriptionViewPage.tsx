@@ -159,16 +159,14 @@ export const PrescriptionViewPage: React.FC = () => {
         {/* Header banner */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-primary-700 px-6 sm:px-8 py-5 text-white">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/15">
-              <Icon.Cross size={20} />
-            </div>
+            <img src="/logo.png" alt="MedraLink Logo" className="h-11 w-11 object-contain shrink-0" />
             <div>
-              <p className="font-display text-base sm:text-lg font-extrabold leading-tight">MedraLink Clinical Health System</p>
-              <p className="text-[11px] sm:text-xs text-primary-200">National Digital E-Prescription Registry</p>
+              <p className="font-display text-lg sm:text-xl font-bold tracking-tight leading-tight">MedraLink Clinical Health System</p>
+              <p className="text-xs text-primary-200">National Digital E-Prescription Registry</p>
             </div>
           </div>
           <div className="text-left sm:text-right">
-            <span className="rounded-md bg-white/15 px-2 py-1 font-mono text-xs font-semibold">
+            <span className="rounded-md bg-white/20 px-2.5 py-1 font-mono text-xs font-bold text-white">
               Rx ID: {data.prescription_uid}
             </span>
             <p className="mt-1.5 text-xs text-primary-200">Issued: {issueDateFormatted}</p>
@@ -179,17 +177,17 @@ export const PrescriptionViewPage: React.FC = () => {
           {/* Physician letterhead */}
           <div className="flex flex-col sm:flex-row justify-between gap-4 sm:gap-6">
             <div>
-              <p className="text-base font-bold text-ink-900">{doctorName}</p>
-              <p className="text-xs text-ink-600">{qualifications}</p>
-              <p className="text-xs text-ink-600">{specialization}</p>
-              <p className="mt-1 font-mono text-[11px] text-ink-600">
+              <p className="text-lg font-bold text-ink-900">{doctorName}</p>
+              <p className="text-xs font-medium text-ink-600">{qualifications}</p>
+              <p className="text-xs font-semibold text-primary-700">{specialization}</p>
+              <p className="mt-1 font-mono text-xs text-ink-600">
                 BMDC Registration No: {doctorLicense}
               </p>
             </div>
             <div className="text-left sm:text-right text-xs text-ink-600">
               <p className="font-semibold text-ink-900">Chamber: {hospitalAffiliation}</p>
               <p>{chamberDetails}</p>
-              <p className="mt-1 font-mono text-[11px] text-ink-600">Tel: {doctorPhone}</p>
+              <p className="mt-1 font-mono text-xs text-ink-600">Tel: {doctorPhone}</p>
             </div>
           </div>
 
@@ -204,8 +202,8 @@ export const PrescriptionViewPage: React.FC = () => {
               ['Blood Group', bloodGroup],
             ].map(([l, v], i) => (
               <div key={l} className="bg-canvas px-3 py-2.5">
-                <p className="text-[10px] font-semibold text-slate-500">{l}</p>
-                <p className={`mt-0.5 text-xs sm:text-sm font-semibold text-ink-900 ${i > 0 ? 'tabular' : ''}`}>
+                <p className="text-xs font-semibold uppercase tracking-wider text-ink-600">{l}</p>
+                <p className={`mt-1 text-sm font-bold text-ink-900 ${i > 0 ? 'tabular' : ''}`}>
                   {v}
                 </p>
               </div>
@@ -237,7 +235,7 @@ export const PrescriptionViewPage: React.FC = () => {
                   </span>
                 ))
               ) : (
-                <span className="text-slate-500 italic">None recorded</span>
+                <span className="text-ink-600 italic">None recorded</span>
               )}
             </p>
           </div>
@@ -252,7 +250,7 @@ export const PrescriptionViewPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="mt-3 w-full min-w-[500px] border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-hair-strong text-left text-[11px] font-semibold text-slate-600">
+                  <tr className="border-b border-hair-strong text-left text-xs font-semibold text-ink-600">
                     <th className="w-6 py-2 font-bold">#</th>
                     <th className="py-2 font-bold">Medicine Name &amp; Generic</th>
                     <th className="py-2 font-bold">Dosage</th>
@@ -264,13 +262,13 @@ export const PrescriptionViewPage: React.FC = () => {
                 <tbody className="text-ink-900">
                   {items.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-6 text-center text-xs text-slate-500">
+                      <td colSpan={6} className="py-6 text-center text-xs text-ink-600">
                         No medications prescribed in this session.
                       </td>
                     </tr>
                   ) : (
                     items.map((item: any, index: number) => (
-                      <tr key={item.id || index} className="border-b border-primary-50/60 align-top">
+                      <tr key={item.id || index} className="border-b border-hair align-top">
                         <td className="py-2.5 tabular text-ink-600">{index + 1}</td>
                         <td className="py-2.5 pr-2">
                           <p className="font-semibold text-ink-900">{item.medication_name}</p>
@@ -293,7 +291,7 @@ export const PrescriptionViewPage: React.FC = () => {
 
             {/* Advice & Follow-up */}
             <div className="mt-5 rounded-lg bg-canvas p-3.5 border border-hair">
-              <p className="text-xs font-semibold text-slate-700">
+              <p className="text-xs font-semibold text-ink-900">
                 Physician's Clinical Advice
               </p>
               <p className="mt-1 text-xs text-ink-900 leading-relaxed">

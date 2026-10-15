@@ -1,0 +1,115 @@
+flowchart TD
+    %% =========================================================================
+    %% MEDRALINK - UML 2.5 ACTIVITY DIAGRAM (CONSULTATION & E-RX LIFECYCLE)
+    %% =========================================================================
+
+    %% Node Styles
+    classDef startEnd fill:#0F172A,stroke:#0F172A,stroke-width:2.5px,color:#FFFFFF;
+    classDef decision fill:#FFFFFF,stroke:#0F172A,stroke-width:2px,color:#0F172A,font-weight:bold;
+    classDef action fill:#FFFFFF,stroke:#0F172A,stroke-width:1.5px,color:#0F172A;
+    classDef sysAction fill:#F8FAFC,stroke:#1E3A8A,stroke-width:1.5px,color:#0F172A;
+    classDef dbAction fill:#FFFFFF,stroke:#1E3A8A,stroke-width:1.5px,color:#0F172A;
+    classDef ptAction fill:#F8FAFC,stroke:#0F172A,stroke-width:1.5px,color:#0F172A;
+    classDef barStyle fill:#0F172A,stroke:#0F172A,stroke-width:3px;
+    classDef errorState fill:#F8FAFC,stroke:#0F172A,stroke-width:1.5px,color:#0F172A;
+
+    %% 1. DOCTOR SWIMLANE
+    subgraph Lane_Doctor["👨‍⚕️ Healthcare Provider (Doctor)"]
+        direction TB
+        A_Start((●)):::startEnd --> A_Search["Search Patient\n(by National ID / Medra-UID)"]:::action
+        A_Search --> A_WaitAuth["Await Security Authorization"]:::action
+        A_RenderHist["Review Patient Medical Timeline,\nAllergies & Historical Records"]:::action --> A_EnterConsult["Enter Clinical Vitals, Symptoms\n& ICD-10 Diagnoses"]:::action
+        A_EnterConsult --> Fork_Clinical{"═════ FORK (Concurrent Clinical Tasks) ═════"}:::barStyle
+        
+        Fork_Clinical --> A_WriteRx["Formulate E-Prescription\n• Drug Name, Dosage, Regimen\n• Automated Interaction Check"]:::action
+        Fork_Clinical --> A_OrderLabs["Order Diagnostic Tests\n• Select Lab Requisitions\n• Attach Digital Scans / PDFs"]:::action
+        
+        A_WriteRx --> Join_Clinical{"═════ JOIN (Synchronize Tasks) ═════"}:::barStyle
+        A_OrderLabs --> Join_Clinical
+        
+        Join_Clinical --> A_Finalize["Review Summary & Click\n'Finalize & Sign Consultation'"]:::action
+        A_FixErrors["Correct Formatted Fields &\nDrug Conflict Warnings"]:::action --> A_Finalize
+    end
+
+    %% 2. CLIENT SPA SWIMLANE
+    subgraph Lane_Client["🖥️ Client Application (Web / Mobile SPA)"]
+        direction TB
+        B_Debounce["Debounce Input & Dispatch\nHTTPS GET /api/v1/patients/:id"]:::action
+        B_ClientValid["Execute Client-Side JSON Schema\n& Input Sanitization Checks"]:::action
+        B_DispatchRecord["Emit Encrypted Payload with JWT\nPOST /api/v1/consultations"]:::action
+        B_RenderSuccess["Render Real-Time Success Toast\n& Load Printable Digital Record"]:::action
+    end
+
+    %% 3. SYSTEM & SECURITY GATEWAY SWIMLANE
+    subgraph Lane_System["⚙️ MedraLink Security & Core Services Engine"]
+        direction TB
+        C_TokenCheck{"Validate JWT &\nRBAC Session?"}:::decision
+        C_Deny["Log Security Violation &\nGenerate 403 Forbidden"]:::errorState
+        C_ConsentCheck{"Doctor Assigned or\nBreak-Glass Emergency?"}:::decision
+        
+        C_FetchTimeline["Query Timeline Aggregator &\nDecrypt Longitudinal Record"]:::sysAction
+        
+        C_ValidateTx{"Validate Business Logic\n& Drug Contraindications?"}:::decision
+        C_FormatErrors["Return 422 Unprocessable Entity\nwith Detailed Error Matrix"]:::errorState
+        
+        C_HashChain["Generate SHA-256 Hash of Record\n& Prepare Cryptographic Audit Entry"]:::sysAction
+        C_TxManager["Initiate Two-Phase ACID Transaction\n(Begin Distributed DB Write)"]:::sysAction
+        C_EmitEvents["Emit WebSocket Real-Time Event\n& Trigger SMS/Email Push Dispatcher"]:::sysAction
+    end
+
+    %% 4. DATABASE & STORAGE SWIMLANE
+    subgraph Lane_Database["🗄️ Persistence & Storage Tier"]
+        direction TB
+        D_ReadDB[("Read Patient Profile &\nChronological Visits from DB")]:::dbAction
+        D_WriteDB[("ATOMIC WRITE:\n• medical_records\n• prescriptions & items\n• lab_attachments\n• audit_trail_ledger")]:::dbAction
+        D_Commit["Transaction Committed (ACID Verified)"]:::dbAction
+    end
+
+    %% 5. PATIENT SWIMLANE
+    subgraph Lane_Patient["👤 Patient (Record Subject)"]
+        direction TB
+        E_RecvAlert["Receive Push Notification / SMS\n('New Consultation Record Added')"]:::ptAction
+        E_OpenApp["Open Patient Portal\n& Authenticate Biometrically"]:::ptAction
+        E_AccessDoc["Access Updated Health Timeline\n& Download QR-Verified Prescription PDF"]:::ptAction
+        E_End(((◉))):::startEnd
+    end
+
+    %% =========================================================================
+    %% WORKFLOW CONTROL FLOW (EDGES)
+    %% =========================================================================
+    
+    %% Patient Search Flow
+    A_Search --> B_Debounce
+    B_Debounce --> C_TokenCheck
+    
+    C_TokenCheck -- "[Invalid Token]" --> C_Deny
+    C_Deny --> End_Deny((⨂)):::startEnd
+    C_TokenCheck -- "[Valid Token]" --> C_ConsentCheck
+    
+    C_ConsentCheck -- "[Access Denied]" --> C_Deny
+    C_ConsentCheck -- "[Authorized / Break-Glass]" --> C_FetchTimeline
+    
+    C_FetchTimeline --> D_ReadDB
+    D_ReadDB --> A_RenderHist
+
+    %% Consultation Submission Flow
+    A_Finalize --> B_ClientValid
+    B_ClientValid --> B_DispatchRecord
+    B_DispatchRecord --> C_ValidateTx
+
+    C_ValidateTx -- "[Validation Failed]" --> C_FormatErrors
+    C_FormatErrors --> A_FixErrors
+
+    C_ValidateTx -- "[Validation Passed]" --> C_HashChain
+    C_HashChain --> C_TxManager
+    C_TxManager --> D_WriteDB
+    D_WriteDB --> D_Commit
+    
+    D_Commit --> C_EmitEvents
+    C_EmitEvents --> B_RenderSuccess
+
+    %% Patient Notification Flow
+    C_EmitEvents --> E_RecvAlert
+    E_RecvAlert --> E_OpenApp
+    E_OpenApp --> E_AccessDoc
+    E_AccessDoc --> E_End

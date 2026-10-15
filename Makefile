@@ -1,5 +1,5 @@
 # ==============================================================================
-# 🏥 MedraLink Prototype — Local Makefile (prototype directory)
+# 🏥 MedraLink Prototype | Local Makefile (prototype directory)
 # ==============================================================================
 
 SHELL := /bin/bash

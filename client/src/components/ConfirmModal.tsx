@@ -81,12 +81,12 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           </div>
         </div>
 
-        <div className="mt-6 flex items-center justify-end gap-3 border-t border-primary-50/60 pt-4">
+        <div className="mt-6 flex flex-wrap items-center justify-end gap-2.5 sm:gap-3 border-t border-hair pt-4">
           <button
             type="button"
             disabled={isLoading}
             onClick={onCancel}
-            className="rounded-xl border border-hair bg-white px-4 py-2 text-xs font-semibold text-ink-600 shadow-xs hover:bg-slate-50 hover:text-ink-900 transition-colors disabled:opacity-50"
+            className="inline-flex min-h-[38px] items-center justify-center rounded-xl border border-hair bg-white px-4 py-2 text-xs font-semibold text-ink-900 shadow-xs hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 disabled:opacity-50"
           >
             {cancelLabel}
           </button>
@@ -95,13 +95,13 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             type="button"
             disabled={isLoading}
             onClick={onConfirm}
-            className={`flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors disabled:opacity-50 ${
+            className={`inline-flex min-h-[38px] items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 ${
               isDestructive
-                ? 'bg-critical hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-critical'
-                : 'bg-primary-700 hover:bg-primary-800 focus-visible:ring-2 focus-visible:ring-primary-600'
+                ? 'bg-critical hover:bg-rose-700 focus-visible:ring-critical'
+                : 'bg-primary-600 hover:bg-primary-700 focus-visible:ring-primary-600'
             }`}
           >
-            {isLoading && <Icon.Loader size={14} className="text-white" />}
+            {isLoading && <Icon.Loader size={14} className="text-white shrink-0 animate-spin" />}
             <span>{confirmLabel}</span>
           </button>
         </div>

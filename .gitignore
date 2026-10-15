@@ -1,38 +1,84 @@
 # Dependencies
 node_modules/
-/.pnp
+**/node_modules/
+.pnp
 .pnp.js
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
 # Build and distribution outputs
 dist/
+**/dist/
 dist-ssr/
-*.local
+**/dist-ssr/
+build/
+**/build/
+out/
+*.tsbuildinfo
+.turbo/
+.cache/
+.parcel-cache/
 
-# Database and uploaded files
-*.sqlite*
+# Database and persistent storage files
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
 **/data/*.sqlite*
+**/data/*.db*
 **/uploads/*
 !**/uploads/.gitkeep
 !**/data/.gitkeep
 
-# Environment variables
+# Environment and secrets
 .env
+.env.*
+!.env.example
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.cert
 
-# Logs
+# Logs and runtime diagnostics
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-*.log
+.pnpm-debug.log*
 
-# Testing coverage
+# Testing and coverage
 coverage/
+**/coverage/
+.nyc_output/
+*.lcov
+
+# Cloud and Hosting Providers
+.netlify/
+.netlify
+.vercel/
+.railway/
 
 # OS and Editor metadata
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 .vscode/
 .idea/
@@ -45,3 +91,6 @@ Thumbs.db
 # Deployment & tooling artifacts
 .netlify/
 .agents/
+.backup/
+*~
+

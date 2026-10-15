@@ -92,7 +92,7 @@ export const PatientTimelinePage: React.FC = () => {
     <div className="min-h-screen bg-canvas pb-20">
       <main className="mx-auto max-w-[1200px] 2xl:max-w-[1720px] space-y-6 px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
         {/* Back Link & Title */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             onClick={() => {
@@ -107,9 +107,21 @@ export const PatientTimelinePage: React.FC = () => {
               Back to {user?.role === 'DOCTOR' ? 'Doctor Workstation' : user?.role === 'ADMIN' ? 'Governance Console' : 'Patient Health Portal'}
             </span>
           </button>
-          <Pill tone="emerald">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Verified RBAC Medical Timeline
-          </Pill>
+          <div className="flex items-center gap-2.5">
+            <a
+              href={`/api/v1/patients/${patient?.id || id}/summary/pdf?token=${token}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-hair bg-white px-3.5 py-1.5 text-xs font-semibold text-primary-700 shadow-xs transition-colors hover:bg-slate-50 hover:text-primary-800 focus-visible:ring-2 focus-visible:ring-primary-600"
+              title="Download official longitudinal patient health dossier as PDF"
+            >
+              <Icon.Download size={14} className="text-primary-600" />
+              <span>Export Health Summary (PDF)</span>
+            </a>
+            <Pill tone="emerald">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Verified RBAC Medical Timeline
+            </Pill>
+          </div>
         </div>
 
         {/* Summary Banner */}
@@ -121,18 +133,18 @@ export const PatientTimelinePage: React.FC = () => {
                   {initials}
                 </div>
                 <div>
-                  <h1 className="font-display text-2xl font-bold">{fullName}</h1>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <span className="rounded-md bg-white/15 px-2 py-0.5 font-mono text-xs">
+                  <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white">{fullName}</h1>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                    <span className="rounded-md bg-white/20 px-2.5 py-0.5 font-mono text-xs font-semibold text-white">
                       {patientUid}
                     </span>
-                    <span className="text-sm text-primary-100">
+                    <span className="text-sm font-medium text-primary-100">
                       {patient?.gender || '-'} •{' '}
                       {patient?.date_of_birth
                         ? `${new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()} Yrs`
                         : '-'}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-critical px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-critical px-3 py-0.5 text-xs font-bold text-white shadow-xs">
                       {patient?.blood_group ? `${patient.blood_group} Blood Group` : 'Blood Group N/A'}
                     </span>
                   </div>
@@ -223,7 +235,7 @@ export const PatientTimelinePage: React.FC = () => {
 
         {/* Section Heading */}
         <div className="pt-2">
-          <h2 className="font-display text-xl font-bold text-ink-900">Longitudinal Health Timeline</h2>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-ink-900">Longitudinal Health Timeline</h2>
           <p className="mt-1 text-sm text-ink-600">
             A single continuous record of every consultation, accessible under strict RBAC.
           </p>
@@ -286,7 +298,7 @@ export const PatientTimelinePage: React.FC = () => {
                           <p className="mt-1.5 text-sm text-ink-600">
                             {record.doctor_name}{' '}
                             <span className="text-ink-600">
-                              ({record.doctor_qualifications || record.doctor_specialization || 'MBBS, FCPS Cardiology - NICVD'})
+                              ({record.doctor_qualifications || record.doctor_specialization || 'MBBS, FCPS Cardiology | NICVD'})
                             </span>
                           </p>
                           <p className="text-sm text-ink-600">
@@ -295,6 +307,17 @@ export const PatientTimelinePage: React.FC = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
+                          <a
+                            href={`/api/v1/consultations/${record.id}/pdf?token=${token}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-hair bg-white px-2.5 py-1 text-xs font-semibold text-primary-700 shadow-xs transition-colors hover:bg-slate-50 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                            title="Download Clinical Encounter Summary PDF"
+                          >
+                            <Icon.Download size={12} className="text-primary-600" />
+                            <span className="hidden sm:inline">Encounter PDF</span>
+                          </a>
                           {isLatest && (
                             <Pill tone="emerald">
                               <span className="h-1.5 w-1.5 rounded-full bg-success" /> Most Recent
@@ -511,6 +534,18 @@ export const PatientTimelinePage: React.FC = () => {
                   <span className="font-bold text-audit">{timeline.reduce((acc: number, t: any) => acc + (t.labReports?.length || 0), 0) || 2} Reports</span>
                 </div>
               </div>
+
+              <div className="pt-2 border-t border-hair">
+                <a
+                  href={`/api/v1/patients/${patient?.id || id}/summary/pdf?token=${token}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex min-h-[40px] items-center justify-center gap-2 w-full rounded-xl bg-primary-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
+                >
+                  <Icon.Download size={14} />
+                  <span>Download Full Dossier (PDF)</span>
+                </a>
+              </div>
             </Card>
 
             {/* Diagnostic Quick Filter Card */}
@@ -524,16 +559,16 @@ export const PatientTimelinePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="space-y-2 text-xs">
-                <div className="rounded-lg border border-hair bg-canvas p-2.5">
+              <div className="space-y-2.5 text-xs">
+                <div className="rounded-lg border border-hair bg-canvas p-3">
                   <p className="font-semibold text-ink-900">Fast Blood Glucose &amp; HbA1c</p>
-                  <p className="text-[11px] text-success font-medium">5.8% (Optimal Glycemic Control)</p>
-                  <p className="text-[10px] text-ink-400 font-mono mt-0.5">Square Diagnostics • 10 Aug 2026</p>
+                  <p className="text-xs text-success font-medium mt-0.5">5.8% (Optimal Glycemic Control)</p>
+                  <p className="text-xs text-ink-500 font-mono mt-1">Square Diagnostics • 10 Aug 2026</p>
                 </div>
-                <div className="rounded-lg border border-hair bg-canvas p-2.5">
+                <div className="rounded-lg border border-hair bg-canvas p-3">
                   <p className="font-semibold text-ink-900">12-Lead Resting Electrocardiogram (ECG)</p>
-                  <p className="text-[11px] text-success font-medium">Normal Sinus Rhythm • 74 bpm</p>
-                  <p className="text-[10px] text-ink-400 font-mono mt-0.5">NICVD Lab 3 • 10 Aug 2026</p>
+                  <p className="text-xs text-success font-medium mt-0.5">Normal Sinus Rhythm • 74 bpm</p>
+                  <p className="text-xs text-ink-500 font-mono mt-1">NICVD Lab 3 • 10 Aug 2026</p>
                 </div>
               </div>
             </Card>
@@ -542,19 +577,19 @@ export const PatientTimelinePage: React.FC = () => {
             <Card className="p-5 text-xs bg-slate-900 text-white border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                  <Icon.Shield size={15} />
-                  <span>Cryptographic RBAC Seal</span>
+                  <Icon.Shield size={16} />
+                  <span className="text-xs">Cryptographic RBAC Seal</span>
                 </div>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/20">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Verified
                 </span>
               </div>
-              <p className="text-slate-300 leading-relaxed text-[11px]">
+              <p className="text-slate-300 leading-relaxed text-xs">
                 This longitudinal medical timeline is cryptographically verified against the MedraLink distributed ledger.
               </p>
-              <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-2.5">
+              <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-semibold text-slate-400">SHA-256 Digest:</span>
+                  <span className="text-xs font-semibold text-slate-400">SHA-256 Digest:</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -562,13 +597,13 @@ export const PatientTimelinePage: React.FC = () => {
                       toast.success('Copied SHA-256 integrity hash!');
                     }}
                     title="Copy hash to clipboard"
-                    className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
                   >
-                    <Icon.Copy size={11} />
+                    <Icon.Copy size={12} />
                     <span>Copy</span>
                   </button>
                 </div>
-                <p className="font-mono text-[10px] text-slate-300 break-all select-all leading-normal">
+                <p className="font-mono text-xs text-slate-300 break-all select-all leading-normal">
                   e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
                 </p>
               </div>
