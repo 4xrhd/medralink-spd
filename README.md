@@ -16,7 +16,7 @@
 
 ### Key Architectural Highlights
 - **High-Performance 3-Tier Architecture:** React 18 TypeScript SPA (Vite + Tailwind CSS) with Express.js REST API and 3NF-normalized PostgreSQL/SQLite persistence.
-- **Emergency Hospital Locator:** Integrated Google Maps Platform (Maps JavaScript API & Places Service) for real-time GPS geolocation, interactive numbered markers, turn-by-turn navigation, and toll-free emergency hotline dispatch (16263).
+- **Emergency Hospital Locator:** Free OpenStreetMap search (no API key, no billing) with GPS or typed-address location, a specialization filter, interactive numbered markers, turn-by-turn navigation, and toll-free emergency hotline dispatch (16263).
 - **Single-Service Cloud Deployable:** The Express server automatically compiles and statically serves the SPA client in production with HTML5 history pushState fallback, enabling single-container deployments on Render, Railway, Fly.io, or VPS instances.
 - **Regulatory-Grade Security:** Granular Role-Based Access Control (RBAC), Helmet CSP hardening, Gzip/Brotli compression, Morgan request logging, rate limiting (auth + general API), parameterized SQL execution, and an immutable SHA-256 cryptographic audit trail.
 - **Dual Database Engine Support:** Instant zero-config embedded SQLite for rapid development and testing; enterprise connection-pooled PostgreSQL with auto-SSL detection for production cloud deployments.
@@ -212,16 +212,18 @@ cd prototype/client
 npm run dev
 ```
 
-### 🗺️ Emergency Hospital Search Setup (Google Maps Platform)
+### 🗺️ Emergency Hospital Search (OpenStreetMap, free)
 
-The `/hospitals` emergency locator utilizes Google Maps JavaScript API and Places API:
+The `/hospitals` locator needs **no API key and no payment**:
 
-1. Obtain a Google Maps API Key with **Maps JavaScript API** and **Places API** enabled from the [Google Cloud Console](https://console.cloud.google.com).
-2. Configure your key in `prototype/client/.env`:
-   ```env
-   VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
-   ```
-3. Restart the Vite dev server. If no key is provided, the interface displays an informative configuration guide while keeping all navigation paths responsive.
+- **Map:** Leaflet with OpenStreetMap tiles.
+- **Hospitals in Bangladesh:** a bundled snapshot of 2,121 OpenStreetMap hospitals (`client/public/data/hospitals-bd.json`, about 70 kB gzipped), searched in the browser, so results are instant and never rate-limited. Refresh it with `cd client && node scripts/fetch-hospitals.mjs`.
+- **Outside Bangladesh:** live Overpass API query (all public servers in parallel, first answer wins).
+- **Typed address:** Nominatim geocoding.
+- **Specialization filter:** OpenStreetMap `healthcare:speciality` tags plus hospital-name matching; kept in the URL (`/hospitals?specialty=cardiology`).
+- **Directions:** opens Google Maps by plain link, which needs no key.
+
+Map data (c) OpenStreetMap contributors, ODbL.
 
 ---
 

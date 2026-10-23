@@ -15,7 +15,7 @@
 * Medical history viewing
 * Interactive Patient Medical Timeline
 * PDF prescription generation
-* Emergency hospital locator and nearby medical facility search (Google Maps Platform)
+* Emergency hospital locator and nearby medical facility search with specialization filter (OpenStreetMap, no API key)
 * Real-time GPS geolocation detection and distance computation
 * Turn-by-turn emergency navigation and one-touch facility dialing
 * National health emergency hotline integration (24/7 Toll-free 16263)

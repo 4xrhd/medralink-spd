@@ -153,4 +153,10 @@ so uploaded lab files do not persist.
   (`/hospitals?specialty=cardiology`), so a filtered search can be shared.
 - The patient portal's Emergency Services card has a specialization picker that opens the filtered search.
 - axe WCAG 2.1 AA: zero violations on the patient dashboard and the hospital search page.
-- Requires `VITE_GOOGLE_MAPS_API_KEY` (Maps JavaScript API and Places API) at build time.
+- Moved from Google Maps to free OpenStreetMap services, because Google Maps Platform requires a
+  billing account: Leaflet map with OpenStreetMap tiles, a bundled snapshot of 2,121 Bangladesh
+  hospitals (`client/public/data/hospitals-bd.json`, refreshed by `client/scripts/fetch-hospitals.mjs`),
+  live Overpass fallback outside Bangladesh, and Nominatim for typed addresses. No API key, no cost.
+- Specialty filtering runs on the loaded list in the browser, so changing the filter needs no request.
+- Name matching avoids false hits such as "Heart" for ENT, "Accident" for dental, "Neurology" for kidney.
+- Client unit tests added with Vitest (15 tests for the search service).

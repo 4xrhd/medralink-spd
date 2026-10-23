@@ -5,7 +5,9 @@ All notable changes to MedraLink. Detailed notes per date live in `docs/date-*/u
 ## 2026-10-23
 
 ### Added
-- Specialization filter for the Google Maps hospital search, with a picker on the patient portal.
+- Specialization filter for the hospital search, with a picker on the patient portal.
+- Free OpenStreetMap hospital search (Leaflet map, bundled Bangladesh snapshot, Overpass, Nominatim) replacing Google Maps; no API key or billing.
+- Client unit tests with Vitest.
 - Input validation with express-validator on all write routes.
 - Doctor-to-patient assignment checks on patient, timeline, prescription and lab report access.
 - Profile update, password change, forgot and reset password (API and pages).
