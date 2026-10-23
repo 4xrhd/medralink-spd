@@ -7,15 +7,19 @@ import { Patient } from '../types/index.js';
 export async function searchPatients(req: Request, res: Response) {
   try {
     const q = (req.query.q as string || '').trim();
+    // Doctors need the directory to start a first consultation, but not national IDs or addresses
+    const columns = req.user?.role === 'DOCTOR'
+      ? 'p.id, p.patient_uid, p.date_of_birth, p.gender, p.blood_group, p.created_at, u.full_name, u.phone'
+      : 'p.*, u.full_name, u.email, u.phone';
     let sql = `
-      SELECT p.*, u.full_name, u.email, u.phone
+      SELECT ${columns}
       FROM patients p
       JOIN users u ON p.user_id = u.id
     `;
     const params: any[] = [];
 
     if (q) {
-      sql += ` WHERE p.patient_uid LIKE ? OR u.full_name LIKE ? OR u.phone LIKE ? OR p.nid_or_bid LIKE ?`;
+      sql += ` WHERE LOWER(p.patient_uid) LIKE LOWER(?) OR LOWER(u.full_name) LIKE LOWER(?) OR u.phone LIKE ? OR p.nid_or_bid LIKE ?`;
       const searchPattern = `%${q}%`;
       params.push(searchPattern, searchPattern, searchPattern, searchPattern);
     }

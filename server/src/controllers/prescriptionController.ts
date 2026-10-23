@@ -104,6 +104,9 @@ export async function downloadPrescriptionPDF(req: Request, res: Response) {
     if (!prescription) {
       return res.status(404).json({ success: false, message: 'Prescription not found.' });
     }
+    if (!(await canAccessPatient(req, prescription.patient_id))) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
 
     const items = await query('SELECT * FROM prescription_items WHERE prescription_id = ?', [prescription.id]);
     const vitals = await queryOne('SELECT * FROM vital_signs WHERE record_id = ?', [prescription.record_id]);

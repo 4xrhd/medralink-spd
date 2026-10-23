@@ -4,16 +4,10 @@
   command = "npm run build"
 
 # The API runs on Render (render.yaml). Proxying keeps the browser on one origin,
-# so relative /api links (PDF downloads, uploads) work without CORS.
+# so relative /api links (PDF downloads, lab report files) work without CORS.
 [[redirects]]
   from = "/api/*"
   to = "https://medralink-api.onrender.com/api/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/uploads/*"
-  to = "https://medralink-api.onrender.com/uploads/:splat"
   status = 200
   force = true
 

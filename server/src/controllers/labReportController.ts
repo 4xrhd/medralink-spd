@@ -23,6 +23,37 @@ const storage = multer.diskStorage({
   }
 });
 
+/** A rejected upload: the error handler answers it with 400. */
+export class UploadRejectedError extends Error {}
+
+// First bytes of each allowed type; the declared MIME type alone is chosen by the client
+const MAGIC_BYTES: Record<string, number[][]> = {
+  'application/pdf': [[0x25, 0x50, 0x44, 0x46]],
+  'image/png': [[0x89, 0x50, 0x4e, 0x47]],
+  'image/jpeg': [[0xff, 0xd8, 0xff]],
+  'image/webp': [[0x52, 0x49, 0x46, 0x46]],
+};
+
+export function hasExpectedSignature(filePath: string, mimeType: string): boolean {
+  const signatures = MAGIC_BYTES[mimeType];
+  if (!signatures) return false;
+  const head = Buffer.alloc(8);
+  const fd = fs.openSync(filePath, 'r');
+  try {
+    fs.readSync(fd, head, 0, head.length, 0);
+  } finally {
+    fs.closeSync(fd);
+  }
+  return signatures.some((sig) => sig.every((byte, i) => head[i] === byte));
+}
+
+function discardUpload(file?: Express.Multer.File): void {
+  if (!file) return;
+  fs.promises.unlink(file.path).catch((err) => console.warn('[UPLOAD] could not remove rejected file', err));
+}
+
+export const labFileUrl = (labId: string) => `/api/v1/lab-reports/${labId}/file`;
+
 export const uploadMiddleware = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB limit
@@ -34,13 +65,19 @@ export const uploadMiddleware = multer({
     if (allowedExts.includes(ext) && allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only PDF and image files (JPG, PNG, WebP) are allowed.'));
+      cb(new UploadRejectedError('Only PDF and image files (JPG, PNG, WebP) are allowed.'));
     }
   }
 });
 
 export async function uploadLabReport(req: Request, res: Response) {
+  const file = req.file;
+  let stored = false;
   try {
+    if (file && !hasExpectedSignature(file.path, file.mimetype)) {
+      return res.status(400).json({ success: false, message: 'The file content does not match its type.' });
+    }
+
     const { patientId, recordId, testName, category, testDate, resultsSummary } = req.body;
     if (!patientId || !testName || !category) {
       return res.status(400).json({ success: false, message: 'Patient ID, Test Name, and Category are required.' });
@@ -55,8 +92,7 @@ export async function uploadLabReport(req: Request, res: Response) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 
-    const file = req.file;
-    const labId = 'lab-' + Math.random().toString(36).substring(2, 10);
+    const labId = `lab-${crypto.randomUUID()}`;
     const now = new Date().toISOString().split('T')[0];
 
     await execute(
@@ -69,7 +105,7 @@ export async function uploadLabReport(req: Request, res: Response) {
         testName,
         category,
         file ? file.path : null,
-        file ? `/uploads/${file.filename}` : null,
+        file ? labFileUrl(labId) : null,
         file ? file.originalname : null,
         file ? file.size : null,
         file ? file.mimetype : null,
@@ -78,6 +114,7 @@ export async function uploadLabReport(req: Request, res: Response) {
         'COMPLETED'
       ]
     );
+    stored = true;
 
     await recordAuditEvent({
       actorId: req.user?.id,
@@ -95,12 +132,53 @@ export async function uploadLabReport(req: Request, res: Response) {
       message: 'Lab report uploaded successfully.',
       data: {
         id: labId,
-        fileUrl: file ? `/uploads/${file.filename}` : null
+        fileUrl: file ? labFileUrl(labId) : null
       }
     });
   } catch (error: any) {
     console.error('Error uploading lab report:', error);
     return res.status(500).json({ success: false, message: 'Failed to upload diagnostic report.' });
+  } finally {
+    // Any request that did not end in a saved record leaves no file behind
+    if (!stored) discardUpload(file);
+  }
+}
+
+export async function downloadLabReportFile(req: Request, res: Response) {
+  try {
+    const report = await queryOne<{ patient_id: string; file_path: string | null; file_name: string | null; mime_type: string | null }>(
+      'SELECT patient_id, file_path, file_name, mime_type FROM lab_reports WHERE id = ?',
+      [req.params.id]
+    );
+    if (!report) return res.status(404).json({ success: false, message: 'Lab report not found.' });
+    if (!(await canAccessPatient(req, report.patient_id))) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
+    }
+    // Only files inside the upload folder are ever sent
+    const filePath = report.file_path ? path.resolve(uploadDir, path.basename(report.file_path)) : null;
+    if (!filePath || !fs.existsSync(filePath)) {
+      return res.status(404).json({ success: false, message: 'No file is attached to this report.' });
+    }
+
+    await recordAuditEvent({
+      actorId: req.user?.id,
+      actorRole: req.user?.role || 'UNKNOWN',
+      action: 'VIEW_LAB_REPORT_FILE',
+      targetResource: 'lab_reports',
+      targetId: String(req.params.id),
+      ipAddress: req.ip || '127.0.0.1',
+      userAgent: req.headers['user-agent'],
+      details: `Lab report file ${report.file_name ?? ''} opened`,
+    });
+
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.type(report.mime_type || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="${(report.file_name || 'report').replace(/["\\\r\n]/g, '')}"`);
+    return res.sendFile(filePath);
+  } catch (error: unknown) {
+    console.error('Error sending lab report file:', error);
+    return res.status(500).json({ success: false, message: 'Failed to open the lab report file.' });
   }
 }
 

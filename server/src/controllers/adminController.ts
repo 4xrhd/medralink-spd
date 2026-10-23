@@ -43,7 +43,7 @@ export async function listUsers(req: Request, res: Response) {
       params.push(status);
     }
     if (q) {
-      sql += ' AND (full_name LIKE ? OR email LIKE ?)';
+      sql += ' AND (LOWER(full_name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?))';
       params.push(`%${q}%`, `%${q}%`);
     }
     sql += ' ORDER BY created_at DESC LIMIT 200';

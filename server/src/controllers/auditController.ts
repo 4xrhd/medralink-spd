@@ -12,12 +12,12 @@ function buildAuditFilter(q: Record<string, unknown>): { where: string; params: 
 
   if (q.role) add('a.actor_role = ?', q.role);
   if (q.userId) add('a.actor_id = ?', q.userId);
-  if (q.action) add('a.action LIKE ?', `%${q.action}%`);
+  if (q.action) add('UPPER(a.action) LIKE UPPER(?)', `%${q.action}%`);
   if (q.from) add('a.timestamp >= ?', new Date(String(q.from)).toISOString());
   if (q.to) add('a.timestamp <= ?', new Date(String(q.to)).toISOString());
   if (q.search) {
     const like = `%${q.search}%`;
-    add('(a.details LIKE ? OR a.target_id LIKE ? OR u.full_name LIKE ?)', like, like, like);
+    add('(LOWER(a.details) LIKE LOWER(?) OR LOWER(a.target_id) LIKE LOWER(?) OR LOWER(u.full_name) LIKE LOWER(?))', like, like, like);
   }
   return { where: clauses.length ? `WHERE ${clauses.join(' AND ')}` : '', params };
 }

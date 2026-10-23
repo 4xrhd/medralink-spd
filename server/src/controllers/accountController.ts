@@ -109,9 +109,13 @@ export async function resetPassword(req: Request, res: Response) {
       return res.status(400).json({ success: false, message: 'Reset link is invalid or has expired.' });
     }
 
+    // Claim the token first: only the request whose DELETE removes the row may use it
+    const claimed = await execute('DELETE FROM password_resets WHERE id = ?', [reset.id]);
+    if (claimed.changes !== 1) {
+      return res.status(400).json({ success: false, message: 'Reset link is invalid or has expired.' });
+    }
     const hash = await bcrypt.hash(newPassword, 10);
     await execute('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [hash, reset.user_id]);
-    await execute('DELETE FROM password_resets WHERE id = ?', [reset.id]);
     const user = await queryOne<{ role: string }>('SELECT role FROM users WHERE id = ?', [reset.user_id]);
     await auditFromRequest(req, reset.user_id, user?.role || 'UNKNOWN', 'PASSWORD_RESET', 'Password reset with token');
     return res.json({ success: true, message: 'Password has been reset. You can now sign in.' });
