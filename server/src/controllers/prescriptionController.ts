@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { query, queryOne } from '../db/database.js';
 import { generatePrescriptionPDF } from '../services/pdfService.js';
 import { recordAuditEvent } from '../services/auditService.js';
+import { canAccessPatient } from '../services/accessService.js';
 
 export async function getPrescriptionById(req: Request, res: Response) {
   try {
@@ -27,7 +28,7 @@ export async function getPrescriptionById(req: Request, res: Response) {
     }
 
     // Role check
-    if (req.user?.role === 'PATIENT' && req.user.patientId !== prescription.patient_id) {
+    if (!(await canAccessPatient(req, prescription.patient_id))) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 

@@ -4,7 +4,9 @@ import { recordAuditEvent } from '../services/auditService.js';
 
 export async function createAppointment(req: Request, res: Response) {
   try {
-    const { patientId, doctorId, appointmentDate, timeSlot, reason } = req.body;
+    const { doctorId, appointmentDate, timeSlot, reason } = req.body;
+    // Patients can only book for themselves
+    const patientId = req.user?.role === 'PATIENT' ? req.user.patientId : req.body.patientId;
     if (!patientId || !doctorId || !appointmentDate || !timeSlot) {
       return res.status(400).json({ success: false, message: 'Missing required appointment booking fields.' });
     }
@@ -87,6 +89,22 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
     const { status } = req.body;
     if (!status) {
       return res.status(400).json({ success: false, message: 'Status is required.' });
+    }
+
+    const appointment = await queryOne<{ patient_id: string; doctor_id: string }>(
+      'SELECT patient_id, doctor_id FROM appointments WHERE id = ?',
+      [id]
+    );
+    if (!appointment) {
+      return res.status(404).json({ success: false, message: 'Appointment not found.' });
+    }
+    const user = req.user;
+    const ownsAppointment =
+      user?.role === 'ADMIN' ||
+      (user?.role === 'DOCTOR' && user.doctorId === appointment.doctor_id) ||
+      (user?.role === 'PATIENT' && user.patientId === appointment.patient_id && status === 'CANCELLED');
+    if (!ownsAppointment) {
+      return res.status(403).json({ success: false, message: 'You cannot change this appointment.' });
     }
 
     await execute('UPDATE appointments SET status = ? WHERE id = ?', [status, id]);

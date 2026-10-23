@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { validate, rules } from '../middleware/validate.js';
 import { createConsultation, getConsultationById, downloadConsultationPDF } from '../controllers/consultationController.js';
 import { authenticateJWT } from '../middleware/auth.js';
 import { requireRole } from '../middleware/rbac.js';
@@ -15,7 +16,7 @@ router.get('/:id/pdf', (req, res, next) => {
 
 router.use(authenticateJWT);
 
-router.post('/', requireRole(['DOCTOR', 'ADMIN']), createConsultation);
+router.post('/', requireRole(['DOCTOR', 'ADMIN']), validate(rules.consultation), createConsultation);
 router.get('/:id', getConsultationById);
 
 export default router;

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { execute, query, queryOne, runTransaction } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
+import { canAccessPatient } from '../services/accessService.js';
 import { createNotification } from '../services/notificationService.js';
 import { generateConsultationSummaryPDF, generatePatientHealthSummaryPDF } from '../services/pdfService.js';
 
@@ -263,7 +264,7 @@ export async function getConsultationById(req: Request, res: Response) {
     }
 
     // Role-level security check
-    if (req.user?.role === 'PATIENT' && req.user.patientId !== record.patient_id) {
+    if (!(await canAccessPatient(req, record.patient_id))) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 
@@ -312,7 +313,7 @@ export async function downloadConsultationPDF(req: Request, res: Response) {
       return res.status(404).json({ success: false, message: 'Consultation record not found.' });
     }
 
-    if (req.user?.role === 'PATIENT' && req.user.patientId !== record.patient_id) {
+    if (!(await canAccessPatient(req, record.patient_id))) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 
@@ -421,7 +422,7 @@ export async function downloadPatientSummaryPDF(req: Request, res: Response) {
       return res.status(404).json({ success: false, message: 'Patient record not found.' });
     }
 
-    if (req.user?.role === 'PATIENT' && req.user.patientId !== patient.id) {
+    if (!(await canAccessPatient(req, patient.id))) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 

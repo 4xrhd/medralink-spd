@@ -2,8 +2,10 @@ import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { execute, query, queryOne } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
+import { canAccessPatient } from '../services/accessService.js';
 
 const uploadDir = path.resolve(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -15,8 +17,8 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const uniqueName = `lab_${Date.now()}_${Math.random().toString(36).substring(2, 8)}${ext}`;
+    const ext = path.extname(file.originalname).toLowerCase();
+    const uniqueName = `lab_${Date.now()}_${crypto.randomBytes(8).toString('hex')}${ext}`;
     cb(null, uniqueName);
   }
 });
@@ -25,9 +27,11 @@ export const uploadMiddleware = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB limit
   fileFilter: (_req, file, cb) => {
-    const allowedTypes = /pdf|jpg|jpeg|png|webp/;
-    const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
-    if (allowedTypes.test(ext)) {
+    // Both the extension and the declared MIME type must be on the allow-list
+    const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
+    const allowedMimes = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedExts.includes(ext) && allowedMimes.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new Error('Only PDF and image files (JPG, PNG, WebP) are allowed.'));
@@ -45,6 +49,10 @@ export async function uploadLabReport(req: Request, res: Response) {
     const patient = await queryOne('SELECT id, patient_uid FROM patients WHERE id = ? OR patient_uid = ?', [patientId, patientId]);
     if (!patient) {
       return res.status(404).json({ success: false, message: 'Patient not found.' });
+    }
+
+    if (!(await canAccessPatient(req, patient.id))) {
+      return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 
     const file = req.file;
@@ -110,8 +118,18 @@ export async function listLabReports(req: Request, res: Response) {
       sql += ` WHERE lr.patient_id = ?`;
       params.push(req.user.patientId);
     } else if (req.query.patientId) {
+      const patientId = String(req.query.patientId);
+      if (!(await canAccessPatient(req, patientId))) {
+        return res.status(403).json({ success: false, message: 'Access denied.' });
+      }
       sql += ` WHERE lr.patient_id = ?`;
-      params.push(req.query.patientId);
+      params.push(patientId);
+    } else if (req.user?.role === 'DOCTOR') {
+      // Without a patient filter a doctor only sees reports of assigned patients
+      sql += ` WHERE lr.patient_id IN (
+        SELECT patient_id FROM appointments WHERE doctor_id = ?
+        UNION SELECT patient_id FROM medical_records WHERE doctor_id = ?)`;
+      params.push(req.user.doctorId, req.user.doctorId);
     }
 
     sql += ` ORDER BY lr.test_date DESC, lr.created_at DESC LIMIT 50`;
