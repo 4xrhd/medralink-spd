@@ -248,7 +248,6 @@ export const LandingPage: React.FC = () => {
       {/* Problem vs MedraLink Solution */}
       <section id="solutions" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <SectionHeading
-          eyebrow="The Healthcare Challenge"
           title="From fragmented records to one continuous timeline"
           subtitle="How MedraLink transforms disconnected clinic visits into a safe, lifelong care journey."
         />
@@ -313,7 +312,6 @@ export const LandingPage: React.FC = () => {
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <SectionHeading
             align="center"
-            eyebrow="How MedraLink Works"
             title="A seamless journey from registration to recovery"
             subtitle="Designed for clinical simplicity, safety, and instant physician adoption."
           />
@@ -345,7 +343,6 @@ export const LandingPage: React.FC = () => {
       <section id="clinical-architecture" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-14 sm:py-20">
         <SectionHeading
           align="center"
-          eyebrow="Tailored Clinical Interfaces"
           title="Role-based workspaces designed for every healthcare stakeholder"
           subtitle="Specialized interfaces engineered specifically for attending physicians, patients, and clinical governance teams."
         />
@@ -447,9 +444,6 @@ export const LandingPage: React.FC = () => {
       {/* Enterprise Security & Compliance Banner */}
       <section id="governance" className="scroll-mt-24 bg-gradient-to-br from-primary-900 via-primary-800 to-ink-900 py-16 text-white">
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <p className="text-xs font-bold text-primary-200">
-            Enterprise Security &amp; Compliance
-          </p>
           <h2 className="mt-2 max-w-2xl font-display text-3xl sm:text-4xl font-bold tracking-tight">
             Privacy built into every patient record
           </h2>
