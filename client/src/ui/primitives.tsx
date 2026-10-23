@@ -325,25 +325,26 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "inline-flex items-center justify-center font-semibold transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
+      // App-like feel: eased colour and shadow, a 1px lift on hover, a quick press on click
+      "group/btn inline-flex items-center justify-center whitespace-nowrap font-semibold select-none cursor-pointer transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px active:translate-y-0 active:scale-[0.97] active:duration-75 motion-reduce:transform-none motion-reduce:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
 
     const variants: Record<Exclude<NonNullable<ButtonProps["variant"]>, "clinical">, string> = {
       primary:
-        "bg-primary-700 hover:bg-primary-800 text-white border border-transparent shadow-sm shadow-primary-600/20 focus-visible:ring-primary-600",
+        "bg-primary-700 hover:bg-primary-800 text-white border border-transparent shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(11_93_70/0.25)] hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_6px_14px_-4px_rgb(11_93_70/0.45)] focus-visible:ring-primary-600",
       secondary:
-        "bg-white hover:bg-primary-50 text-ink-900 border border-hair-strong hover:border-primary-300 shadow-subtle focus-visible:ring-primary-600",
+        "bg-white hover:bg-primary-50 text-ink-900 border border-hair-strong hover:border-primary-300 shadow-[0_1px_2px_rgb(20_33_28/0.06)] hover:shadow-[0_4px_12px_-4px_rgb(20_33_28/0.18)] focus-visible:ring-primary-600",
       outline:
         "bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-200 focus-visible:ring-primary-600",
       destructive:
-        "bg-critical hover:bg-rose-700 text-white border border-transparent shadow-sm focus-visible:ring-critical",
+        "bg-critical hover:bg-rose-700 text-white border border-transparent shadow-[0_1px_2px_rgb(176_38_33/0.25)] hover:shadow-[0_6px_14px_-4px_rgb(176_38_33/0.45)] focus-visible:ring-critical",
       ghost:
-        "bg-transparent hover:bg-primary-50 text-ink-600 hover:text-ink-900 border border-transparent focus-visible:ring-primary-600",
+        "bg-transparent hover:bg-primary-50 text-ink-600 hover:text-ink-900 border border-transparent hover:translate-y-0 focus-visible:ring-primary-600",
       soft:
         "bg-primary-50 hover:bg-primary-100 text-primary-700 border border-primary-100 focus-visible:ring-primary-600",
     };
 
     const sizes: Record<string, string> = {
-      sm: "min-h-[36px] h-9 px-3.5 text-xs gap-1.5 rounded-lg font-semibold",
+      sm: "min-h-[36px] h-9 px-3.5 text-[13px] gap-1.5 rounded-lg font-semibold",
       md: "min-h-[40px] h-10 px-4 text-sm gap-2 rounded-xl font-semibold",
       lg: "min-h-[48px] h-12 px-5 text-base gap-2.5 rounded-xl font-semibold",
     };
@@ -364,7 +365,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         <span>{children}</span>
         {!isLoading && icon && iconPosition === "right" && (
-          <span className="shrink-0">{icon}</span>
+          <span className="shrink-0 transition-transform duration-200 ease-out group-hover/btn:translate-x-0.5 motion-reduce:transform-none">{icon}</span>
         )}
       </button>
     );

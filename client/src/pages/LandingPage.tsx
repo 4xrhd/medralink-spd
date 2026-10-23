@@ -5,6 +5,14 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Card, Icon, Button, VitalPill } from '../ui/primitives.js';
 import { EcgLine, SectionHeading, StepCard } from '../ui/medical.js';
 
+const FAQ: [string, string][] = [
+  ['Is MedraLink free for patients?', 'Yes. Patients can create an account, view their timeline and download prescriptions at no cost.'],
+  ['Who can see my medical record?', 'You, and doctors who have had a consultation with you. Other patients and doctors who have not treated you cannot open it.'],
+  ['How are doctors verified?', 'Doctors register with their BMDC registration number. An administrator checks it before the account can write prescriptions.'],
+  ['Can a pharmacy check that a prescription is real?', 'Each prescription PDF has a QR code that links to the issued prescription, so it can be compared with the paper copy.'],
+  ['What happens to my old paper reports?', 'You can upload lab reports as PDF or image files. They are attached to your record and served only to you and your doctors.'],
+];
+
 export const LandingPage: React.FC = () => {
   useDocumentTitle('MedraLink | Connected Health Records for Patients and Doctors');
   const navigate = useNavigate();
@@ -12,43 +20,54 @@ export const LandingPage: React.FC = () => {
   const [tab, setTab] = useState(0);
 
   const tabs = [
-    { label: "Physician Workstation", icon: <Icon.Stethoscope size={16} /> },
-    { label: "Patient Health Portal", icon: <Icon.User size={16} /> },
-    { label: "Clinical Administration", icon: <Icon.Shield size={16} /> },
+    { label: "For doctors", icon: <Icon.Stethoscope size={16} /> },
+    { label: "For patients", icon: <Icon.User size={16} /> },
+    { label: "For administrators", icon: <Icon.Shield size={16} /> },
   ];
 
   const content = [
     {
-      title: "Rapid clinical documentation, structured for patient continuity",
-      subtitle: "Engineered for high-volume outpatient clinics and hospital chambers with zero repetitive paperwork.",
+      title: "Write a consultation once, and it stays with the patient",
+      subtitle: "Built for busy outpatient chambers: less retyping, fewer missed details.",
       features: [
-        ["Searchable ICD-10 Codification", "Quick-select diagnosis chips backed by comprehensive ICD-10 clinical database."],
-        ["Structured E-Prescriptions", "Dosage, frequency, meal timing, and duration validation with built-in safety checks."],
-        ["Live Vitals Telemetry Matrix", "Automated BMI computation with threshold-aware blood pressure, pulse, and SpO2 alerts."],
-        ["Cryptographic Digital Signature", "Finalize, cryptographically sign, and issue an official prescription sheet in one step."],
+        ["ICD-10 diagnosis search", "Find and attach diagnosis codes as you type instead of looking them up."],
+        ["Structured prescriptions", "Dose, frequency, meal timing and duration in fixed fields, checked before issuing."],
+        ["Vitals with automatic BMI", "Blood pressure, pulse and SpO2 flagged when they fall outside normal ranges."],
+        ["Previous visits at a glance", "See allergies, conditions and past prescriptions before you prescribe."],
       ],
     },
     {
-      title: "A longitudinal health timeline patients can actually understand",
-      subtitle: "Every consultation, prescription, and attached diagnostic test organized into one clear story.",
+      title: "One health history you can read and carry",
+      subtitle: "Every consultation, prescription and lab report in date order, on any device.",
       features: [
-        ["Continuous Vertical Timeline", "Consultations rendered on an intuitive chronological tree spanning every visit."],
-        ["Diagnostic Lab Streaming", "High-resolution laboratory reports attached and reviewable directly against each visit."],
-        ["Allergy & Safety Alerts", "Prominent warning strips surface known allergies and chronic conditions instantly."],
-        ["Official PDF & QR Verification", "Download legally valid prescription sheets equipped with instant QR verification."],
+        ["Visit timeline", "Each consultation in order, with the diagnosis, medicines and notes from that visit."],
+        ["Lab reports with each visit", "Upload a report once and it sits next to the consultation it belongs to."],
+        ["Allergy warnings", "Known allergies and chronic conditions shown at the top of your record."],
+        ["Prescription PDF with QR code", "Download a prescription a pharmacy can check by scanning its QR code."],
       ],
     },
     {
-      title: "Clinical governance held to national and hospital standards",
-      subtitle: "Role-scoped access control ensuring confidential medical data is protected at every touchpoint.",
+      title: "Control who can see what",
+      subtitle: "Each role sees only the records it needs, and every change is logged.",
       features: [
-        ["BMDC Credential Verification", "Verify and validate physician credentials with real-time license lookups."],
-        ["Immutable Cryptographic Audit Trail", "Every consultation record and update written to an append-only SHA-256 ledger."],
-        ["Strict Role-Based Access Control", "Rigid privilege boundaries enforced across doctors, patients, and clinic administrators."],
-        ["Real-Time Platform Telemetry", "Live uptime, active record volumes, and compliance KPIs monitored continuously."],
+        ["Doctor verification", "New doctors are checked against their BMDC registration before they can prescribe."],
+        ["Tamper-evident audit log", "Each record change is chained with SHA-256, so edits to history show up on verification."],
+        ["Role-based access", "Doctors, patients and administrators get separate permissions enforced on the server."],
+        ["Account management", "Suspend or reactivate users and adjust platform settings from one panel."],
       ],
     },
   ];
+
+  const dashboardPath = user ? ({ DOCTOR: '/doctor', PATIENT: '/patient', ADMIN: '/admin' } as const)[user.role] : null;
+
+  const onTabKey = (e: React.KeyboardEvent) => {
+    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    const next = (tab + step + tabs.length) % tabs.length;
+    setTab(next);
+    document.getElementById(`workspace-tab-${next}`)?.focus();
+  };
 
   const handleLaunchDoctor = () => {
     if (user?.role === 'DOCTOR') {
@@ -94,52 +113,66 @@ export const LandingPage: React.FC = () => {
               verified physicians, and diagnostic clinics with one lifelong, role-secured medical timeline.
             </p>
 
-            {/* Primary Action Group */}
             <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
-              <Button
-                size="lg"
-                variant="primary"
-                onClick={handleLaunchDoctor}
-                icon={<Icon.Arrow size={16} />}
-                iconPosition="right"
-                className="w-full sm:w-auto justify-center"
-              >
-                Launch Doctor Workstation
-              </Button>
-              <Button
-                size="lg"
-                variant="secondary"
-                onClick={handleLaunchPatient}
-                icon={<Icon.User size={16} />}
-                className="w-full sm:w-auto justify-center"
-              >
-                Explore Patient Timeline
-              </Button>
+              {dashboardPath ? (
+                <Button
+                  size="lg"
+                  onClick={() => navigate(dashboardPath)}
+                  icon={<Icon.Arrow size={16} />}
+                  iconPosition="right"
+                  className="w-full sm:w-auto justify-center"
+                >
+                  Open your dashboard
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    size="lg"
+                    onClick={() => navigate('/register')}
+                    icon={<Icon.Arrow size={16} />}
+                    iconPosition="right"
+                    className="w-full sm:w-auto justify-center"
+                  >
+                    Create a free account
+                  </Button>
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    onClick={() => navigate('/login')}
+                    className="w-full sm:w-auto justify-center"
+                  >
+                    Sign in
+                  </Button>
+                </>
+              )}
             </div>
+            {!dashboardPath && (
+              <p className="mt-3 text-sm text-ink-600">Free for patients. Doctors are verified before they can prescribe.</p>
+            )}
 
-            {/* Medical Trust Indicators (Plain text + medical icons, no badges) */}
-            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-hair pt-6 text-xs text-ink-600">
+            
+            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-hair pt-6 text-sm text-ink-600">
               <div className="flex items-center gap-2 font-medium">
                 <Icon.ShieldPlus size={16} className="text-primary-700 shrink-0" />
-                <span>BMDC Verified</span>
+                <span>BMDC-verified doctors</span>
               </div>
               <div className="flex items-center gap-2 font-medium">
                 <Icon.Lock size={16} className="text-primary-700 shrink-0" />
-                <span>Encrypted Records</span>
+                <span>Encrypted in transit</span>
               </div>
               <div className="flex items-center gap-2 font-medium">
                 <Icon.Capsule size={16} className="text-primary-700 shrink-0" />
-                <span>Digital E-Rx</span>
+                <span>QR-checked prescriptions</span>
               </div>
               <div className="flex items-center gap-2 font-medium">
                 <Icon.HeartPulse size={16} className="text-primary-700 shrink-0" />
-                <span>Lifelong History</span>
+                <span>One lifelong record</span>
               </div>
             </div>
           </div>
 
           {/* Floating Live Consultation Workstation Preview */}
-          <div className="relative z-10">
+          <div className="relative z-10" aria-label="Example consultation screen" role="img">
             <div className="absolute -inset-4 sm:-inset-6 rounded-3xl bg-primary-50" aria-hidden="true" />
             <Card className="relative p-5 sm:p-6 shadow-card hover:shadow-card-hover border-hair bg-surface">
               <div className="flex items-center justify-between border-b border-hair pb-3.5">
@@ -149,25 +182,25 @@ export const LandingPage: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-sm font-bold text-ink-900">Dr. Ahmed Tariq, MBBS</p>
-                    <p className="text-xs text-ink-400">Consultation Session • Patient: Rahim Ahmed (P-1001)</p>
+                    <p className="text-xs text-ink-400">Patient: Rahim Ahmed, P-1001</p>
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" /> Live Session
+                  <span className="h-1.5 w-1.5 rounded-full bg-success" /> In progress
                 </span>
               </div>
 
               {/* Vitals Telemetry Row */}
               <div className="mt-4 grid grid-cols-3 gap-2">
                 <VitalPill label="Blood Pressure" value="120/80" tone="slate" />
-                <VitalPill label="Heart Pulse" value="74 bpm" tone="slate" />
-                <VitalPill label="Oxygen (SpO₂)" value="99%" tone="emerald" />
+                <VitalPill label="Pulse" value="74 bpm" tone="slate" />
+                <VitalPill label="SpO₂" value="99%" tone="emerald" />
               </div>
 
               {/* Diagnosis Row */}
               <div className="mt-4">
                 <p className="text-xs font-bold text-ink-400">
-                  Clinical Diagnosis (ICD-10)
+                  Diagnosis (ICD-10)
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-lg border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700">
@@ -183,18 +216,18 @@ export const LandingPage: React.FC = () => {
               <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5">
                 <div className="mb-2 flex items-center justify-between text-xs font-semibold text-emerald-800">
                   <div className="flex items-center gap-1.5">
-                    <Icon.Capsule size={15} /> Official Digital Prescription
+                    <Icon.Capsule size={15} /> Prescription
                   </div>
-                  <span className="font-mono text-[10px] text-emerald-700">QR Verified</span>
+                  <span className="font-mono text-[10px] text-emerald-700">QR code attached</span>
                 </div>
                 <div className="space-y-1.5 text-xs text-ink-900 font-medium">
-                  <div className="flex justify-between tabular">
+                  <div className="flex flex-wrap justify-between gap-x-3 tabular">
                     <span>Tab. Amlocard 5mg (Amlodipine)</span>
-                    <span className="font-mono text-ink-600">1 + 0 + 0 • 30 Days</span>
+                    <span className="font-mono text-ink-600">1+0+0, 30 days</span>
                   </div>
-                  <div className="flex justify-between tabular">
+                  <div className="flex flex-wrap justify-between gap-x-3 tabular">
                     <span>Tab. Napa Extra (Paracetamol/Caffeine)</span>
-                    <span className="font-mono text-ink-600">1 + 0 + 1 • As needed</span>
+                    <span className="font-mono text-ink-600">1+0+1, as needed</span>
                   </div>
                 </div>
               </div>
@@ -203,47 +236,11 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Care Impact Pillars */}
-      <section id="network-clinics" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-10 sm:py-14">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              metric: "One Unified Record",
-              desc: "Eliminates duplicate diagnostic scans and lost paper prescriptions across clinics.",
-              icon: <Icon.ClipboardHeart size={20} className="text-primary-700" />,
-            },
-            {
-              metric: "Allergy Safe Checks",
-              desc: "Surfaces drug allergies and historical contraindications before finalizing any prescription.",
-              icon: <Icon.ShieldPlus size={20} className="text-primary-700" />,
-            },
-            {
-              metric: "Real-Time Telemetry",
-              desc: "Instant ICD-10 codification, vitals matrix computation, and longitudinal visit history.",
-              icon: <Icon.HeartPulse size={20} className="text-primary-700" />,
-            },
-            {
-              metric: "Cryptographic Audit",
-              desc: "Every consultation and modification is recorded in an immutable append-only ledger.",
-              icon: <Icon.Lock size={20} className="text-primary-700" />,
-            },
-          ].map((item) => (
-            <Card key={item.metric} className="p-6 border-hair hover:border-primary-200">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary-50 mb-4">
-                {item.icon}
-              </div>
-              <p className="font-display text-lg font-bold text-ink-900">{item.metric}</p>
-              <p className="mt-2 text-sm text-ink-600 leading-relaxed">{item.desc}</p>
-            </Card>
-          ))}
-        </div>
-      </section>
-
       {/* Problem vs MedraLink Solution */}
       <section id="solutions" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <SectionHeading
-          title="From fragmented records to one continuous timeline"
-          subtitle="How MedraLink transforms disconnected clinic visits into a safe, lifelong care journey."
+          title="Paper slips get lost. Your history should not."
+          subtitle="Most patients carry their medical history in a bag of loose prescriptions. MedraLink replaces that with one record every doctor you visit can read."
         />
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
@@ -253,39 +250,39 @@ export const LandingPage: React.FC = () => {
               imageAlt: "Fragmented physical medical records and prescriptions",
               accent: "#E11D48",
               headerBg: "bg-rose-50/70 border-b border-rose-100",
-              title: "Fragmented Paper Slips",
-              body: "Clinical data is lost between visits, forcing repetitive diagnostic testing and inflating patient costs. No physician sees the full picture.",
-              tag: "Data Fragmentation",
+              title: "Lost between visits",
+              body: "Old prescriptions and test results go missing, so tests get repeated and the next doctor starts from scratch.",
+              tag: "The problem",
             },
             {
               image: "/assets/drug_interaction.png",
               imageAlt: "Pharmaceutical bottles with alert badge illustrating contraindications",
               accent: "#B45309",
               headerBg: "bg-amber-50/70 border-b border-amber-100",
-              title: "Medication Safety Hazards",
-              body: "Unreviewed allergies and drug interactions lead to severe adverse reactions when prescribing physicians lack historical context.",
-              tag: "Clinical Risk",
+              title: "Allergies nobody saw",
+              body: "Without past records, a doctor can prescribe something the patient has already reacted to.",
+              tag: "The risk",
             },
             {
               image: "/assets/unified_timeline.png",
               imageAlt: "Connected digital medical timeline ribbon with diagnostic nodes",
               accent: "#0F766E",
               headerBg: "bg-primary-50/80 border-b border-primary-100",
-              title: "MedraLink Unified Timeline",
-              body: "A single, continuous medical history accessible under strict role-based access control: every consultation, prescription, and lab in one record.",
-              tag: "Verified Solution",
+              title: "One record that follows you",
+              body: "Every consultation, prescription and lab report in one timeline, visible only to you and the doctors treating you.",
+              tag: "With MedraLink",
             },
           ].map((c) => (
             <Card
               key={c.title}
-              className="group flex flex-col overflow-hidden p-0 transition-all duration-200 hover:-translate-y-1 hover:shadow-card-hover border-hair"
+              className="flex flex-col overflow-hidden p-0 border-hair"
               style={{ borderTopWidth: 3, borderTopColor: c.accent }}
             >
               <div className={`flex h-44 w-full items-center justify-center p-4 ${c.headerBg}`}>
                 <img
                   src={c.image}
                   alt={c.imageAlt}
-                  className="max-h-32 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                  className="max-h-32 w-auto object-contain"
                   loading="lazy"
                 />
               </div>
@@ -294,7 +291,7 @@ export const LandingPage: React.FC = () => {
                   {c.tag}
                 </span>
                 <h3 className="mt-2 font-display text-xl font-bold text-ink-900">{c.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-ink-600">{c.body}</p>
+                <p className="mt-3 text-base leading-relaxed text-ink-600">{c.body}</p>
               </div>
             </Card>
           ))}
@@ -306,28 +303,28 @@ export const LandingPage: React.FC = () => {
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <SectionHeading
             align="center"
-            title="A seamless journey from registration to recovery"
-            subtitle="Designed for clinical simplicity, safety, and instant physician adoption."
+            title="How it works"
+            subtitle="Three steps from first sign-up to a record that keeps itself up to date."
           />
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             <StepCard
               step={1}
               icon={<Icon.IdCard size={20} className="text-primary-700" />}
-              title="Universal Patient Health ID"
-              description="Patients receive a single unique Health UID linking all future consultations, lab reports, and allergy profiles into one permanent record."
+              title="Create your account"
+              description="Patients get a Health ID that links every future consultation, lab report and allergy to one record. Doctors register with their BMDC number."
             />
             <StepCard
               step={2}
               icon={<Icon.Stethoscope size={20} className="text-primary-700" />}
-              title="Physician Consultation"
-              description="Doctors review prior medical history in seconds, capture live vital telemetry, assign ICD-10 diagnoses, and issue cryptographically signed prescriptions."
+              title="See the doctor"
+              description="The doctor reads your history, records vitals and diagnosis, and issues the prescription from the same screen."
             />
             <StepCard
               step={3}
               icon={<Icon.ClipboardHeart size={20} className="text-primary-700" />}
-              title="Continuous Care &amp; Access"
-              description="Patients view their longitudinal timeline anytime on mobile or desktop, while pharmacies and diagnostic clinics verify orders with secure QR scanning."
+              title="Keep it with you"
+              description="The visit appears on your timeline right away. Download the prescription, and a pharmacy can check it by scanning the QR code."
             />
           </div>
         </div>
@@ -337,22 +334,25 @@ export const LandingPage: React.FC = () => {
       <section id="clinical-architecture" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-14 sm:py-20">
         <SectionHeading
           align="center"
-          title="Role-based workspaces designed for every healthcare stakeholder"
-          subtitle="Specialized interfaces engineered specifically for attending physicians, patients, and clinical governance teams."
+          title="A workspace for each role"
+          subtitle="Doctors, patients and administrators each get a screen built around what they do."
         />
 
         {/* Centered Segmented Control Tab Bar */}
         <div className="mt-8 flex justify-center">
           <div
             role="tablist"
-            aria-label="Clinical workspace features"
+            aria-label="Workspaces"
+            onKeyDown={onTabKey}
             className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-hair bg-primary-50/70 p-1.5"
           >
             {tabs.map((t, i) => (
               <button
                 key={t.label}
+                id={`workspace-tab-${i}`}
                 type="button"
                 role="tab"
+                tabIndex={tab === i ? 0 : -1}
                 aria-selected={tab === i}
                 aria-controls={`workspace-panel-${i}`}
                 onClick={() => setTab(i)}
@@ -369,7 +369,7 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
 
-        <Card id={`workspace-panel-${tab}`} role="tabpanel" className="mt-8 p-6 sm:p-8 border-hair">
+        <Card id={`workspace-panel-${tab}`} role="tabpanel" aria-labelledby={`workspace-tab-${tab}`} className="mt-8 p-6 sm:p-8 border-hair">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hair pb-5">
             <div>
               <p className="text-xs font-bold text-primary-700">
@@ -382,52 +382,29 @@ export const LandingPage: React.FC = () => {
                 {content[tab].subtitle}
               </p>
             </div>
-            {tab === 0 && (
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={handleLaunchDoctor}
-                icon={<Icon.Arrow size={14} />}
-                iconPosition="right"
-              >
-                Open Workstation
-              </Button>
-            )}
-            {tab === 1 && (
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={handleLaunchPatient}
-                icon={<Icon.Arrow size={14} />}
-                iconPosition="right"
-              >
-                View Health Record
-              </Button>
-            )}
-            {tab === 2 && (
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={handleLaunchAdmin}
-                icon={<Icon.Arrow size={14} />}
-                iconPosition="right"
-              >
-                Access Governance
-              </Button>
-            )}
+            <Button
+              size="sm"
+              variant={tab === 2 ? 'secondary' : 'primary'}
+              onClick={[handleLaunchDoctor, handleLaunchPatient, handleLaunchAdmin][tab]}
+              icon={<Icon.Arrow size={14} />}
+              iconPosition="right"
+              className="shrink-0"
+            >
+              {['Open doctor workspace', 'Open my health record', 'Open admin console'][tab]}
+            </Button>
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {content[tab].features.map(([t, b]) => (
               <div
                 key={t}
-                className="flex gap-3.5 rounded-xl border border-hair bg-canvas p-4 transition-all hover:bg-white hover:border-primary-200 hover:shadow-subtle"
+                className="flex gap-3.5 rounded-xl border border-hair bg-canvas p-4"
               >
                 <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary-50 text-primary-700">
                   <Icon.Check size={15} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-ink-900">{t}</p>
-                  <p className="mt-1 text-xs sm:text-sm text-ink-600 leading-relaxed">{b}</p>
+                  <p className="text-base font-semibold text-ink-900">{t}</p>
+                  <p className="mt-1 text-sm text-ink-600 leading-relaxed">{b}</p>
                 </div>
               </div>
             ))}
@@ -438,56 +415,72 @@ export const LandingPage: React.FC = () => {
       {/* Enterprise Security & Compliance Banner */}
       <section id="governance" className="scroll-mt-24 bg-gradient-to-br from-primary-900 via-primary-800 to-ink-900 py-16 text-white">
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <h2 className="mt-2 max-w-2xl font-display text-3xl sm:text-4xl font-bold tracking-tight">
+          <h2 className="max-w-2xl font-display text-3xl sm:text-4xl font-bold tracking-tight">
             Privacy built into every patient record
           </h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              ["Role-Based Access Control", "Strict RBAC scoping every clinical record to authorized medical staff.", <Icon.Lock size={20} />],
-              ["HTTPS and hashed passwords", "Traffic is encrypted in transit and passwords are stored only as bcrypt hashes.", <Icon.Shield size={20} />],
-              ["SQL Injection Defense", "Parameterized queries and prepared statements applied across all endpoints.", <Icon.File size={20} />],
-              ["Immutable Audit Ledger", "Append-only cryptographic ledger tracking every record creation and view.", <Icon.Pulse size={20} />],
+              ["Only your doctors", "A doctor can open your record only after treating you. Other users never see it.", <Icon.Lock size={20} />],
+              ["Encrypted traffic", "Traffic is encrypted in transit and passwords are stored only as bcrypt hashes.", <Icon.Shield size={20} />],
+              ["Files behind sign-in", "Lab reports and prescription PDFs are served only to signed-in users allowed to see them.", <Icon.File size={20} />],
+              ["Every change logged", "Record changes are written to a hash-chained audit log that administrators can verify.", <Icon.Pulse size={20} />],
             ].map(([t, b, icon]) => (
               <div key={t as string} className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xs">
                 <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-primary-200">
                   {icon}
                 </div>
                 <p className="mt-4 font-display text-lg font-semibold">{t as string}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-300">{b as string}</p>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-slate-300">{b as string}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Final Call to Action Card */}
-      <section className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12 py-14 sm:py-18">
-        <div className="relative overflow-hidden rounded-3xl bg-primary-800 p-8 sm:p-12 text-white">
+      <section id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+        <SectionHeading align="center" title="Questions people ask" />
+        <div className="mt-10 divide-y divide-hair rounded-2xl border border-hair bg-surface">
+          {FAQ.map(([q, a]) => (
+            <details key={q} className="group px-5 py-4 sm:px-6">
+              <summary className="flex min-h-[44px] cursor-pointer text-base list-none items-center justify-between gap-4 rounded font-semibold text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-700 [&::-webkit-details-marker]:hidden">
+                {q}
+                <Icon.Chevron size={18} className="shrink-0 text-ink-400 transition-transform group-open:rotate-180" />
+              </summary>
+              <p className="mt-3 text-base leading-relaxed text-ink-600">{a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12 pb-14 sm:pb-18">
+        <div className="rounded-3xl bg-primary-800 p-8 sm:p-12 text-white">
           <div className="max-w-2xl">
             <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Start your connected health journey with MedraLink
+              Bring your records together
             </h2>
             <p className="mt-3 text-base sm:text-lg text-primary-50 leading-relaxed">
-              Empower your clinical practice with structured E-prescribing and give patients a lifelong health timeline they can trust.
+              Patients sign up in a minute. Doctors register with their BMDC number and start after verification.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button
                 size="lg"
                 variant="secondary"
-                onClick={handleLaunchDoctor}
+                onClick={() => navigate(dashboardPath ?? '/register')}
                 icon={<Icon.Arrow size={16} />}
                 iconPosition="right"
               >
-                Launch Doctor Workstation
+                {dashboardPath ? 'Open your dashboard' : 'Create a free account'}
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-white border-white/40 hover:bg-white/10"
-                onClick={handleLaunchPatient}
-              >
-                Explore Patient Timeline
-              </Button>
+              {!dashboardPath && (
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-white border-white/40 hover:bg-white/10"
+                  onClick={() => navigate('/register?role=doctor')}
+                >
+                  Register as a doctor
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -513,33 +506,24 @@ export const LandingPage: React.FC = () => {
                 </span>
               </div>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-600">
-                Connected Electronic Medical Record &amp; clinical continuity infrastructure for patients,
-                physicians, and healthcare networks.
+                One medical record shared between patients and the doctors who treat them.
               </p>
-              <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-primary-700">
-                <Icon.Hospital size={15} />
-                <span>CSE 416 • Software Project Design &amp; Development</span>
-              </div>
             </div>
 
             {[
-              ["Platform Solutions", [
-                ["Physician Workstation", "/doctor"],
-                ["Patient Health Timeline", "/patient"],
-                ["Diagnostic Streaming", "#solutions"],
-                ["Clinical E-Prescribing", "#clinical-architecture"],
+              ["Product", [
+                ["How it works", "#how-it-works"],
+                ["For doctors", "#clinical-architecture"],
+                ["Security", "#governance"],
+                ["FAQ", "#faq"],
               ]],
-              ["Clinical Governance", [
-                ["BMDC Verification", "#governance"],
-                ["Audit Trail Console", "/admin"],
-                ["Security Architecture", "#governance"],
-                ["RBAC Policies", "#governance"],
+              ["Get started", [
+                ["Create an account", "/register"],
+                ["Register as a doctor", "/register?role=doctor"],
+                ["Sign in", "/login"],
               ]],
-              ["Support & Portal", [
-                ["Physician Sign In", "/login?role=doctor"],
-                ["Patient Sign In", "/login?role=patient"],
-                ["Register Clinic", "/register"],
-                ["Security Overview", "#governance"],
+              ["Find care", [
+                ["Hospitals near you", "/hospitals"],
               ]],
             ].map(([title, links]) => (
               <div key={title as string}>
@@ -576,39 +560,8 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="mt-12 flex flex-col gap-2 border-t border-hair pt-6 text-xs text-ink-400 sm:flex-row sm:items-center sm:justify-between">
-            <p>© 2026 MedraLink Health Technologies. University of Information Technology &amp; Sciences (UITS).</p>
-            <div className="flex gap-5 text-ink-600">
-              <a
-                href="#governance"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.querySelector('#governance')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="hover:text-primary-700 cursor-pointer transition-colors"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#governance"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.querySelector('#governance')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="hover:text-primary-700 cursor-pointer transition-colors"
-              >
-                Terms of Service
-              </a>
-              <a
-                href="#governance"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.querySelector('#governance')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="hover:text-primary-700 cursor-pointer transition-colors"
-              >
-                Security Overview
-              </a>
-            </div>
+            <p>© 2026 MedraLink. University of Information Technology &amp; Sciences (UITS).</p>
+            <p>Built for CSE 416, Software Project Design and Development.</p>
           </div>
         </div>
       </footer>

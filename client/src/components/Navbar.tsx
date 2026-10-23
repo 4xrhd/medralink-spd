@@ -155,11 +155,11 @@ export const Navbar: React.FC = () => {
     : 'ML';
 
   const publicNavItems = [
-    ['Solutions', '#solutions'],
-    ['Care Journey', '#how-it-works'],
+    ['Product', '#solutions'],
+    ['How it works', '#how-it-works'],
     ['Workspaces', '#clinical-architecture'],
-    ['Governance', '#governance'],
-    ['Support', '#support'],
+    ['Security', '#governance'],
+    ['FAQ', '#faq'],
   ];
 
   return (

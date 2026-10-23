@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, Select } from '../ui/forms.js';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
@@ -11,7 +11,8 @@ import { getApiErrorMessage } from '../services/api';
 export const RegisterPage: React.FC = () => {
   useDocumentTitle('Account Registration');
   const toast = useToast();
-  const [role, setRole] = useState<'PATIENT' | 'DOCTOR'>('PATIENT');
+  const [searchParams] = useSearchParams();
+  const [role, setRole] = useState<'PATIENT' | 'DOCTOR'>(searchParams.get('role') === 'doctor' ? 'DOCTOR' : 'PATIENT');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
