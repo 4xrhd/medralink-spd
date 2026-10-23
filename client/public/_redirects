@@ -1,1 +1,4 @@
-/*    /index.html   200
+# API runs on Render (render.yaml); proxy keeps one origin for /api and /uploads links
+/api/*      https://medralink-api.onrender.com/api/:splat      200!
+/uploads/*  https://medralink-api.onrender.com/uploads/:splat  200!
+/*          /index.html   200
