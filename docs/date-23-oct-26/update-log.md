@@ -160,3 +160,52 @@ so uploaded lab files do not persist.
 - Specialty filtering runs on the loaded list in the browser, so changing the filter needs no request.
 - Name matching avoids false hits such as "Heart" for ENT, "Accident" for dental, "Neurology" for kidney.
 - Client unit tests added with Vitest (15 tests for the search service).
+
+## 13. Engineering review and hardening
+
+A review of server and client found and fixed these issues:
+
+- Security:
+  - Prescription PDFs had no record-level check; any signed-in user could download any patient's PDF. They now use `canAccessPatient`.
+  - Lab report files were public under `/uploads`. They are now served by `GET /api/v1/lab-reports/:id/file` with an access check, `nosniff`, `no-store` and an audit event.
+  - Uploads are checked by file signature (magic bytes). Rejected or denied uploads leave no file behind and return 400 or 403, not 500.
+  - CORS refuses unknown origins.
+  - Express trusts one proxy hop, so rate limits and audit IPs use the real client address on Render.
+  - 5xx responses no longer expose internal error messages.
+  - Password reset tokens are single-use, even under concurrent requests.
+  - Doctors see the patient directory without national ID numbers.
+- Data integrity:
+  - The audit hash chain gets a `seq` column and is written inside a locked transaction (`pg_advisory_xact_lock` on PostgreSQL), so concurrent events cannot fork it.
+  - SQLite transactions run one at a time, and outside writes wait for them.
+- PostgreSQL:
+  - The patient summary PDF used SQLite-only `GROUP_CONCAT` and failed on Supabase. It now uses `STRING_AGG` through a `listAgg` helper.
+  - Indexes were added for the RBAC link checks (migration `20261023000200`).
+- Operations:
+  - Configuration is validated at boot with zod: a JWT secret of at least 32 characters and explicit CORS origins in production, and `DATABASE_URL` for PostgreSQL.
+  - The process exits on a failed start or an unhandled rejection.
+  - The notification seed is idempotent.
+- CI:
+  - The workflow paths were wrong (the repository root is `prototype`), so every run had failed. Fixed.
+  - A new job runs all backend tests against PostgreSQL 16.
+- `npm run latency` (server) reports p50 and p95 per endpoint. Locally on SQLite the worst p95 was 5.1 ms.
+- `POST /prescriptions/:id/pdf` was added as named in the proposal.
+- Tests: 98 backend tests pass on SQLite and PostgreSQL (84% line coverage), plus 20 client tests.
+
+## 14. UI redesign: the clinical record
+
+- Look:
+  - Palette: record green `#0B5D46`, chart white `#F4F7F5`, ink `#14211C`, and one alert red for allergies and critical values.
+  - Fonts: Public Sans for body text and Bricolage Grotesque for headings.
+  - Flatter cards, and labels in sentence case instead of tracked all caps.
+- New SVG logo: a record thread with the current visit marked. The navbar has one plain link list per role, with the active page underlined.
+- Removed invented content: safety index, bed capacity, uptime, FHIR sync, the "AES-256 locker" and TLS claims.
+- Fixed wrong data:
+  - Patient header: blood group, age and emergency contact.
+  - Doctor header: BMDC licence.
+  - Admin counts: consultations and audit entries.
+- Login demo buttons fill the real seeded accounts and only appear when `VITE_DEMO_MODE=true`.
+- Client auth:
+  - A 401 signs the user out through React state, but not on the sign-in form.
+  - The session ends at token expiry.
+  - Restored sessions are confirmed with `/auth/me`.
+- axe WCAG 2.1 AA: zero violations on the landing, login, doctor, new consultation, patient, timeline, hospital search and admin pages.

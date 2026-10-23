@@ -4,7 +4,22 @@ All notable changes to MedraLink. Detailed notes per date live in `docs/date-*/u
 
 ## 2026-10-23
 
+### Security
+- Prescription PDFs and lab report files now check record-level access; lab files are no longer public.
+- CORS refuses unknown origins; real client IPs behind the proxy; no internal errors in 5xx responses.
+- Upload signature checks, single-use reset tokens, boot-time configuration validation.
+
+### Fixed
+- Patient summary PDF on PostgreSQL (SQLite-only GROUP_CONCAT).
+- Audit hash chain could fork under concurrent writes; SQLite transactions could absorb other requests' writes.
+- Wrong dashboard data (patient blood group and contact, doctor licence, admin counts).
+- CI paths; every workflow run had been failing.
+
+### Changed
+- UI redesign: record-green palette, Public Sans and Bricolage Grotesque, new logo, role navigation, no invented metrics.
+
 ### Added
+- PostgreSQL 16 CI job, `npm run latency`, `POST /prescriptions/:id/pdf`, client auth tests.
 - Specialization filter for the hospital search, with a picker on the patient portal.
 - Free OpenStreetMap hospital search (Leaflet map, bundled Bangladesh snapshot, Overpass, Nominatim) replacing Google Maps; no API key or billing.
 - Client unit tests with Vitest.
