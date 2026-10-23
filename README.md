@@ -35,6 +35,16 @@ The application includes pre-seeded accounts and a sticky **1-Click Role Switche
 
 ---
 
+## 🌐 Live Deployment
+
+- **App:** https://medralink.netlify.app (Netlify; proxies `/api` to the backend)
+- **API:** https://medralink-api.onrender.com/api/health (Render, Singapore, `render.yaml`)
+- **Database:** Supabase PostgreSQL (see below)
+
+The free Render instance sleeps when idle; the first request can take up to a minute.
+
+---
+
 ## 🗄️ Supabase PostgreSQL
 
 The production database is Supabase project `svieyxgbzrriwvxosbdw` (`ap-southeast-2`, PostgreSQL 17).

@@ -124,9 +124,21 @@ Response on Supabase went from about 4.0 s to about 2.0 s with identical output.
 is network latency to Sydney; hosting the backend in the same region is the next step for the
 under-200 ms objective.
 
-## 10. Still to do
+## 10. Deployment
 
-- Deploy backend to Render (Sydney region) and frontend to Netlify.
+| Component | Host | URL |
+| :--- | :--- | :--- |
+| Frontend | Netlify | https://medralink.netlify.app |
+| Backend API | Render (Singapore, free plan) | https://medralink-api.onrender.com |
+| Database | Supabase (Sydney) | project `svieyxgbzrriwvxosbdw` |
+
+Netlify proxies `/api/*` and `/uploads/*` to Render, so the browser uses one origin.
+Verified live: health reports `postgres`, doctor sign-in, assigned timeline 200, unassigned patient 403.
+The free Render plan sleeps when idle (first request about 30 to 60 s) and its disk is wiped on restart,
+so uploaded lab files do not persist.
+
+## 11. Still to do
+
 - PostgreSQL job in CI.
 - `POST /api/v1/prescriptions/:id/pdf` alias to match proposal sec. 7.2.
 - Latency measurement script (p50 / p95) for the report.
