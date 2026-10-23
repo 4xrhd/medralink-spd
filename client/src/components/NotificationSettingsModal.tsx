@@ -64,7 +64,7 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
         <div className="flex items-start justify-between border-b border-hair pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="grid h-8 w-8 place-items-center rounded-xl bg-primary-50 text-primary-600">
+              <div className="grid h-8 w-8 place-items-center rounded-xl bg-primary-50 text-primary-700">
                 <Icon.Shield size={16} />
               </div>
               <h2 id="notif-settings-title" className="font-display text-base font-bold text-ink-900">

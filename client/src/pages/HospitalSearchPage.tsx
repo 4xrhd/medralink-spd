@@ -611,7 +611,7 @@ export const HospitalSearchPage: React.FC = () => {
         {/* Waiting for location */}
         {!searched && !searching && !userLocation && !gpsLoading && (
           <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-hair bg-white py-16 text-center">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-primary-600">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-primary-700">
               <Icon.MapPin size={28} />
             </div>
             <div>

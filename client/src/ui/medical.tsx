@@ -203,7 +203,7 @@ export function StepCard({
   return (
     <div className="relative h-full rounded-2xl border border-hair bg-surface p-6 shadow-card">
       <div className="flex items-center gap-3">
-        <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-600 font-display text-sm font-bold text-white">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-700 font-display text-sm font-bold text-white">
           {step}
         </span>
         <IconChip size="sm">{icon}</IconChip>

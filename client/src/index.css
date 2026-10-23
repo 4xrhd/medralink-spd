@@ -22,9 +22,9 @@
   --c-surface: 255 255 255;
   --c-hair: 226 232 240;
   --c-hair-strong: 203 213 225;
-  --c-critical: 225 29 72;
-  --c-warning: 217 119 6;
-  --c-success: 22 163 74;
+  --c-critical: 190 18 60;  /* #be123c, AA contrast on white and rose-50 */
+  --c-warning: 180 83 9;    /* #b45309, 5.0:1 on white (WCAG AA) */
+  --c-success: 21 128 61;   /* #15803d, 5.0:1 on white (WCAG AA) */
   --c-audit: 124 58 237;
 
   /* Legacy aliases kept for any remaining plain CSS usage */

@@ -87,7 +87,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               bg: 'bg-primary-50',
               border: 'border-primary-100',
               text: 'text-primary-900',
-              icon: <Icon.Shield size={18} className="text-primary-600 shrink-0 mt-0.5" />,
+              icon: <Icon.Shield size={18} className="text-primary-700 shrink-0 mt-0.5" />,
             },
           };
 

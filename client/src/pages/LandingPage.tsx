@@ -87,7 +87,7 @@ export const LandingPage: React.FC = () => {
           <div className="relative z-10">
             {/* Plain text eyebrow: NO BADGE */}
             <p className="text-xs sm:text-sm font-bold tracking-wider uppercase text-primary-700 flex items-center gap-2">
-              <Icon.HeartPulse size={16} className="text-primary-600 shrink-0" />
+              <Icon.HeartPulse size={16} className="text-primary-700 shrink-0" />
               <span>Connected Care for Clinicians &amp; Patients</span>
             </p>
 
@@ -126,19 +126,19 @@ export const LandingPage: React.FC = () => {
             {/* Medical Trust Indicators (Plain text + medical icons, no badges) */}
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-hair pt-6 text-xs text-ink-600">
               <div className="flex items-center gap-2 font-medium">
-                <Icon.ShieldPlus size={16} className="text-primary-600 shrink-0" />
+                <Icon.ShieldPlus size={16} className="text-primary-700 shrink-0" />
                 <span>BMDC Verified</span>
               </div>
               <div className="flex items-center gap-2 font-medium">
-                <Icon.Lock size={16} className="text-primary-600 shrink-0" />
+                <Icon.Lock size={16} className="text-primary-700 shrink-0" />
                 <span>Encrypted Records</span>
               </div>
               <div className="flex items-center gap-2 font-medium">
-                <Icon.Capsule size={16} className="text-primary-600 shrink-0" />
+                <Icon.Capsule size={16} className="text-primary-700 shrink-0" />
                 <span>Digital E-Rx</span>
               </div>
               <div className="flex items-center gap-2 font-medium">
-                <Icon.HeartPulse size={16} className="text-primary-600 shrink-0" />
+                <Icon.HeartPulse size={16} className="text-primary-700 shrink-0" />
                 <span>Lifelong History</span>
               </div>
             </div>
@@ -150,7 +150,7 @@ export const LandingPage: React.FC = () => {
             <Card className="relative p-5 sm:p-6 shadow-card hover:shadow-card-hover border-hair bg-surface">
               <div className="flex items-center justify-between border-b border-hair pb-3.5">
                 <div className="flex items-center gap-3">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-600 text-white shadow-sm">
+                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-700 text-white shadow-sm">
                     <Icon.Stethoscope size={18} />
                   </div>
                   <div>
@@ -191,7 +191,7 @@ export const LandingPage: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     <Icon.Capsule size={15} /> Official Digital Prescription
                   </div>
-                  <span className="font-mono text-[10px] text-emerald-600">QR Verified</span>
+                  <span className="font-mono text-[10px] text-emerald-700">QR Verified</span>
                 </div>
                 <div className="space-y-1.5 text-xs text-ink-900 font-medium">
                   <div className="flex justify-between tabular">
@@ -216,22 +216,22 @@ export const LandingPage: React.FC = () => {
             {
               metric: "One Unified Record",
               desc: "Eliminates duplicate diagnostic scans and lost paper prescriptions across clinics.",
-              icon: <Icon.ClipboardHeart size={20} className="text-primary-600" />,
+              icon: <Icon.ClipboardHeart size={20} className="text-primary-700" />,
             },
             {
               metric: "Allergy Safe Checks",
               desc: "Surfaces drug allergies and historical contraindications before finalizing any prescription.",
-              icon: <Icon.ShieldPlus size={20} className="text-primary-600" />,
+              icon: <Icon.ShieldPlus size={20} className="text-primary-700" />,
             },
             {
               metric: "Real-Time Telemetry",
               desc: "Instant ICD-10 codification, vitals matrix computation, and longitudinal visit history.",
-              icon: <Icon.HeartPulse size={20} className="text-primary-600" />,
+              icon: <Icon.HeartPulse size={20} className="text-primary-700" />,
             },
             {
               metric: "Cryptographic Audit",
               desc: "Every consultation and modification is recorded in an immutable append-only ledger.",
-              icon: <Icon.Lock size={20} className="text-primary-600" />,
+              icon: <Icon.Lock size={20} className="text-primary-700" />,
             },
           ].map((item) => (
             <Card key={item.metric} className="p-6 border-hair hover:border-primary-200">
@@ -267,7 +267,7 @@ export const LandingPage: React.FC = () => {
             {
               image: "/assets/drug_interaction.png",
               imageAlt: "Pharmaceutical bottles with alert badge illustrating contraindications",
-              accent: "#D97706",
+              accent: "#B45309",
               headerBg: "bg-amber-50/70 border-b border-amber-100",
               title: "Medication Safety Hazards",
               body: "Unreviewed allergies and drug interactions lead to severe adverse reactions when prescribing physicians lack historical context.",
@@ -276,7 +276,7 @@ export const LandingPage: React.FC = () => {
             {
               image: "/assets/unified_timeline.png",
               imageAlt: "Connected digital medical timeline ribbon with diagnostic nodes",
-              accent: "#0D9488",
+              accent: "#0F766E",
               headerBg: "bg-primary-50/80 border-b border-primary-100",
               title: "MedraLink Unified Timeline",
               body: "A single, continuous medical history accessible under strict role-based access control: every consultation, prescription, and lab in one record.",
@@ -367,11 +367,11 @@ export const LandingPage: React.FC = () => {
                 onClick={() => setTab(i)}
                 className={`inline-flex items-center gap-2 rounded-xl px-4 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   tab === i
-                    ? "bg-primary-600 text-white shadow-sm"
+                    ? "bg-primary-700 text-white shadow-sm"
                     : "text-ink-600 hover:text-ink-900 hover:bg-white/80"
                 }`}
               >
-                <span className={tab === i ? "text-primary-100" : "text-primary-600"}>{t.icon}</span>
+                <span className={tab === i ? "text-primary-100" : "text-primary-700"}>{t.icon}</span>
                 <span>{t.label}</span>
               </button>
             ))}
@@ -431,7 +431,7 @@ export const LandingPage: React.FC = () => {
                 key={t}
                 className="flex gap-3.5 rounded-xl border border-hair bg-canvas p-4 transition-all hover:bg-white hover:border-primary-200 hover:shadow-subtle"
               >
-                <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary-50 text-primary-600">
+                <div className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-primary-50 text-primary-700">
                   <Icon.Check size={15} />
                 </div>
                 <div>
@@ -521,7 +521,7 @@ export const LandingPage: React.FC = () => {
               <div className="flex items-center gap-2.5">
                 <img src="/logo.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
                 <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
-                  Medra<span className="text-primary-600">Link</span>
+                  Medra<span className="text-primary-700">Link</span>
                 </span>
               </div>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-600">

@@ -162,7 +162,7 @@ export const DoctorDashboard: React.FC = () => {
         <div className="relative" ref={searchContainerRef}>
           <div className="flex items-center gap-3 rounded-2xl border border-hair bg-white px-4 py-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-all focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-50 focus-within:shadow-md">
             {isSearching ? (
-              <Icon.Loader size={20} className="text-primary-600" />
+              <Icon.Loader size={20} className="text-primary-700" />
             ) : (
               <Icon.Search size={20} className="text-ink-400" />
             )}
@@ -222,7 +222,7 @@ export const DoctorDashboard: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-sm font-bold text-ink-900">
-                              {pt.full_name} <span className="ml-1 font-mono text-xs font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded-md">{pt.patient_uid}</span>
+                              {pt.full_name} <span className="ml-1 font-mono text-xs font-semibold text-primary-700 bg-primary-50 px-2 py-0.5 rounded-md">{pt.patient_uid}</span>
                             </p>
                             <div className="mt-1.5 flex flex-wrap items-center gap-2">
                               <Pill tone="crimson">{pt.blood_group || 'Blood N/A'}</Pill>
@@ -243,7 +243,7 @@ export const DoctorDashboard: React.FC = () => {
                           </Link>
                           <Link
                             to={`/doctor/new-consultation?patientId=${pt.id}`}
-                            className="min-h-[36px] inline-flex items-center justify-center rounded-xl bg-primary-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary-700"
+                            className="min-h-[36px] inline-flex items-center justify-center rounded-xl bg-primary-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary-800"
                           >
                             Open Consultation
                           </Link>
@@ -309,7 +309,7 @@ export const DoctorDashboard: React.FC = () => {
           <Card className="p-6">
             <div className="flex items-center justify-between border-b border-hair pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-600">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                   <Icon.Clock size={16} />
                 </div>
                 <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Today's Scheduled Consultations</h2>
@@ -326,7 +326,7 @@ export const DoctorDashboard: React.FC = () => {
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-primary-600">{apt.time_slot}</span>
+                        <span className="font-mono text-xs font-bold text-primary-700">{apt.time_slot}</span>
                         <span className="text-sm font-bold text-ink-900">{apt.patient_name}</span>
                         <span className="font-mono text-xs text-ink-400">({apt.patient_uid})</span>
                       </div>
@@ -335,7 +335,7 @@ export const DoctorDashboard: React.FC = () => {
 
                     <Link
                       to={`/doctor/new-consultation?patientId=${apt.patient_id}&appointmentId=${apt.id}`}
-                      className="rounded-lg bg-primary-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-700"
+                      className="rounded-lg bg-primary-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-800"
                     >
                       Consult Now
                     </Link>
@@ -426,7 +426,7 @@ export const DoctorDashboard: React.FC = () => {
             <Card className="p-6">
               <div className="flex items-center justify-between border-b border-hair pb-4">
                 <div className="flex items-center gap-2.5">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-600">
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                     <Icon.Activity size={16} />
                   </div>
                   <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Clinical Quick Actions</h2>
@@ -445,7 +445,7 @@ export const DoctorDashboard: React.FC = () => {
                     </div>
                     <div className="text-left">
                       <p className="text-sm font-bold">New Walk-In Consultation</p>
-                      <p className="text-xs text-primary-200">Ad-hoc patient intake &amp; prescription</p>
+                      <p className="text-xs text-primary-100">Ad-hoc patient intake &amp; prescription</p>
                     </div>
                   </div>
                   <Icon.Arrow size={14} className="text-blue-200" />
@@ -460,7 +460,7 @@ export const DoctorDashboard: React.FC = () => {
                   className="flex w-full items-center justify-between rounded-xl border border-hair bg-canvas p-3 text-left transition-colors hover:bg-white hover:border-hair-strong"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-white text-primary-600 border border-hair">
+                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-white text-primary-700 border border-hair">
                       <Icon.Search size={15} />
                     </div>
                     <div>
@@ -513,7 +513,7 @@ export const DoctorDashboard: React.FC = () => {
 
                 <div className="rounded-xl border border-primary-100 bg-primary-50 p-3 text-xs">
                   <p className="font-bold text-primary-700">Cardiology Acute Helpline</p>
-                  <p className="mt-0.5 text-primary-600 font-mono font-semibold">NICVD ER: +8802-9122560</p>
+                  <p className="mt-0.5 text-primary-700 font-mono font-semibold">NICVD ER: +8802-9122560</p>
                 </div>
               </div>
             </Card>

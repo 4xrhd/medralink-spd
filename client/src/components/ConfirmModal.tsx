@@ -65,7 +65,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border ${
               isDestructive
                 ? 'bg-rose-50 border-rose-200 text-critical'
-                : 'bg-primary-50 border-primary-100 text-primary-600'
+                : 'bg-primary-50 border-primary-100 text-primary-700'
             }`}
           >
             {isDestructive ? <Icon.Alert size={20} /> : <Icon.Shield size={20} />}

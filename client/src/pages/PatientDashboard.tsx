@@ -256,7 +256,7 @@ export const PatientDashboard: React.FC = () => {
           <Card hover className="p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-hair pb-3">
               <div className="flex items-center gap-2">
-                <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-600">
+                <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                   <Icon.Pulse size={16} />
                 </div>
                 <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Recent Clinical Biometrics</h2>
@@ -382,7 +382,7 @@ export const PatientDashboard: React.FC = () => {
             <Card className="p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-hair pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-600">
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                     <Icon.Shield size={16} />
                   </div>
                   <h3 className="font-display text-base font-bold text-ink-900">Patient Care Navigator</h3>
@@ -398,7 +398,7 @@ export const PatientDashboard: React.FC = () => {
                   </p>
                   <Link
                     to={`/patient/timeline/${patientId}`}
-                    className="mt-2.5 inline-flex items-center gap-1.5 font-bold text-primary-600 hover:underline"
+                    className="mt-2.5 inline-flex items-center gap-1.5 font-bold text-primary-700 hover:underline"
                   >
                     <span>Browse complete visit timeline</span>
                     <Icon.Arrow size={12} />

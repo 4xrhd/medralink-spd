@@ -328,7 +328,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants: Record<string, string> = {
       primary:
-        "bg-primary-600 hover:bg-primary-700 text-white border border-transparent shadow-sm shadow-primary-600/20 focus-visible:ring-primary-600",
+        "bg-primary-700 hover:bg-primary-800 text-white border border-transparent shadow-sm shadow-primary-600/20 focus-visible:ring-primary-600",
       clinical:
         "bg-primary-700 hover:bg-primary-800 text-white border border-transparent shadow-sm focus-visible:ring-primary-700",
       secondary:
