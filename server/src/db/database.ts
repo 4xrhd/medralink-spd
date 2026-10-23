@@ -21,6 +21,14 @@ types.setTypeParser(types.builtins.TIMESTAMPTZ, (v) => v);
 // runTransaction use the same connection (a pool query would bypass BEGIN/COMMIT).
 const txClient = new AsyncLocalStorage<PoolClient>();
 
+// SQLite has one shared connection, so transactions run one at a time. sqliteTx marks code
+// running inside one (nested runTransaction calls join it); writes from other requests wait
+// for the open transaction instead of silently joining it.
+const sqliteTx = new AsyncLocalStorage<true>();
+let sqliteQueue: Promise<unknown> = Promise.resolve();
+
+export const isPostgresDialect = (): boolean => isPostgres;
+
 function toPgPlaceholders(sql: string): string {
   let paramIndex = 1;
   return sql.replace(/\?/g, () => `$${paramIndex++}`);
@@ -108,6 +116,14 @@ DO $$ DECLARE t text; BEGIN
 END $$;
 `;
 
+// Columns added after the first release; existing databases get them on startup
+const POSTGRES_COLUMN_MIGRATIONS = `
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'GENERAL';
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS link TEXT;
+ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS seq BIGINT;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_seq ON audit_logs(seq);
+`;
+
 export async function initDb(): Promise<void> {
   const schemaPath = resolveSchemaPath();
   if (!schemaPath) {
@@ -119,6 +135,7 @@ export async function initDb(): Promise<void> {
   if (isPostgres && pgPool) {
     await pgPool.query(schemaSql);
     await pgPool.query(POSTGRES_AUDIT_GUARDS);
+    await pgPool.query(POSTGRES_COLUMN_MIGRATIONS);
     console.log('[DB] PostgreSQL schema initialized successfully.');
   } else if (sqliteDb) {
     sqliteDb.exec(schemaSql);
@@ -133,6 +150,11 @@ export async function initDb(): Promise<void> {
       if (!colNames.includes('link')) {
         sqliteDb.exec("ALTER TABLE notifications ADD COLUMN link TEXT");
       }
+      const auditCols = (sqliteDb.prepare('PRAGMA table_info(audit_logs)').all() as Array<{ name: string }>).map((c) => c.name);
+      if (!auditCols.includes('seq')) {
+        sqliteDb.exec('ALTER TABLE audit_logs ADD COLUMN seq INTEGER');
+      }
+      sqliteDb.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_seq ON audit_logs(seq)');
     } catch (migErr) {
       console.warn('[DB] Migration notice:', migErr);
     }
@@ -183,6 +205,7 @@ export async function queryOne<T = any>(sql: string, params: any[] = []): Promis
 }
 
 export async function execute(sql: string, params: any[] = []): Promise<{ changes: number; lastInsertRowid?: number | bigint }> {
+  if (sqliteDb && !sqliteTx.getStore()) await sqliteQueue;
   if (isPostgres && pgPool) {
     const res = await (txClient.getStore() ?? pgPool).query(toPgPlaceholders(sql), params);
     return { changes: res.rowCount || 0 };
@@ -196,6 +219,7 @@ export async function execute(sql: string, params: any[] = []): Promise<{ change
 
 export async function runTransaction<T>(callback: () => Promise<T>): Promise<T> {
   if (isPostgres && pgPool) {
+    if (txClient.getStore()) return callback();
     const client = await pgPool.connect();
     try {
       await client.query('BEGIN');
@@ -209,15 +233,23 @@ export async function runTransaction<T>(callback: () => Promise<T>): Promise<T> 
       client.release();
     }
   } else if (sqliteDb) {
-    sqliteDb.exec('BEGIN TRANSACTION');
-    try {
-      const result = await callback();
-      sqliteDb.exec('COMMIT');
-      return result;
-    } catch (err) {
-      sqliteDb.exec('ROLLBACK');
-      throw err;
-    }
+    if (sqliteTx.getStore()) return callback();
+    const db = sqliteDb;
+    const run = sqliteQueue.then(() =>
+      sqliteTx.run(true, async () => {
+        db.exec('BEGIN TRANSACTION');
+        try {
+          const result = await callback();
+          db.exec('COMMIT');
+          return result;
+        } catch (err) {
+          db.exec('ROLLBACK');
+          throw err;
+        }
+      })
+    );
+    sqliteQueue = run.catch(() => undefined);
+    return run;
   }
   return callback();
 }

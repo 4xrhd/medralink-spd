@@ -24,27 +24,62 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
           cache-dependency-path: |
-            prototype/package-lock.json
-            prototype/server/package-lock.json
-            prototype/client/package-lock.json
+            server/package-lock.json
+            client/package-lock.json
 
       - name: Install Server Dependencies
-        run: cd prototype/server && npm ci
+        run: cd server && npm ci
 
       - name: Run Backend Automated Test Suite
-        run: cd prototype/server && npm run test:coverage
+        run: cd server && npm run test:coverage
 
       - name: Install Client Dependencies
-        run: cd prototype/client && npm ci
+        run: cd client && npm ci
 
       - name: Run Frontend Unit Tests (Vitest)
-        run: cd prototype/client && npm test
+        run: cd client && npm test
 
       - name: Build Frontend Client (Vite)
-        run: cd prototype/client && npm run build
+        run: cd client && npm run build
 
       - name: Build Backend Server (TypeScript)
-        run: cd prototype/server && npm run build
+        run: cd server && npm run build
+
+  postgres-tests:
+    name: Backend tests on PostgreSQL 16
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: medralink_test
+        ports: [ "5432:5432" ]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install Server Dependencies
+        run: cd server && npm ci
+
+      # One shared database, so suites run one after another
+      - name: Run Backend Tests against PostgreSQL
+        env:
+          TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/medralink_test
+        run: cd server && npx jest --runInBand
 
   docker-verification:
     name: Docker Image Build Verification
@@ -60,7 +95,7 @@ jobs:
       - name: Build MedraLink Production Image
         uses: docker/build-push-action@v5
         with:
-          context: ./prototype
-          file: ./prototype/Dockerfile
+          context: .
+          file: ./Dockerfile
           push: false
           tags: medralink:ci-test

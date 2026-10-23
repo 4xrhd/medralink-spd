@@ -323,7 +323,7 @@ async function seedNotificationsIfEmpty() {
   for (const n of sampleNotifications) {
     await execute(
       `INSERT INTO notifications (id, user_id, title, message, type, category, link, is_read, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`,
       [n.id, n.userId, n.title, n.message, n.type, n.category, n.link, n.isRead, n.createdAt]
     );
   }

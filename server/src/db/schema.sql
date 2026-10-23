@@ -220,7 +220,8 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     user_agent TEXT,
     details TEXT,                     -- JSON serialized context or description
     sha256_hash TEXT,                 -- Cryptographic audit integrity chain
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    seq BIGINT                        -- Position in the hash chain (1, 2, 3, ...)
 );
 
 CREATE TABLE IF NOT EXISTS password_resets (
@@ -249,5 +250,15 @@ CREATE INDEX IF NOT EXISTS idx_prescriptions_patient ON prescriptions(patient_id
 CREATE INDEX IF NOT EXISTS idx_lab_reports_patient ON lab_reports(patient_id);
 CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);
 CREATE INDEX IF NOT EXISTS idx_audit_actor ON audit_logs(actor_id);
+CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_appointments_doctor_patient ON appointments(doctor_id, patient_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_patient ON appointments(patient_id);
+CREATE INDEX IF NOT EXISTS idx_records_doctor_patient ON medical_records(doctor_id, patient_id);
+CREATE INDEX IF NOT EXISTS idx_prescription_items_rx ON prescription_items(prescription_id);
+CREATE INDEX IF NOT EXISTS idx_vitals_record ON vital_signs(record_id);
+CREATE INDEX IF NOT EXISTS idx_diagnoses_record ON diagnoses(record_id);
+CREATE INDEX IF NOT EXISTS idx_allergies_patient ON allergies(patient_id);
+CREATE INDEX IF NOT EXISTS idx_conditions_patient ON medical_conditions(patient_id);
+CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets(token_hash);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at);
