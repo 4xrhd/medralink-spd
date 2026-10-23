@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ConfirmModal } from '../components/ConfirmModal.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
+import { useDebounce } from '../hooks/useDebounce.js';
+import { AdminUsersPanel, AdminSettingsPanel } from '../components/AdminPanels.js';
 import { Card, Icon, Pill, Badge, Button, MetricCard } from '../ui/primitives.js';
 
 export const AdminDashboard: React.FC = () => {
@@ -22,18 +24,39 @@ export const AdminDashboard: React.FC = () => {
   const [auditFilterRole, setAuditFilterRole] = useState<'All' | 'DOCTOR' | 'PATIENT' | 'ADMIN'>('All');
   const [auditSearch, setAuditSearch] = useState('');
   const [last24Hours, setLast24Hours] = useState(false);
+  const [auditFrom, setAuditFrom] = useState('');
+  const [auditTo, setAuditTo] = useState('');
+  const [auditTotal, setAuditTotal] = useState(0);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
+  const debouncedAuditSearch = useDebounce(auditSearch, 300);
+
+  // Filtering runs on the server (GET /admin/audit-logs) so it covers the whole ledger, not one page
+  const fetchAuditLogs = useCallback(async () => {
+    const params: Record<string, string> = { limit: '100' };
+    if (auditFilterRole !== 'All') params.role = auditFilterRole;
+    if (debouncedAuditSearch.trim()) params.search = debouncedAuditSearch.trim();
+    if (last24Hours) params.from = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    else if (auditFrom) params.from = new Date(auditFrom).toISOString();
+    if (auditTo) params.to = new Date(`${auditTo}T23:59:59`).toISOString();
+    try {
+      const res = await api.get('/admin/audit-logs', { params });
+      setAuditLogs(res.data.data?.logs || []);
+      setAuditTotal(res.data.data?.total ?? 0);
+    } catch (err) {
+      console.error('Error fetching audit logs:', err);
+      toast.error('Failed to load audit logs');
+    }
+  }, [auditFilterRole, debouncedAuditSearch, last24Hours, auditFrom, auditTo, toast]);
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, [fetchAuditLogs]);
 
   const fetchStats = async () => {
     try {
-      const [dRes, docsRes, auditRes] = await Promise.all([
-        api.get('/dashboard'),
-        api.get('/doctors'),
-        api.get('/audit-logs'),
-      ]);
+      const [dRes, docsRes] = await Promise.all([api.get('/dashboard'), api.get('/doctors')]);
       setDashboardData(dRes.data.data);
       setDoctors(docsRes.data.data || []);
-      setAuditLogs(auditRes.data.data?.logs || []);
     } catch (err) {
       console.error('Error fetching admin data:', err);
       toast.error('Failed to load governance telemetry');
@@ -87,13 +110,7 @@ export const AdminDashboard: React.FC = () => {
   const stats = dashboardData?.stats;
   const pendingDoctorsCount = doctors.filter((d) => !d.is_verified).length;
 
-  // Filtered audit logs
-  const filteredAuditLogs = auditLogs.filter((log) => {
-    const matchesRole = auditFilterRole === 'All' || log.role === auditFilterRole;
-    const haystack = `${log.actor_name || ''} ${log.action || ''} ${log.resource || ''} ${log.details || ''}`.toLowerCase();
-    const matchesSearch = !auditSearch.trim() || haystack.includes(auditSearch.trim().toLowerCase());
-    return matchesRole && matchesSearch;
-  });
+  const filteredAuditLogs = auditLogs;
 
   const roleTone = (r: string) =>
     r === 'DOCTOR' ? 'blue' : r === 'ADMIN' ? 'purple' : 'emerald';
@@ -271,6 +288,9 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </Card>
 
+        <AdminUsersPanel />
+        <AdminSettingsPanel />
+
         {/* Section 2: Cryptographic Audit Trail Inspector (Append-Only) */}
         <Card className="overflow-hidden p-0">
           <div className="border-b border-hair px-4 py-4 sm:px-6">
@@ -334,6 +354,29 @@ export const AdminDashboard: React.FC = () => {
               >
                 <Icon.Clock size={14} /> Last 24 hours
               </button>
+
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
+                From
+                <input
+                  type="date"
+                  value={auditFrom}
+                  disabled={last24Hours}
+                  onChange={(e) => setAuditFrom(e.target.value)}
+                  className="rounded-lg border border-hair bg-white px-2 py-1.5 text-xs text-ink-900 disabled:opacity-50"
+                />
+              </label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
+                To
+                <input
+                  type="date"
+                  value={auditTo}
+                  onChange={(e) => setAuditTo(e.target.value)}
+                  className="rounded-lg border border-hair bg-white px-2 py-1.5 text-xs text-ink-900"
+                />
+              </label>
+              <span className="text-xs text-ink-600" aria-live="polite">
+                {auditTotal} matching {auditTotal === 1 ? 'entry' : 'entries'}
+              </span>
             </div>
           </div>
 
@@ -351,24 +394,24 @@ export const AdminDashboard: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-hair">
                 {filteredAuditLogs.map((l, i) => {
-                  const hash = l.integrity_hash || l.hash || '-';
+                  const hash = l.sha256_hash || '-';
                   const isCopied = copiedHash === hash && hash !== '-';
                   return (
                     <tr key={l.id || i} className="hover:bg-canvas transition-colors">
                       <td className="tabular whitespace-nowrap px-6 py-3 text-ink-600">
-                        {l.created_at ? new Date(l.created_at).toLocaleString() : '-'}
+                        {l.timestamp ? new Date(l.timestamp).toLocaleString() : '-'}
                       </td>
                       <td className="px-3 py-3">
                         <span className="font-sans">
-                          <Pill tone={roleTone(l.role)}>{l.role}</Pill>
+                          <Pill tone={roleTone(l.actor_role)}>{l.actor_role}</Pill>
                         </span>
                         <span className="mt-0.5 block text-[10px] font-sans font-medium text-ink-600">
-                          {l.actor_name || l.actor || 'System'}
+                          {l.actor_name || 'System'}
                         </span>
                       </td>
                       <td className="px-3 py-3 font-semibold text-primary-700">{l.action}</td>
-                      <td className="px-3 py-3 text-audit font-semibold">{l.resource}</td>
-                      <td className="px-3 py-3 font-sans text-ink-600">{l.details || l.context || '-'}</td>
+                      <td className="px-3 py-3 text-audit font-semibold">{l.target_resource}</td>
+                      <td className="px-3 py-3 font-sans text-ink-600">{l.details || '-'}</td>
                       <td className="px-6 py-3">
                         <div className="flex items-center gap-2">
                           <span className="text-ink-900 select-all">{hash}</span>

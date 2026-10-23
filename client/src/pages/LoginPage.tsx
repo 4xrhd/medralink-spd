@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Icon, Button, FormField, Input } from '../ui/primitives.js';
 import { EcgLine } from '../ui/medical.js';
+import { getApiErrorMessage } from '../services/api.js';
 
 export const LoginPage: React.FC = () => {
   useDocumentTitle('Sign In');
@@ -50,7 +51,7 @@ export const LoginPage: React.FC = () => {
       await login(email, password);
       toast.success('Successfully authenticated');
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Invalid email or password.';
+      const msg = getApiErrorMessage(err, 'Invalid email or password.');
       setError(msg);
       toast.error(msg);
     } finally {
@@ -145,7 +146,7 @@ export const LoginPage: React.FC = () => {
           <div className="lg:hidden text-center mb-6">
             <img src="/logo.png" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
-              Sign in to Medra<span className="text-primary-600">Link</span>
+              Sign in to Medra<span className="text-primary-700">Link</span>
             </h1>
             <p className="text-xs text-ink-600 mt-1">
               Connected Electronic Medical Records &amp; Clinical Portals
@@ -172,7 +173,7 @@ export const LoginPage: React.FC = () => {
             {/* Quick Demo Access Selectors */}
             <div className="mb-6 rounded-2xl border border-hair bg-primary-50/40 p-3.5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-600 mb-2.5 flex items-center gap-1.5">
-                <Icon.User size={13} className="text-primary-600" /> Quick Demo One-Click Access:
+                <Icon.User size={13} className="text-primary-700" /> Quick Demo One-Click Access:
               </p>
               <div className="grid grid-cols-3 gap-2">
                 <button
@@ -183,7 +184,7 @@ export const LoginPage: React.FC = () => {
                   }}
                   className={`min-h-[48px] rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1 ${
                     email === 'dr.test@medralink.com'
-                      ? 'border-primary-600 bg-primary-600 text-white shadow-sm'
+                      ? 'border-primary-600 bg-primary-700 text-white shadow-sm'
                       : 'border-hair-strong bg-white text-ink-900 hover:border-primary-300 hover:bg-primary-50/50'
                   }`}
                 >
@@ -257,6 +258,11 @@ export const LoginPage: React.FC = () => {
                   }
                 />
               </FormField>
+              <div className="-mt-2 text-right">
+                <Link to="/forgot-password" className="text-xs font-semibold text-primary-700 hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
 
               <Button
                 type="submit"
@@ -272,7 +278,7 @@ export const LoginPage: React.FC = () => {
 
             <div className="mt-6 border-t border-hair pt-5 text-center text-xs text-ink-600">
               Don't have a clinical account?{' '}
-              <Link to="/register" className="font-semibold text-primary-600 hover:underline">
+              <Link to="/register" className="font-semibold text-primary-700 hover:underline">
                 Register Patient or Doctor Profile
               </Link>
             </div>

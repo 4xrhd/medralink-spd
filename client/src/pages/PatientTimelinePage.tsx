@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import api from '../services/api.js';
+import api, { getApiErrorMessage } from '../services/api.js';
 import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
 
 function TimelineMarker({ active }: { active?: boolean }) {
@@ -38,7 +38,7 @@ export const PatientTimelinePage: React.FC = () => {
         const res = await api.get(`/patients/${id}/timeline`);
         setData(res.data.data);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to load medical timeline.');
+        setError(getApiErrorMessage(err, 'Failed to load medical timeline.'));
       } finally {
         setLoading(false);
       }
@@ -64,7 +64,7 @@ export const PatientTimelinePage: React.FC = () => {
           <p className="text-sm font-semibold text-rose-700">{error || 'Patient timeline data unavailable.'}</p>
           <Link
             to="/"
-            className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 hover:underline"
+            className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:underline"
           >
             <Icon.Arrow size={14} className="rotate-180" /> Return to Dashboard
           </Link>
@@ -115,7 +115,7 @@ export const PatientTimelinePage: React.FC = () => {
               className="inline-flex items-center gap-1.5 rounded-xl border border-hair bg-white px-3.5 py-1.5 text-xs font-semibold text-primary-700 shadow-xs transition-colors hover:bg-slate-50 hover:text-primary-800 focus-visible:ring-2 focus-visible:ring-primary-600"
               title="Download official longitudinal patient health dossier as PDF"
             >
-              <Icon.Download size={14} className="text-primary-600" />
+              <Icon.Download size={14} className="text-primary-700" />
               <span>Export Health Summary (PDF)</span>
             </a>
             <Pill tone="emerald">
@@ -273,17 +273,9 @@ export const PatientTimelinePage: React.FC = () => {
                     <Card className="p-6 transition-all hover:shadow-md">
                       {/* Card Header */}
                       <div
+                        // Mouse shortcut only; keyboard and screen-reader users use the chevron button below,
+                        // so the header is not itself a nested interactive control.
                         onClick={() => toggleCard(record.id)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            toggleCard(record.id);
-                          }
-                        }}
-                        tabIndex={0}
-                        role="button"
-                        aria-expanded={isAccordionOpen}
-                        aria-label={`Toggle consultation details for ${visitDateStr}`}
                         className="flex flex-wrap items-start justify-between gap-3 cursor-pointer select-none rounded-xl -m-2 p-2 hover:bg-slate-50/70 focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
                       >
                         <div>
@@ -315,7 +307,7 @@ export const PatientTimelinePage: React.FC = () => {
                             className="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-hair bg-white px-2.5 py-1 text-xs font-semibold text-primary-700 shadow-xs transition-colors hover:bg-slate-50 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
                             title="Download Clinical Encounter Summary PDF"
                           >
-                            <Icon.Download size={12} className="text-primary-600" />
+                            <Icon.Download size={12} className="text-primary-700" />
                             <span className="hidden sm:inline">Encounter PDF</span>
                           </a>
                           {isLatest && (
@@ -475,7 +467,7 @@ export const PatientTimelinePage: React.FC = () => {
                                         type="button"
                                         aria-expanded={isOpen}
                                         onClick={() => toggleReport(lab.id)}
-                                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-600 hover:text-primary-700"
+                                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:text-primary-700"
                                       >
                                         {isOpen ? 'Hide details' : 'View scan / results'}
                                         <Icon.Arrow size={13} className={isOpen ? 'rotate-90' : ''} />
@@ -508,7 +500,7 @@ export const PatientTimelinePage: React.FC = () => {
             <Card className="p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-hair pb-3">
                 <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-600">
+                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                     <Icon.Clock size={16} />
                   </div>
                   <h3 className="font-display text-sm font-bold text-ink-900">Timeline Analytics</h3>
@@ -540,7 +532,7 @@ export const PatientTimelinePage: React.FC = () => {
                   href={`/api/v1/patients/${patient?.id || id}/summary/pdf?token=${token}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex min-h-[40px] items-center justify-center gap-2 w-full rounded-xl bg-primary-600 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
+                  className="flex min-h-[40px] items-center justify-center gap-2 w-full rounded-xl bg-primary-700 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
                 >
                   <Icon.Download size={14} />
                   <span>Download Full Dossier (PDF)</span>

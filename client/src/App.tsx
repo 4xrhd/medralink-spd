@@ -36,6 +36,15 @@ const PrescriptionViewPage = lazy(() =>
 const AdminDashboard = lazy(() =>
   import('./pages/AdminDashboard.js').then((m) => ({ default: m.AdminDashboard }))
 );
+const AccountSettingsPage = lazy(() =>
+  import('./pages/AccountSettingsPage.js').then((m) => ({ default: m.AccountSettingsPage }))
+);
+const ForgotPasswordPage = lazy(() =>
+  import('./pages/PasswordResetPages.js').then((m) => ({ default: m.ForgotPasswordPage }))
+);
+const ResetPasswordPage = lazy(() =>
+  import('./pages/PasswordResetPages.js').then((m) => ({ default: m.ResetPasswordPage }))
+);
 const HospitalSearchPage = lazy(() =>
   import('./pages/HospitalSearchPage.js').then((m) => ({ default: m.HospitalSearchPage }))
 );
@@ -67,6 +76,8 @@ export const App: React.FC = () => {
                     {/* Public Auth Routes */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
 
                     {/* Public Emergency Hospital Search - No Auth Required */}
                     <Route path="/hospitals" element={<HospitalSearchPage />} />
@@ -78,6 +89,7 @@ export const App: React.FC = () => {
                     <Route element={<ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN']} />}>
                       <Route path="/patient" element={<PatientDashboard />} />
                       <Route path="/patient/timeline/:id" element={<PatientTimelinePage />} />
+                      <Route path="/account" element={<AccountSettingsPage />} />
                     </Route>
 
                     {/* Doctor Role Routes */}
@@ -90,6 +102,8 @@ export const App: React.FC = () => {
                     <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
                       <Route path="/admin" element={<AdminDashboard />} />
                       <Route path="/admin/audit-logs" element={<AdminDashboard />} />
+                      <Route path="/admin/users" element={<AdminDashboard />} />
+                      <Route path="/admin/settings" element={<AdminDashboard />} />
                     </Route>
 
                     {/* Fallback */}

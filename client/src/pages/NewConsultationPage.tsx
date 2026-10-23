@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import api from '../services/api.js';
+import api, { getApiErrorMessage } from '../services/api.js';
 import { Card, Icon, Pill, Badge, Button, VitalPill } from '../ui/primitives.js';
 
 const COMMON_ICD10 = [
@@ -249,7 +249,7 @@ export const NewConsultationPage: React.FC = () => {
         navigate(`/patient/timeline/${selectedPatientId}`);
       }
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Failed to submit consultation record.';
+      const msg = getApiErrorMessage(err, 'Failed to submit consultation record.');
       setError(msg);
       toast.error(msg);
     } finally {
@@ -331,7 +331,7 @@ export const NewConsultationPage: React.FC = () => {
                 <span className="text-ink-400">Emergency:</span>
                 <span className="font-semibold text-ink-900">{selectedPatient?.emergency_contact_name || 'Nasreen Ahmed'}</span>
                 <span className="text-ink-600">({selectedPatient?.emergency_contact_relation || 'Spouse'})</span>
-                <span className="font-mono text-primary-600">{selectedPatient?.emergency_contact_phone || '+8801712345678'}</span>
+                <span className="font-mono text-primary-700">{selectedPatient?.emergency_contact_phone || '+8801712345678'}</span>
               </div>
             </div>
 
@@ -512,7 +512,7 @@ export const NewConsultationPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={addCustomDiagnosis}
-                    className="text-xs font-semibold text-primary-600 hover:underline"
+                    className="text-xs font-semibold text-primary-700 hover:underline"
                   >
                     Add
                   </button>
@@ -637,7 +637,7 @@ export const NewConsultationPage: React.FC = () => {
             <button
               type="button"
               onClick={addPrescriptionRow}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-hair-strong py-2.5 text-xs font-semibold text-primary-600 transition-colors hover:border-primary-600 hover:bg-primary-50"
+              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-hair-strong py-2.5 text-xs font-semibold text-primary-700 transition-colors hover:border-primary-600 hover:bg-primary-50"
             >
               <Icon.Plus size={15} /> Add Medicine Row
             </button>
@@ -658,8 +658,9 @@ export const NewConsultationPage: React.FC = () => {
 
             {/* Follow-up recommendation */}
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-hair bg-canvas p-3">
-              <span className="text-xs font-semibold text-ink-900">Scheduled Chamber Follow-up</span>
+              <label htmlFor="follow-up-date" className="text-xs font-semibold text-ink-900">Scheduled Chamber Follow-up</label>
               <input
+                id="follow-up-date"
                 type="date"
                 value={followUpDate}
                 onChange={(e) => setFollowUpDate(e.target.value)}

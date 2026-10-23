@@ -176,7 +176,7 @@ export const Navbar: React.FC = () => {
           >
             <img src="/logo.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
             <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
-              Medra<span className="text-primary-600">Link</span>
+              Medra<span className="text-primary-700">Link</span>
             </span>
           </Link>
           {getRoleBadge()}
@@ -315,7 +315,7 @@ export const Navbar: React.FC = () => {
                   }}
                   className={`relative grid h-9 w-9 place-items-center rounded-xl border transition-colors ${
                     showNotifications
-                      ? 'border-primary-600 bg-primary-50 text-primary-600'
+                      ? 'border-primary-600 bg-primary-50 text-primary-700'
                       : 'border-hair text-ink-600 hover:bg-slate-100 hover:text-ink-900'
                   }`}
                 >
@@ -346,7 +346,7 @@ export const Navbar: React.FC = () => {
                           <button
                             type="button"
                             onClick={markAllAsRead}
-                            className="text-[11px] font-semibold text-primary-600 hover:underline cursor-pointer"
+                            className="text-[11px] font-semibold text-primary-700 hover:underline cursor-pointer"
                           >
                             Mark all read
                           </button>
@@ -645,6 +645,13 @@ export const Navbar: React.FC = () => {
                       >
                         <Icon.Settings size={15} /> Notification Preferences
                       </button>
+                      <Link
+                        to="/account"
+                        onClick={() => setShowProfileMenu(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                      >
+                        <Icon.User size={15} /> Account Settings
+                      </Link>
                     </div>
 
                     <div className="border-t border-hair pt-1">
@@ -698,7 +705,7 @@ export const Navbar: React.FC = () => {
               </Link>
               <Link
                 to="/register"
-                className="hidden sm:inline-flex whitespace-nowrap rounded-lg bg-primary-600 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
+                className="hidden sm:inline-flex whitespace-nowrap rounded-lg bg-primary-700 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-800"
               >
                 Register Clinic
               </Link>
@@ -800,6 +807,12 @@ export const Navbar: React.FC = () => {
                   </>
                 )}
 
+                <Link
+                  to="/account"
+                  className="block rounded-xl px-3.5 py-2.5 text-sm font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                >
+                  Account Settings
+                </Link>
                 <Link
                   to="/"
                   className="block rounded-xl px-3.5 py-2.5 text-sm font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"

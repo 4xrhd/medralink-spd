@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import api from '../services/api.js';
+import api, { getApiErrorMessage } from '../services/api.js';
 import { Icon } from '../ui/primitives.js';
 
 function QR() {
@@ -36,7 +36,7 @@ export const PrescriptionViewPage: React.FC = () => {
         const res = await api.get(`/prescriptions/${id}`);
         setData(res.data.data);
       } catch (err: any) {
-        setError(err.response?.data?.message || 'Failed to load prescription.');
+        setError(getApiErrorMessage(err, 'Failed to load prescription.'));
       } finally {
         setLoading(false);
       }
@@ -278,7 +278,7 @@ export const PrescriptionViewPage: React.FC = () => {
                         </td>
                         <td className="py-2.5 tabular">{item.dosage}</td>
                         <td className="py-2.5">
-                          <span className="font-mono font-semibold text-primary-600">{item.frequency}</span>
+                          <span className="font-mono font-semibold text-primary-700">{item.frequency}</span>
                         </td>
                         <td className="py-2.5 tabular">{item.duration}</td>
                         <td className="py-2.5 text-ink-600">{item.instructions || 'As directed'}</td>

@@ -30,4 +30,10 @@ api.interceptors.response.use(
   }
 );
 
+/** Prefers the first field-level validation message, then the server message, then the fallback. */
+export function getApiErrorMessage(err: unknown, fallback: string): string {
+  const data = (err as { response?: { data?: { message?: string; errors?: { message: string }[] } } })?.response?.data;
+  return data?.errors?.[0]?.message || data?.message || fallback;
+}
+
 export default api;

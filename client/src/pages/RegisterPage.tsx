@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Icon, Button, FormField, Input } from '../ui/primitives.js';
 import { EcgLine } from '../ui/medical.js';
+import { getApiErrorMessage } from '../services/api';
 
 export const RegisterPage: React.FC = () => {
   useDocumentTitle('Account Registration');
@@ -70,7 +71,7 @@ export const RegisterPage: React.FC = () => {
       if (role === 'DOCTOR') navigate('/doctor');
       else navigate('/patient');
     } catch (err: any) {
-      const msg = err.response?.data?.message || 'Registration failed. Please check inputs.';
+      const msg = getApiErrorMessage(err, 'Registration failed. Please check inputs.');
       setError(msg);
       toast.error(msg);
     } finally {
@@ -168,7 +169,7 @@ export const RegisterPage: React.FC = () => {
           <div className="lg:hidden text-center mb-6">
             <img src="/logo.png" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
-              Create Medra<span className="text-primary-600">Link</span> Account
+              Create Medra<span className="text-primary-700">Link</span> Account
             </h1>
             <p className="text-xs text-ink-600 mt-1">
               Register for continuous clinical record management
@@ -199,7 +200,7 @@ export const RegisterPage: React.FC = () => {
                 <div
                   className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
                     role === 'PATIENT'
-                      ? 'bg-primary-600 text-white shadow-xs'
+                      ? 'bg-primary-700 text-white shadow-xs'
                       : 'bg-primary-50 text-primary-700'
                   }`}
                 >
@@ -211,7 +212,7 @@ export const RegisterPage: React.FC = () => {
                       Patient Profile
                     </span>
                     {role === 'PATIENT' && (
-                      <span className="grid h-4 w-4 place-items-center rounded-full bg-primary-600 text-white">
+                      <span className="grid h-4 w-4 place-items-center rounded-full bg-primary-700 text-white">
                         <Icon.Check size={10} />
                       </span>
                     )}
@@ -234,7 +235,7 @@ export const RegisterPage: React.FC = () => {
                 <div
                   className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
                     role === 'DOCTOR'
-                      ? 'bg-primary-600 text-white shadow-xs'
+                      ? 'bg-primary-700 text-white shadow-xs'
                       : 'bg-primary-50 text-primary-700'
                   }`}
                 >
@@ -246,7 +247,7 @@ export const RegisterPage: React.FC = () => {
                       Doctor Portal
                     </span>
                     {role === 'DOCTOR' && (
-                      <span className="grid h-4 w-4 place-items-center rounded-full bg-primary-600 text-white">
+                      <span className="grid h-4 w-4 place-items-center rounded-full bg-primary-700 text-white">
                         <Icon.Check size={10} />
                       </span>
                     )}
@@ -308,9 +309,10 @@ export const RegisterPage: React.FC = () => {
                     id="reg-password"
                     type={showPassword ? 'text' : 'password'}
                     required
+                    minLength={8}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="At least 6 characters"
+                    placeholder="At least 8 characters"
                     leftIcon={<Icon.Lock size={16} />}
                     rightElement={
                       <button
@@ -430,7 +432,7 @@ export const RegisterPage: React.FC = () => {
 
             <div className="mt-6 text-center text-xs text-ink-600 border-t border-hair pt-5">
               Already registered?{' '}
-              <Link to="/login" className="font-semibold text-primary-600 hover:underline">
+              <Link to="/login" className="font-semibold text-primary-700 hover:underline">
                 Sign In
               </Link>
             </div>
