@@ -1,38 +1,32 @@
 # ==============================================================================
 # MedraLink EMR Platform - Render Blueprint Specification
+# Backend API on Render, database on Supabase (ap-southeast-2), frontend on Netlify.
 # ==============================================================================
 services:
   - type: web
-    name: medralink-app
+    name: medralink-api
     runtime: node
-    plan: starter
-    region: oregon
-    buildCommand: npm run install:all && npm run build
+    plan: free
+    region: singapore # closest Render region to the Supabase database in Sydney
+    rootDir: server
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
       - key: DB_DIALECT
         value: postgres
       - key: DATABASE_URL
-        fromDatabase:
-          name: medralink-db
-          property: connectionString
+        sync: false # Supabase IPv4 Session pooler string, entered in the Render dashboard
+      - key: DATABASE_SSL
+        value: "true"
+      - key: DB_POOL_MAX
+        value: "10"
       - key: AUTO_SEED
         value: "true"
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGIN
-        value: "*"
-
-databases:
-  - name: medralink-db
-    databaseName: medralink
-    user: medra_user
-    plan: starter
-    region: oregon
-    postgresMajorVersion: 16
+        sync: false # the Netlify site URL, e.g. https://medralink.netlify.app

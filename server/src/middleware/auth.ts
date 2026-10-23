@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken';
 import { UserRole } from '../types/index.js';
 import { queryOne } from '../db/database.js';
 
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+  // The fallback below is public in the repository; never sign production tokens with it
+  throw new Error('JWT_SECRET must be set in production.');
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'medralink_secure_academic_jwt_secret_2026';
 
 export interface AuthUser {
