@@ -123,7 +123,7 @@ export async function seedDatabase() {
   // Visit 1 for Rahim Ahmed (pat-1)
   await execute(
     `INSERT INTO medical_records (id, record_uid, patient_id, doctor_id, appointment_id, visit_date, chief_complaint, clinical_notes, follow_up_date)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`,
     ['rec-1', 'REC-94821', 'pat-1', 'doc-1', 'apt-1', '2026-08-10 10:30:00', 'Mild exertional chest tightness and morning occipital headaches for 2 weeks', 'Patient is moderately anxious. Heart sounds S1, S2 audible with no murmurs. Chest clear on auscultation.', '2026-09-18']
   );
 
@@ -234,8 +234,8 @@ async function seedNotificationsIfEmpty() {
   const userIds = ['usr-admin-1', 'usr-doc-1', 'usr-doc-2', 'usr-pat-1', 'usr-pat-2', 'usr-pat-3'];
   for (const uid of userIds) {
     await execute(
-      `INSERT OR IGNORE INTO notification_settings (user_id, critical_alerts, prescription_updates, lab_results, security_audits, sound_enabled, email_digest)
-       VALUES (?, 1, 1, 1, 1, 1, 0)`,
+      `INSERT INTO notification_settings (user_id, critical_alerts, prescription_updates, lab_results, security_audits, sound_enabled, email_digest)
+       VALUES (?, 1, 1, 1, 1, 1, 0) ON CONFLICT DO NOTHING`,
       [uid]
     );
   }
@@ -322,7 +322,7 @@ async function seedNotificationsIfEmpty() {
 
   for (const n of sampleNotifications) {
     await execute(
-      `INSERT OR IGNORE INTO notifications (id, user_id, title, message, type, category, link, is_read, created_at)
+      `INSERT INTO notifications (id, user_id, title, message, type, category, link, is_read, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [n.id, n.userId, n.title, n.message, n.type, n.category, n.link, n.isRead, n.createdAt]
     );

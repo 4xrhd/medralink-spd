@@ -2,11 +2,29 @@ import Database from 'better-sqlite3';
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import { Pool } from 'pg';
+import { Pool, PoolClient, types } from 'pg';
+import { AsyncLocalStorage } from 'async_hooks';
 
 dotenv.config();
 
 const isPostgres = process.env.DB_DIALECT === 'postgres';
+
+// Make PostgreSQL return the same JS shapes as SQLite so controllers stay dialect-agnostic:
+// COUNT(*) / BIGINT as numbers, NUMERIC as numbers, and dates/timestamps as plain strings.
+types.setTypeParser(types.builtins.INT8, (v) => parseInt(v, 10));
+types.setTypeParser(types.builtins.NUMERIC, (v) => parseFloat(v));
+types.setTypeParser(types.builtins.DATE, (v) => v);
+types.setTypeParser(types.builtins.TIMESTAMP, (v) => v);
+types.setTypeParser(types.builtins.TIMESTAMPTZ, (v) => v);
+
+// The pg client of the transaction currently in progress, so query/execute inside
+// runTransaction use the same connection (a pool query would bypass BEGIN/COMMIT).
+const txClient = new AsyncLocalStorage<PoolClient>();
+
+function toPgPlaceholders(sql: string): string {
+  let paramIndex = 1;
+  return sql.replace(/\?/g, () => `$${paramIndex++}`);
+}
 const dataDir = path.resolve(process.cwd(), 'data');
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -67,6 +85,29 @@ function resolveSchemaPath(): string | null {
   return null;
 }
 
+// The audit trail is append-only: the database itself rejects UPDATE and DELETE on audit_logs.
+const SQLITE_AUDIT_GUARDS = `
+CREATE TRIGGER IF NOT EXISTS audit_logs_no_update BEFORE UPDATE ON audit_logs
+BEGIN SELECT RAISE(ABORT, 'audit_logs is append-only'); END;
+CREATE TRIGGER IF NOT EXISTS audit_logs_no_delete BEFORE DELETE ON audit_logs
+BEGIN SELECT RAISE(ABORT, 'audit_logs is append-only'); END;
+`;
+
+const POSTGRES_AUDIT_GUARDS = `
+CREATE OR REPLACE FUNCTION audit_logs_block_mutation() RETURNS trigger AS $$
+BEGIN RAISE EXCEPTION 'audit_logs is append-only'; END;
+$$ LANGUAGE plpgsql SET search_path = '';
+DROP TRIGGER IF EXISTS audit_logs_no_mutation ON audit_logs;
+CREATE TRIGGER audit_logs_no_mutation BEFORE UPDATE OR DELETE ON audit_logs
+FOR EACH ROW EXECUTE FUNCTION audit_logs_block_mutation();
+-- Deny the Supabase Data API (anon/authenticated); the backend's owner role bypasses RLS
+DO $$ DECLARE t text; BEGIN
+  FOR t IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+    EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
+  END LOOP;
+END $$;
+`;
+
 export async function initDb(): Promise<void> {
   const schemaPath = resolveSchemaPath();
   if (!schemaPath) {
@@ -77,9 +118,11 @@ export async function initDb(): Promise<void> {
 
   if (isPostgres && pgPool) {
     await pgPool.query(schemaSql);
+    await pgPool.query(POSTGRES_AUDIT_GUARDS);
     console.log('[DB] PostgreSQL schema initialized successfully.');
   } else if (sqliteDb) {
     sqliteDb.exec(schemaSql);
+    sqliteDb.exec(SQLITE_AUDIT_GUARDS);
     // Check and migrate columns on notifications table if needed
     try {
       const columns = sqliteDb.prepare("PRAGMA table_info(notifications)").all() as Array<{ name: string }>;
@@ -125,9 +168,7 @@ export async function closeDb(): Promise<void> {
 
 export async function query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
   if (isPostgres && pgPool) {
-    let paramIndex = 1;
-    const pgSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
-    const res = await pgPool.query(pgSql, params);
+    const res = await (txClient.getStore() ?? pgPool).query(toPgPlaceholders(sql), params);
     return res.rows as T[];
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(sql);
@@ -143,9 +184,7 @@ export async function queryOne<T = any>(sql: string, params: any[] = []): Promis
 
 export async function execute(sql: string, params: any[] = []): Promise<{ changes: number; lastInsertRowid?: number | bigint }> {
   if (isPostgres && pgPool) {
-    let paramIndex = 1;
-    const pgSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
-    const res = await pgPool.query(pgSql, params);
+    const res = await (txClient.getStore() ?? pgPool).query(toPgPlaceholders(sql), params);
     return { changes: res.rowCount || 0 };
   } else if (sqliteDb) {
     const stmt = sqliteDb.prepare(sql);
@@ -160,7 +199,7 @@ export async function runTransaction<T>(callback: () => Promise<T>): Promise<T> 
     const client = await pgPool.connect();
     try {
       await client.query('BEGIN');
-      const result = await callback();
+      const result = await txClient.run(client, callback);
       await client.query('COMMIT');
       return result;
     } catch (err) {
