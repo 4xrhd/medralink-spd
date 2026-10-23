@@ -519,7 +519,7 @@ export const LandingPage: React.FC = () => {
           <div className="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
             <div>
               <div className="flex items-center gap-2.5">
-                <img src="/logo.svg" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
+                <img src="/logo.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
                 <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
                   Medra<span className="text-primary-700">Link</span>
                 </span>

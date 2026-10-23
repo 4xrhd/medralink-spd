@@ -173,8 +173,10 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
             aria-label="MedraLink Home"
           >
-            <img src="/logo.svg" alt="" className="h-8 w-8" />
-            <span className="font-display text-lg font-semibold text-ink-900">MedraLink</span>
+            <img src="/logo.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
+            <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
+              Medra<span className="text-primary-700">Link</span>
+            </span>
           </Link>
           {getRoleBadge()}
         </div>
@@ -555,7 +557,7 @@ export const Navbar: React.FC = () => {
                         to="/"
                         className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                       >
-                        <img src="/logo.svg" alt="Logo" className="h-4 w-4 object-contain" /> System Overview
+                        <img src="/logo.png" alt="Logo" className="h-4 w-4 object-contain" /> System Overview
                       </Link>
 
                       <button

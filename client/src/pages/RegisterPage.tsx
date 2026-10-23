@@ -92,7 +92,7 @@ export const RegisterPage: React.FC = () => {
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">
-              <img src="/logo.svg" alt="MedraLink Logo" className="h-11 w-11 object-contain" />
+              <img src="/logo.png" alt="MedraLink Logo" className="h-11 w-11 object-contain" />
               <div>
                 <span className="font-display text-xl font-bold tracking-tight">
                   Medra<span className="text-primary-300">Link</span>
@@ -167,7 +167,7 @@ export const RegisterPage: React.FC = () => {
         {/* Right Panel - Form */}
         <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
           <div className="lg:hidden text-center mb-6">
-            <img src="/logo.svg" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
+            <img src="/logo.png" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
               Create Medra<span className="text-primary-700">Link</span> Account
             </h1>
