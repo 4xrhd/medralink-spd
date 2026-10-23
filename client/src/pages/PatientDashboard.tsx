@@ -195,7 +195,7 @@ export const PatientDashboard: React.FC = () => {
         </Card>
 
         {/* 4-Metric Row with MetricCard */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard
             title="Total Consultations"
             value={data?.stats?.totalVisits ?? '3'}
@@ -317,7 +317,6 @@ export const PatientDashboard: React.FC = () => {
                 </div>
                 <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Active Electronic Prescriptions</h2>
               </div>
-              <Pill tone="emerald">Verified Regimens</Pill>
             </div>
 
             <div className="space-y-3">
@@ -389,7 +388,6 @@ export const PatientDashboard: React.FC = () => {
                   </div>
                   <h3 className="font-display text-base font-bold text-ink-900">Patient Care Navigator</h3>
                 </div>
-                <Pill tone="blue">Self-Service</Pill>
               </div>
 
               <div className="space-y-3">
@@ -405,16 +403,6 @@ export const PatientDashboard: React.FC = () => {
                     <span>Browse complete visit timeline</span>
                     <Icon.Arrow size={12} />
                   </Link>
-                </div>
-
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs">
-                  <div className="flex items-center gap-2 text-emerald-900 font-bold">
-                    <Icon.Lock size={14} />
-                    <span>AES-256 Health Locker</span>
-                  </div>
-                  <p className="mt-1 text-emerald-800">
-                    Encrypted zero-knowledge patient consent vault active.
-                  </p>
                 </div>
 
                 <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs">
@@ -440,7 +428,7 @@ export const PatientDashboard: React.FC = () => {
                     className="flex items-center justify-center gap-2 w-full rounded-xl bg-rose-700 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-rose-800 active:scale-[0.98]"
                   >
                     <Icon.Hospital size={13} />
-                    Find Nearby Hospitals on Google Maps
+                    Find nearby hospitals
                   </Link>
                   <p className="mt-2.5 font-mono font-bold text-critical text-sm">Call 16263</p>
                   <p className="mt-0.5 text-ink-600">Toll-free 24/7 national health line</p>

@@ -21,9 +21,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+        sans: ['Public Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Bricolage Grotesque', 'Public Sans', 'ui-sans-serif', 'sans-serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
       },
       fontSize: {
         '2xs': ['0.6875rem', { lineHeight: '0.875rem', letterSpacing: '0.015em' }], // 11px
@@ -42,15 +42,16 @@ export default {
         'sm': '6px',
         'md': '8px',
         'lg': '12px',
-        'xl': '16px',
-        '2xl': '20px',
-        '3xl': '28px',
+        'xl': '12px',
+        '2xl': '14px',
+        '3xl': '20px',
       },
       boxShadow: {
-        'subtle': '0 1px 2px 0 rgb(11 43 51 / 0.04)',
-        'card': '0 1px 3px 0 rgb(13 148 136 / 0.06), 0 1px 2px -1px rgb(11 43 51 / 0.04)',
-        'card-hover': '0 12px 28px -8px rgb(13 148 136 / 0.22), 0 4px 8px -4px rgb(11 43 51 / 0.06)',
-        'elevated': '0 20px 40px -12px rgb(13 148 136 / 0.25), 0 8px 16px -8px rgb(11 43 51 / 0.08)',
+        // Paper on a desk: a hairline edge, almost no blur. Only floating menus get real depth.
+        'subtle': '0 1px 0 0 rgb(20 33 28 / 0.04)',
+        'card': '0 1px 0 0 rgb(20 33 28 / 0.05)',
+        'card-hover': '0 1px 0 0 rgb(20 33 28 / 0.05), 0 0 0 1px rgb(11 93 70 / 0.25)',
+        'elevated': '0 16px 32px -12px rgb(20 33 28 / 0.22), 0 2px 6px -2px rgb(20 33 28 / 0.08)',
       },
       colors: {
         // Healthcare theme
@@ -69,8 +70,12 @@ export default {
         navy: { DEFAULT: v('primary-700'), hover: v('primary-800'), 700: v('primary-800') },
         clinical: { DEFAULT: v('primary-600'), hover: v('primary-700'), light: v('primary-50') },
         brand: { ...primary, navy: v('primary-700'), slate: v('primary-600'), accent: v('success') },
-        emerald: { DEFAULT: '#059669', hover: '#047857', light: '#ECFDF5' },
-        crimson: { DEFAULT: '#E11D48', hover: '#BE123C', light: '#FFF1F2' },
+        // Stock Tailwind greys, greens and reds retuned to the record palette so older
+        // utility classes (bg-slate-50, text-rose-800, ...) stay on-brand
+        slate: { 50: '#F4F7F5', 100: '#E9EFEC', 200: '#DAE3DE', 300: '#C4D1CA', 400: '#8FA39A', 500: '#62746D', 600: '#4D5F58', 700: '#40524B', 800: '#2A3B34', 900: '#14211C' },
+        emerald: { DEFAULT: '#157340', 50: '#ECF5F0', 100: '#D6EBE0', 200: '#ADD4C0', 300: '#82BD9F', 400: '#4FA07A', 500: '#1F8463', 600: '#117053', 700: '#0B5D46', 800: '#084B38', 900: '#06382A' },
+        rose: { 50: '#FBEDEC', 100: '#F6D9D7', 200: '#ECB6B2', 300: '#E08C86', 400: '#CF5F57', 500: '#C0433B', 600: '#B02621', 700: '#94201C', 800: '#7A1B17', 900: '#5E1512', 950: '#3B0D0B' },
+        crimson: { DEFAULT: '#B02621', hover: '#8F1E1A', light: '#FBEDEC' },
         amber: { DEFAULT: '#D97706', hover: '#B45309', light: '#FEF3C7' },
         purple: { DEFAULT: '#7C3AED', hover: '#6D28D9', light: '#F5F3FF' },
       },

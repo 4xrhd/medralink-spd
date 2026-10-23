@@ -621,7 +621,7 @@ export function MetricCard({
   iconTone = "blue",
   status,
   className = "",
-  hover = true,
+  hover = false,
 }: MetricCardProps) {
   const iconTones = {
     blue: "bg-primary-50 text-primary-700 border-primary-200",
@@ -631,32 +631,24 @@ export function MetricCard({
     amber: "bg-amber-50 text-amber-900 border-amber-200",
   };
 
+  // A count reads first; the icon is a quiet marker, and status pills only appear when they carry real state
   return (
-    <Card hover={hover} className={cn("p-5 flex flex-col justify-between", className)}>
-      <div className="flex items-center justify-between gap-2">
+    <Card hover={hover} className={cn("p-4 sm:p-5", className)}>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium text-ink-600">{title}</p>
         {icon && (
-          <div
-            className={cn(
-              "grid h-10 w-10 place-items-center rounded-xl border",
-              iconTones[iconTone]
-            )}
-          >
+          <div className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-lg border", iconTones[iconTone])} aria-hidden="true">
             {icon}
           </div>
         )}
-        {status && (
-          <Badge tone={status.tone || "emerald"} size="sm" dot>
-            {status.label}
-          </Badge>
-        )}
       </div>
-      <div className="mt-4">
-        <p className="tabular font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink-900">
-          {value}
-        </p>
-        <p className="mt-1.5 text-xs font-semibold uppercase tracking-wider text-ink-600">{title}</p>
-        {subtext && <p className="mt-1 text-xs text-ink-600">{subtext}</p>}
-      </div>
+      <p className={cn("mt-2 tabular font-display font-semibold text-ink-900", typeof value === "number" || String(value).length <= 6 ? "text-3xl" : "text-xl")}>{value}</p>
+      {subtext && <p className="mt-1 text-xs text-ink-600">{subtext}</p>}
+      {status && status.tone === "amber" && (
+        <Badge tone="amber" size="sm" dot className="mt-2">
+          {status.label}
+        </Badge>
+      )}
     </Card>
   );
 }
@@ -767,7 +759,7 @@ export function VitalPill({
   };
   return (
     <div className={cn("flex flex-col rounded-xl border px-3.5 py-2.5", tones[tone], className)}>
-      <span className="text-xs font-semibold uppercase tracking-wider text-ink-600">
+      <span className="text-xs font-semibold text-ink-600">
         {label}
       </span>
       <span className={cn("tabular text-sm sm:text-base font-bold mt-0.5", valTone[tone])}>{value}</span>

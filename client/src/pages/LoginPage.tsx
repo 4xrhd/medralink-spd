@@ -7,6 +7,15 @@ import { Icon, Button, FormField, Input } from '../ui/primitives.js';
 import { EcgLine } from '../ui/medical.js';
 import { getApiErrorMessage } from '../services/api.js';
 
+const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true';
+const DEMO_ACCOUNTS: Record<string, { email: string; password: string }> = DEMO_MODE
+  ? {
+      doctor: { email: 'dr.ahmed@medralink.com', password: 'doctor123' },
+      patient: { email: 'rahim@gmail.com', password: 'patient123' },
+      admin: { email: 'admin@medralink.com', password: 'admin123' },
+    }
+  : {};
+
 export const LoginPage: React.FC = () => {
   useDocumentTitle('Sign In');
   const toast = useToast();
@@ -21,16 +30,12 @@ export const LoginPage: React.FC = () => {
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
+  // Demo builds (VITE_DEMO_MODE=true) can prefill the seeded accounts; production builds ship none
   useEffect(() => {
-    if (roleParam === 'doctor') {
-      setEmail('dr.test@medralink.com');
-      setPassword('Password123!');
-    } else if (roleParam === 'patient') {
-      setEmail('patient.test@medralink.com');
-      setPassword('Password123!');
-    } else if (roleParam === 'admin') {
-      setEmail('admin@medralink.com');
-      setPassword('admin123');
+    const demo = DEMO_MODE && roleParam ? DEMO_ACCOUNTS[roleParam] : undefined;
+    if (demo) {
+      setEmail(demo.email);
+      setPassword(demo.password);
     }
   }, [roleParam]);
 
@@ -50,7 +55,7 @@ export const LoginPage: React.FC = () => {
     try {
       await login(email, password);
       toast.success('Successfully authenticated');
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg = getApiErrorMessage(err, 'Invalid email or password.');
       setError(msg);
       toast.error(msg);
@@ -69,19 +74,19 @@ export const LoginPage: React.FC = () => {
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">
-              <img src="/logo.png" alt="MedraLink Logo" className="h-11 w-11 object-contain" />
+              <img src="/logo.svg" alt="MedraLink Logo" className="h-11 w-11 object-contain" />
               <div>
                 <span className="font-display text-xl font-bold tracking-tight">
                   Medra<span className="text-primary-300">Link</span>
                 </span>
-                <p className="text-[11px] font-medium uppercase tracking-wider text-primary-200">
+                <p className="text-[11px] font-medium text-primary-200">
                   Clinical Portal
                 </p>
               </div>
             </div>
 
             <div className="mt-10">
-              <p className="text-xs font-semibold tracking-wider uppercase text-primary-300">
+              <p className="text-xs font-semibold text-primary-300">
                 Connected Care Network
               </p>
               <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-white leading-snug">
@@ -137,14 +142,13 @@ export const LoginPage: React.FC = () => {
 
           <div className="relative z-10 pt-8 border-t border-white/10 text-xs text-primary-200/80 flex items-center justify-between">
             <span>Protected Healthcare Session</span>
-            <span className="font-mono text-[11px] text-primary-300">TLS 1.3 / AES-256</span>
           </div>
         </div>
 
         {/* Right Panel - Form */}
         <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
           <div className="lg:hidden text-center mb-6">
-            <img src="/logo.png" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
+            <img src="/logo.svg" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
               Sign in to Medra<span className="text-primary-700">Link</span>
             </h1>
@@ -156,74 +160,49 @@ export const LoginPage: React.FC = () => {
           <div className="max-w-md w-full mx-auto">
             <div className="hidden lg:block mb-6">
               <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink-900">
-                Welcome to Clinical Portal
+                Sign in to MedraLink
               </h1>
               <p className="text-sm text-ink-600 mt-1.5 leading-relaxed">
-                Enter your credentials or choose a quick evaluation profile below.
+                Use the email and password for your MedraLink account.
               </p>
             </div>
 
             {error && (
-              <div className="mb-5 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs font-medium text-rose-800">
+              <div role="alert" className="mb-5 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs font-medium text-rose-800">
                 <Icon.Alert size={16} className="shrink-0 text-rose-600" />
                 <span>{error}</span>
               </div>
             )}
 
-            {/* Quick Demo Access Selectors */}
-            <div className="mb-6 rounded-2xl border border-hair bg-primary-50/40 p-3.5">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-600 mb-2.5 flex items-center gap-1.5">
-                <Icon.User size={13} className="text-primary-700" /> Quick Demo One-Click Access:
-              </p>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('dr.test@medralink.com');
-                    setPassword('Password123!');
-                  }}
-                  className={`min-h-[48px] rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1 ${
-                    email === 'dr.test@medralink.com'
-                      ? 'border-primary-600 bg-primary-700 text-white shadow-sm'
-                      : 'border-hair-strong bg-white text-ink-900 hover:border-primary-300 hover:bg-primary-50/50'
-                  }`}
-                >
-                  <div className="text-base mb-0.5" aria-hidden="true">🩺</div>
-                  Doctor
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('patient.test@medralink.com');
-                    setPassword('Password123!');
-                  }}
-                  className={`min-h-[48px] rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-1 ${
-                    email === 'patient.test@medralink.com'
-                      ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm'
-                      : 'border-hair-strong bg-white text-ink-900 hover:border-emerald-300 hover:bg-emerald-50/50'
-                  }`}
-                >
-                  <div className="text-base mb-0.5" aria-hidden="true">👤</div>
-                  Patient
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail('admin@medralink.com');
-                    setPassword('admin123');
-                  }}
-                  className={`min-h-[48px] rounded-xl px-2 py-2 text-xs font-semibold transition-all cursor-pointer border text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-1 ${
-                    email === 'admin@medralink.com'
-                      ? 'border-violet-600 bg-violet-600 text-white shadow-sm'
-                      : 'border-hair-strong bg-white text-ink-900 hover:border-violet-300 hover:bg-violet-50/50'
-                  }`}
-                >
-                  <div className="text-base mb-0.5" aria-hidden="true">🛡️</div>
-                  Admin
-                </button>
-              </div>
-            </div>
-
+            {/* Demo builds only: one click fills a seeded account */}
+            {DEMO_MODE && (
+              <fieldset className="mb-6">
+                <legend className="mb-2 text-sm font-medium text-ink-600">Try a demo account</legend>
+                <div className="grid grid-cols-3 gap-2">
+                  {Object.entries(DEMO_ACCOUNTS).map(([role, account]) => {
+                    const selected = email === account.email;
+                    return (
+                      <button
+                        key={role}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => {
+                          setEmail(account.email);
+                          setPassword(account.password);
+                        }}
+                        className={`min-h-[44px] rounded-lg border px-2 text-sm font-medium capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1 ${
+                          selected
+                            ? 'border-primary-700 bg-primary-700 text-white'
+                            : 'border-hair-strong bg-white text-ink-900 hover:border-primary-600'
+                        }`}
+                      >
+                        {role}
+                      </button>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            )}
             <form className="space-y-4" onSubmit={handleSubmit}>
               <FormField label="Email address" htmlFor="login-email" required>
                 <Input
@@ -272,7 +251,7 @@ export const LoginPage: React.FC = () => {
                 isLoading={isSubmitting}
                 icon={<Icon.Lock size={16} />}
               >
-                Sign In to Medical Account
+                Sign in
               </Button>
             </form>
 

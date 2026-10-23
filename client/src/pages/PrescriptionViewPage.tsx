@@ -159,7 +159,7 @@ export const PrescriptionViewPage: React.FC = () => {
         {/* Header banner */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-primary-700 px-6 sm:px-8 py-5 text-white">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="MedraLink Logo" className="h-11 w-11 object-contain shrink-0" />
+            <img src="/logo.svg" alt="MedraLink Logo" className="h-11 w-11 object-contain shrink-0" />
             <div>
               <p className="font-display text-lg sm:text-xl font-bold tracking-tight leading-tight">MedraLink Clinical Health System</p>
               <p className="text-xs text-primary-200">National Digital E-Prescription Registry</p>
@@ -202,7 +202,7 @@ export const PrescriptionViewPage: React.FC = () => {
               ['Blood Group', bloodGroup],
             ].map(([l, v], i) => (
               <div key={l} className="bg-canvas px-3 py-2.5">
-                <p className="text-xs font-semibold uppercase tracking-wider text-ink-600">{l}</p>
+                <p className="text-xs font-semibold text-ink-600">{l}</p>
                 <p className={`mt-1 text-sm font-bold text-ink-900 ${i > 0 ? 'tabular' : ''}`}>
                   {v}
                 </p>

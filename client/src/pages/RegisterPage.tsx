@@ -92,19 +92,19 @@ export const RegisterPage: React.FC = () => {
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">
-              <img src="/logo.png" alt="MedraLink Logo" className="h-11 w-11 object-contain" />
+              <img src="/logo.svg" alt="MedraLink Logo" className="h-11 w-11 object-contain" />
               <div>
                 <span className="font-display text-xl font-bold tracking-tight">
                   Medra<span className="text-primary-300">Link</span>
                 </span>
-                <p className="text-[11px] font-medium uppercase tracking-wider text-primary-200">
+                <p className="text-[11px] font-medium text-primary-200">
                   Registration Portal
                 </p>
               </div>
             </div>
 
             <div className="mt-10">
-              <p className="text-xs font-semibold tracking-wider uppercase text-primary-300">
+              <p className="text-xs font-semibold text-primary-300">
                 Join the Network
               </p>
               <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-white leading-snug">
@@ -167,7 +167,7 @@ export const RegisterPage: React.FC = () => {
         {/* Right Panel - Form */}
         <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
           <div className="lg:hidden text-center mb-6">
-            <img src="/logo.png" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
+            <img src="/logo.svg" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
               Create Medra<span className="text-primary-700">Link</span> Account
             </h1>

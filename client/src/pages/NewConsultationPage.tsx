@@ -277,9 +277,6 @@ export const NewConsultationPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <Pill tone="emerald">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Active Clinical Session • Room 402
-          </Pill>
         </div>
       </section>
 
@@ -378,7 +375,7 @@ export const NewConsultationPage: React.FC = () => {
             {/* Chief Complaints */}
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                <label className="block text-xs font-semibold text-slate-700">
                   Chief Complaints
                 </label>
                 <span className="text-xs font-medium text-ink-400">Primary patient symptoms</span>
@@ -395,7 +392,7 @@ export const NewConsultationPage: React.FC = () => {
             {/* Clinical Examination & Diagnosis Notes */}
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                <label className="block text-xs font-semibold text-slate-700">
                   Clinical Examination &amp; Diagnosis Notes
                 </label>
                 <span className="text-xs font-medium text-ink-400">Physical examination findings</span>
@@ -412,7 +409,7 @@ export const NewConsultationPage: React.FC = () => {
             {/* Vitals Capture Matrix (4x2 grid with Real-Time BMI indicator) */}
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-800">
+                <label className="block text-xs font-semibold text-slate-800">
                   Vitals Capture Matrix
                 </label>
                 <span className="inline-flex items-center gap-1 rounded-md bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700 border border-primary-100">

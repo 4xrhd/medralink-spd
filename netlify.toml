@@ -3,6 +3,10 @@
   publish = "dist"
   command = "npm run build"
 
+# The graded demo shows one-click demo accounts; set to false for a real deployment
+[build.environment]
+  VITE_DEMO_MODE = "true"
+
 # The API runs on Render (render.yaml). Proxying keeps the browser on one origin,
 # so relative /api links (PDF downloads, lab report files) work without CORS.
 [[redirects]]

@@ -119,32 +119,31 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
-  const getRoleBadge = () => {
-    if (!user) return null;
-    switch (user.role) {
-      case 'DOCTOR':
-        return (
-          <Pill tone="blue" className="hidden sm:inline-flex whitespace-nowrap">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary-600" />
-            BMDC Verified • Active Session
-          </Pill>
-        );
-      case 'PATIENT':
-        return (
-          <Pill tone="emerald" className="hidden sm:inline-flex whitespace-nowrap">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" />
-            Patient Health Record
-          </Pill>
-        );
-      case 'ADMIN':
-        return (
-          <Pill tone="purple" className="hidden sm:inline-flex whitespace-nowrap">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-audit" />
-            Enterprise Governance
-          </Pill>
-        );
-    }
-  };
+  const ROLE_LABEL: Record<string, string> = { DOCTOR: 'Doctor', PATIENT: 'Patient', ADMIN: 'Admin' };
+
+  // One link list per role; the active page is marked with the green rule under it
+  const roleNavItems: Array<{ to: string; label: string; match: (path: string) => boolean }> = !user
+    ? []
+    : user.role === 'DOCTOR'
+      ? [
+          { to: '/doctor', label: 'Today', match: (p) => p === '/doctor' },
+          { to: '/doctor/new-consultation', label: 'New consultation', match: (p) => p.startsWith('/doctor/new-consultation') },
+        ]
+      : user.role === 'PATIENT'
+        ? [
+            { to: '/patient', label: 'My record', match: (p) => p === '/patient' },
+            { to: user.patientId ? `/patient/timeline/${user.patientId}` : '/patient', label: 'Timeline', match: (p) => p.startsWith('/patient/timeline') },
+            { to: '/hospitals', label: 'Hospitals', match: (p) => p === '/hospitals' },
+          ]
+        : [
+            { to: '/admin', label: 'Overview', match: (p) => p === '/admin' },
+            { to: '/admin/audit-logs', label: 'Audit trail', match: (p) => p === '/admin/audit-logs' },
+          ];
+
+  const getRoleBadge = () =>
+    user ? (
+      <span className="hidden sm:inline-block border-l border-hair pl-3 text-sm text-ink-600">{ROLE_LABEL[user.role]}</span>
+    ) : null;
 
   const initials = user?.fullName
     ? user.fullName
@@ -165,7 +164,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 h-[72px] border-b border-hair bg-white/95 backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+      <header className="sticky top-0 z-50 h-16 border-b border-hair bg-white">
       <div className="mx-auto flex h-full max-w-[1720px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12">
         {/* Brand Logo & Status */}
         <div className="flex shrink-0 items-center gap-3">
@@ -174,106 +173,30 @@ export const Navbar: React.FC = () => {
             className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
             aria-label="MedraLink Home"
           >
-            <img src="/logo.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
-            <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
-              Medra<span className="text-primary-700">Link</span>
-            </span>
+            <img src="/logo.svg" alt="" className="h-8 w-8" />
+            <span className="font-display text-lg font-semibold text-ink-900">MedraLink</span>
           </Link>
           {getRoleBadge()}
         </div>
 
         {/* Center Navigation Links (Desktop) */}
         {user ? (
-          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2 text-sm font-medium">
-            {user.role === 'DOCTOR' && (
-              <>
+          <nav aria-label="Main" className="hidden md:flex h-full items-stretch gap-6 text-sm font-medium">
+            {roleNavItems.map((item) => {
+              const active = item.match(location.pathname);
+              return (
                 <Link
-                  to="/doctor"
-                  className={`whitespace-nowrap rounded-xl px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all ${
-                    location.pathname === '/doctor'
-                      ? 'bg-primary-50 text-primary-700 shadow-xs'
-                      : 'text-ink-600 hover:bg-slate-100 hover:text-ink-900'
+                  key={item.to}
+                  to={item.to}
+                  aria-current={active ? 'page' : undefined}
+                  className={`inline-flex items-center whitespace-nowrap border-b-2 px-0.5 pt-0.5 transition-colors ${
+                    active ? 'border-primary-700 text-ink-900' : 'border-transparent text-ink-600 hover:text-ink-900'
                   }`}
                 >
-                  Workstation
+                  {item.label}
                 </Link>
-                <Link
-                  to="/doctor/new-consultation"
-                  className={`whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
-                    location.pathname === '/doctor/new-consultation'
-                      ? 'bg-primary-700 text-white shadow-sm ring-2 ring-primary-600/40'
-                      : 'bg-primary-700 text-white shadow-sm hover:bg-primary-800'
-                  }`}
-                >
-                  <Icon.Stethoscope size={16} />
-                  <span>New Consultation</span>
-                </Link>
-              </>
-            )}
-
-            {user.role === 'PATIENT' && (
-              <>
-                <Link
-                  to="/patient"
-                  className={`whitespace-nowrap rounded-xl px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all ${
-                    location.pathname === '/patient'
-                      ? 'bg-primary-50 text-primary-700 shadow-xs'
-                      : 'text-ink-600 hover:bg-slate-100 hover:text-ink-900'
-                  }`}
-                >
-                  My Health Record
-                </Link>
-                <Link
-                  to={user.patientId ? `/patient/timeline/${user.patientId}` : '/patient'}
-                  className={`whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
-                    location.pathname.startsWith('/patient/timeline')
-                      ? 'bg-emerald-50 text-success ring-1 ring-emerald-200'
-                      : 'bg-primary-50 text-primary-700 hover:bg-blue-100'
-                  }`}
-                >
-                  <Icon.Clock size={15} />
-                  <span>Medical Timeline</span>
-                </Link>
-                <Link
-                  to="/hospitals"
-                  className={`whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all ${
-                    location.pathname === '/hospitals'
-                      ? 'bg-rose-100 text-rose-700 ring-1 ring-rose-300'
-                      : 'text-rose-600 hover:bg-rose-50 hover:text-rose-700'
-                  }`}
-                  aria-label="Find emergency hospitals near you"
-                >
-                  <Icon.Hospital size={15} />
-                  <span>Hospitals</span>
-                </Link>
-              </>
-            )}
-
-            {user.role === 'ADMIN' && (
-              <>
-                <Link
-                  to="/admin"
-                  className={`whitespace-nowrap rounded-xl px-3.5 py-2 text-xs sm:text-sm font-semibold transition-all ${
-                    location.pathname === '/admin'
-                      ? 'bg-primary-50 text-primary-700 shadow-xs'
-                      : 'text-ink-600 hover:bg-slate-100 hover:text-ink-900'
-                  }`}
-                >
-                  Governance Console
-                </Link>
-                <Link
-                  to="/admin/audit-logs"
-                  className={`whitespace-nowrap inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs sm:text-sm font-semibold transition-all ${
-                    location.pathname === '/admin/audit-logs'
-                      ? 'bg-violet-50 text-audit ring-1 ring-violet-200'
-                      : 'bg-violet-50 text-audit hover:bg-purple-100'
-                  }`}
-                >
-                  <Icon.Shield size={15} />
-                  <span>Audit Trail</span>
-                </Link>
-              </>
-            )}
+              );
+            })}
           </nav>
         ) : isAuthPage ? (
           <nav className="hidden sm:flex items-center">
@@ -281,7 +204,7 @@ export const Navbar: React.FC = () => {
               to="/"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-600 transition-colors hover:text-primary-700"
             >
-              <Icon.Arrow size={14} className="rotate-180" /> Return to Platform Overview
+              <Icon.Arrow size={14} className="rotate-180" /> Back to home
             </Link>
           </nav>
         ) : (
@@ -632,7 +555,7 @@ export const Navbar: React.FC = () => {
                         to="/"
                         className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
                       >
-                        <img src="/logo.png" alt="Logo" className="h-4 w-4 object-contain" /> System Overview
+                        <img src="/logo.svg" alt="Logo" className="h-4 w-4 object-contain" /> System Overview
                       </Link>
 
                       <button

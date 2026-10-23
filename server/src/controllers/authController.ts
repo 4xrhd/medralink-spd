@@ -30,6 +30,7 @@ export async function login(req: Request, res: Response) {
     let patientUid: string | undefined;
     let doctorId: string | undefined;
     let doctorUid: string | undefined;
+    let doctorProfile: { bmdcLicenseNumber: string; hospitalAffiliation: string; specialization: string; qualifications: string } | undefined;
 
     if (user.role === 'PATIENT') {
       const patient = await queryOne<{ id: string; patient_uid: string }>(
@@ -39,12 +40,20 @@ export async function login(req: Request, res: Response) {
       patientId = patient?.id;
       patientUid = patient?.patient_uid;
     } else if (user.role === 'DOCTOR') {
-      const doctor = await queryOne<{ id: string; doctor_uid: string }>(
-        'SELECT id, doctor_uid FROM doctors WHERE user_id = ?',
+      const doctor = await queryOne<{ id: string; doctor_uid: string; bmdc_license_number: string; hospital_affiliation: string; specialization: string; qualifications: string }>(
+        'SELECT id, doctor_uid, bmdc_license_number, hospital_affiliation, specialization, qualifications FROM doctors WHERE user_id = ?',
         [user.id]
       );
       doctorId = doctor?.id;
       doctorUid = doctor?.doctor_uid;
+      if (doctor) {
+        doctorProfile = {
+          bmdcLicenseNumber: doctor.bmdc_license_number,
+          hospitalAffiliation: doctor.hospital_affiliation,
+          specialization: doctor.specialization,
+          qualifications: doctor.qualifications,
+        };
+      }
     }
 
     const tokenPayload = {
@@ -87,6 +96,7 @@ export async function login(req: Request, res: Response) {
           patientUid,
           doctorId,
           doctorUid,
+          doctorProfile,
         }
       }
     });

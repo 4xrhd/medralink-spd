@@ -1,31 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Figtree:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Healthcare theme tokens (RGB channels for Tailwind alpha support) */
-  --c-primary-50: 240 253 250;
-  --c-primary-100: 204 251 241;
-  --c-primary-200: 153 246 228;
-  --c-primary-500: 20 184 166;
-  --c-primary-600: 13 148 136;
-  --c-primary-700: 15 118 110;
-  --c-primary-800: 17 94 89;
-  --c-primary-900: 19 78 74;
-  --c-care-500: 56 189 248;
-  --c-ink-900: 15 23 42;
-  --c-ink-600: 51 65 85;
-  --c-ink-400: 100 116 139;
-  --c-canvas: 248 250 252;
+  /* "Clinical record" palette: record green from the Bangladesh flag, cool chart white,
+     one alert red reserved for allergies and critical values. RGB channels for Tailwind alpha. */
+  --c-primary-50: 236 245 240;   /* #ECF5F0 */
+  --c-primary-100: 214 235 224;  /* #D6EBE0 */
+  --c-primary-200: 173 212 192;  /* #ADD4C0 */
+  --c-primary-500: 31 132 99;    /* #1F8463 */
+  --c-primary-600: 17 112 83;    /* #117053 */
+  --c-primary-700: 11 93 70;     /* #0B5D46 record green, 7.6:1 on white */
+  --c-primary-800: 8 75 56;      /* #084B38 */
+  --c-primary-900: 6 56 42;      /* #06382A */
+  --c-care-500: 242 181 68;      /* #F2B544 marker amber, used for the current visit */
+  --c-ink-900: 20 33 28;         /* #14211C */
+  --c-ink-600: 64 82 75;         /* #40524B */
+  --c-ink-400: 98 116 109;       /* #62746D, 4.7:1 on white */
+  --c-canvas: 244 247 245;       /* #F4F7F5 chart white */
   --c-surface: 255 255 255;
-  --c-hair: 226 232 240;
-  --c-hair-strong: 203 213 225;
-  --c-critical: 190 18 60;  /* #be123c, AA contrast on white and rose-50 */
-  --c-warning: 180 83 9;    /* #b45309, 5.0:1 on white (WCAG AA) */
-  --c-success: 21 128 61;   /* #15803d, 5.0:1 on white (WCAG AA) */
-  --c-audit: 124 58 237;
+  --c-hair: 218 227 222;         /* #DAE3DE */
+  --c-hair-strong: 196 209 202;  /* #C4D1CA */
+  --c-critical: 176 38 33;       /* #B02621, 6.4:1 on white */
+  --c-warning: 166 77 8;         /* #A64D08 */
+  --c-success: 21 115 64;        /* #157340 */
+  --c-audit: 76 70 150;          /* #4C4696 ledger indigo */
 
   /* Legacy aliases kept for any remaining plain CSS usage */
   --surface-canvas: rgb(var(--c-canvas));
@@ -33,10 +33,10 @@
 }
 
 html {
-  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Public Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--text-primary);
   background: var(--surface-canvas);
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+  font-feature-settings: "tnum" 0;
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
 }
@@ -86,7 +86,7 @@ body {
 /* Clean modern subtle scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #CBD5E1 transparent;
+  scrollbar-color: #C4D1CA transparent;
 }
 *::-webkit-scrollbar {
   width: 6px;
@@ -96,19 +96,19 @@ body {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #C4D1CA;
   border-radius: 6px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #8FA39A;
 }
 
 @layer components {
   .page-title {
-    @apply font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink-900;
+    @apply font-display text-2xl sm:text-3xl font-semibold tracking-tight text-ink-900;
   }
   .section-title {
-    @apply font-display text-lg sm:text-xl font-bold tracking-tight text-ink-900;
+    @apply font-display text-lg sm:text-xl font-semibold tracking-tight text-ink-900;
   }
   .sub-title {
     @apply text-sm leading-relaxed text-ink-600;
@@ -130,3 +130,9 @@ svg.shrink-0 {
   vertical-align: middle;
 }
 
+
+/* Display headings use the optical size of Bricolage Grotesque */
+.font-display {
+  font-optical-sizing: auto;
+  letter-spacing: -0.02em;
+}

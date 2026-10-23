@@ -130,32 +130,15 @@ export const AdminDashboard: React.FC = () => {
         <div className="mx-auto flex max-w-[1200px] 2xl:max-w-[1720px] flex-wrap items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12 py-5">
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
-              MedraLink Enterprise Governance &amp; Compliance Console
+              Administration
             </h1>
             <p className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-ink-600">
               <span className="inline-flex items-center gap-1.5 font-medium text-success">
                 <span className="h-2 w-2 rounded-full bg-success" /> Platform Health: Operational
               </span>
-              <span className="text-ink-400">•</span>
-              <span className="tabular font-medium">99.99% Uptime</span>
-              <span className="text-ink-400">•</span>
-              <span>Zero Unresolved Security Alerts</span>
+              <span className="text-ink-400" aria-hidden="true">|</span>
+              <span className="tabular font-medium">{stats?.totalAuditLogs ?? 0} audit events recorded</span>
             </p>
-          </div>
-
-          <div className="hidden 2xl:flex items-center gap-6 border-l border-hair pl-6 text-xs text-ink-600">
-            <div>
-              <span className="text-xs font-medium text-ink-600 block">Data Center Node</span>
-              <span className="text-sm font-semibold text-ink-900">Dhaka Central Colo-1 (Active)</span>
-            </div>
-            <div>
-              <span className="text-xs font-medium text-ink-600 block">Cryptographic Keyring</span>
-              <span className="font-mono text-sm text-audit font-bold">HSM-256 Validated • FIPS 140-2</span>
-            </div>
-            <div>
-              <span className="text-xs font-medium text-ink-600 block">Regulatory Compliance</span>
-              <span className="text-sm font-semibold text-success">BMDC Form-C &amp; DGDA Audited</span>
-            </div>
           </div>
 
           <div className="flex items-center gap-3 rounded-xl border border-hair bg-slate-50 px-3.5 py-2 shadow-xs">
@@ -166,8 +149,8 @@ export const AdminDashboard: React.FC = () => {
               loading="lazy"
             />
             <div className="text-right">
-              <p className="font-mono text-xs font-bold tracking-tight text-primary-700">LEDGER: SYNCHRONIZED</p>
-              <p className="text-xs font-medium text-success">SHA-256 Validated • 256-Bit</p>
+              <p className="text-xs font-semibold text-primary-700">Append-only audit ledger</p>
+              <p className="text-xs text-ink-600">Each entry chained by SHA-256</p>
             </div>
           </div>
         </div>
@@ -196,7 +179,7 @@ export const AdminDashboard: React.FC = () => {
 
           <MetricCard
             title="Consultations Processed"
-            value={stats?.totalConsultations ?? 0}
+            value={stats?.totalRecords ?? 0}
             subtext="Unified clinical records"
             icon={<Icon.File size={20} />}
             iconTone="navy"
@@ -205,7 +188,7 @@ export const AdminDashboard: React.FC = () => {
 
           <MetricCard
             title="Cryptographic Audit Entries"
-            value={stats?.auditEntriesCount ?? 0}
+            value={stats?.totalAuditLogs ?? 0}
             subtext="SHA-256 validated ledger"
             icon={<Icon.Shield size={20} />}
             iconTone="purple"
@@ -232,7 +215,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="overflow-x-auto" aria-label="Physician credential table">
             <table className="min-w-[900px] w-full text-sm">
               <thead>
-                <tr className="border-b border-hair bg-canvas text-left text-xs font-semibold uppercase tracking-wider text-ink-600">
+                <tr className="border-b border-hair bg-canvas text-left text-xs font-semibold text-ink-600">
                   <th className="px-6 py-3 font-semibold">Doctor Name &amp; UID</th>
                   <th className="px-4 py-3 font-semibold">BMDC License</th>
                   <th className="px-4 py-3 font-semibold">Specialization</th>

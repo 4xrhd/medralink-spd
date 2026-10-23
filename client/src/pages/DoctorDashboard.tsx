@@ -123,7 +123,7 @@ export const DoctorDashboard: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-primary-700 uppercase tracking-wider">{greeting}</span>
+                <span className="text-xs font-semibold text-primary-700">{greeting}</span>
                 <span className="text-xs text-ink-400">•</span>
                 <span className="text-xs text-ink-600 font-medium">{currentDateStr}</span>
               </div>
@@ -134,26 +134,7 @@ export const DoctorDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="hidden 2xl:flex items-center gap-6 border-l border-hair pl-6 text-xs text-ink-600">
-            <div>
-              <span className="text-xs font-medium text-ink-600 block">Department</span>
-              <span className="text-sm font-semibold text-ink-900">{departmentName}</span>
-            </div>
-            <div>
-              <span className="text-xs font-medium text-ink-600 block">Shift Schedule</span>
-              <span className="text-sm font-semibold text-ink-900">Clinical Rounds • Active</span>
-            </div>
-            <div>
-              <span className="text-xs font-medium text-ink-600 block">Station Protocol</span>
-              <span className="font-mono text-sm text-success font-bold">HL7 FHIR v4.0.1 Synced</span>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <Badge tone="emerald" dot pulse>
-              Active Clinical Session
-            </Badge>
-          </div>
         </div>
       </div>
 
@@ -266,7 +247,7 @@ export const DoctorDashboard: React.FC = () => {
         </div>
 
         {/* 4 Standardized Metric KPI Cards */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <MetricCard
             title="Today's Appointment Queue"
             value={data?.stats?.todayAppointmentsCount || 0}
@@ -293,14 +274,6 @@ export const DoctorDashboard: React.FC = () => {
             iconTone="purple"
           />
 
-          <MetricCard
-            title="Clinical Safety Index"
-            value="99.8%"
-            subtext="Zero unresolved adverse alerts"
-            icon={<Icon.Shield size={22} />}
-            iconTone="emerald"
-            status={{ label: "Verified", tone: "emerald" }}
-          />
         </div>
 
         {/* Main Workstation: 3 Columns on 2xl */}
@@ -314,7 +287,6 @@ export const DoctorDashboard: React.FC = () => {
                 </div>
                 <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Today's Scheduled Consultations</h2>
               </div>
-              <Pill tone="blue">Queue Active</Pill>
             </div>
 
             <div className="mt-4 space-y-3">
@@ -367,7 +339,6 @@ export const DoctorDashboard: React.FC = () => {
                 </div>
                 <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Recent Clinical Records Logged</h2>
               </div>
-              <Pill tone="emerald">Verified 3NF</Pill>
             </div>
 
             <div className="mt-4 space-y-3">
@@ -431,7 +402,6 @@ export const DoctorDashboard: React.FC = () => {
                   </div>
                   <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Clinical Quick Actions</h2>
                 </div>
-                <Pill tone="blue">Direct Access</Pill>
               </div>
 
               <div className="mt-4 space-y-2.5">
@@ -473,50 +443,6 @@ export const DoctorDashboard: React.FC = () => {
               </div>
             </Card>
 
-            {/* Chamber Telemetry & Bed Status */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between border-b border-hair pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success">
-                    <Icon.Pulse size={16} />
-                  </div>
-                  <h2 className="font-display text-base font-bold text-ink-900">Chamber &amp; Facility Telemetry</h2>
-                </div>
-                <Pill tone="emerald">Live 2s</Pill>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <div className="rounded-xl border border-hair bg-canvas p-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-ink-600">CCU Bed Capacity</span>
-                    <span className="font-bold text-ink-900 tabular">14 / 16 (88%)</span>
-                  </div>
-                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-hair">
-                    <div className="h-full rounded-full bg-primary-600" style={{ width: '87.5%' }} />
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between rounded-xl border border-hair bg-canvas p-3 text-xs">
-                  <span className="font-semibold text-ink-600">Pathology &amp; Lab TAT</span>
-                  <span className="font-bold text-success flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                    Avg 38 min (Normal)
-                  </span>
-                </div>
-
-                <div className="flex items-center justify-between rounded-xl border border-hair bg-canvas p-3 text-xs">
-                  <span className="font-semibold text-ink-600">Emergency Alert Code</span>
-                  <span className="font-bold text-success bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                    Green • Code Clear
-                  </span>
-                </div>
-
-                <div className="rounded-xl border border-primary-100 bg-primary-50 p-3 text-xs">
-                  <p className="font-bold text-primary-700">Cardiology Acute Helpline</p>
-                  <p className="mt-0.5 text-primary-700 font-mono font-semibold">NICVD ER: +8802-9122560</p>
-                </div>
-              </div>
-            </Card>
           </div>
         </div>
       </main>

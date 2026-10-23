@@ -109,6 +109,13 @@ export async function getDashboardStats(req: Request, res: Response) {
         [patientId]
       );
 
+      // Profile fields shown in the dashboard header (blood group, emergency contact)
+      const patient = await queryOne(
+        `SELECT p.patient_uid, p.date_of_birth, p.gender, p.blood_group, p.emergency_contact_name,
+                p.emergency_contact_phone, p.emergency_contact_relation, p.nid_or_bid, u.full_name
+         FROM patients p JOIN users u ON p.user_id = u.id WHERE p.id = ?`,
+        [patientId]
+      );
       const allergies = await query('SELECT * FROM allergies WHERE patient_id = ?', [patientId]);
       const conditions = await query('SELECT * FROM medical_conditions WHERE patient_id = ?', [patientId]);
 
@@ -121,6 +128,7 @@ export async function getDashboardStats(req: Request, res: Response) {
             activePrescriptionsCount: activePrescriptions.length,
             labReportsCount: labReportsCount?.count || 0,
           },
+          patient,
           activePrescriptions,
           latestVitals,
           allergies,

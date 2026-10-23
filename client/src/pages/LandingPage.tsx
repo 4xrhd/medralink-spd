@@ -86,7 +86,7 @@ export const LandingPage: React.FC = () => {
         <div className="mx-auto grid max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 items-center gap-12 2xl:gap-16 px-4 sm:px-6 lg:px-8 2xl:px-12 py-14 sm:py-18 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
           <div className="relative z-10">
             {/* Plain text eyebrow: NO BADGE */}
-            <p className="text-xs sm:text-sm font-bold tracking-wider uppercase text-primary-700 flex items-center gap-2">
+            <p className="text-xs sm:text-sm font-bold text-primary-700 flex items-center gap-2">
               <Icon.HeartPulse size={16} className="text-primary-700 shrink-0" />
               <span>Connected Care for Clinicians &amp; Patients</span>
             </p>
@@ -146,7 +146,7 @@ export const LandingPage: React.FC = () => {
 
           {/* Floating Live Consultation Workstation Preview */}
           <div className="relative z-10">
-            <div className="absolute -inset-4 sm:-inset-6 rounded-3xl bg-gradient-to-br from-primary-100/50 via-care-500/10 to-transparent blur-xl" />
+            <div className="absolute -inset-4 sm:-inset-6 rounded-3xl bg-primary-50" aria-hidden="true" />
             <Card className="relative p-5 sm:p-6 shadow-card hover:shadow-card-hover border-hair bg-surface">
               <div className="flex items-center justify-between border-b border-hair pb-3.5">
                 <div className="flex items-center gap-3">
@@ -172,7 +172,7 @@ export const LandingPage: React.FC = () => {
 
               {/* Diagnosis Row */}
               <div className="mt-4">
-                <p className="text-xs font-bold uppercase tracking-wider text-ink-400">
+                <p className="text-xs font-bold text-ink-400">
                   Clinical Diagnosis (ICD-10)
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -297,7 +297,7 @@ export const LandingPage: React.FC = () => {
                 />
               </div>
               <div className="flex flex-1 flex-col p-6">
-                <span className="text-xs font-bold uppercase tracking-wider" style={{ color: c.accent }}>
+                <span className="text-xs font-bold" style={{ color: c.accent }}>
                   {c.tag}
                 </span>
                 <h3 className="mt-2 font-display text-xl font-bold text-ink-900">{c.title}</h3>
@@ -381,7 +381,7 @@ export const LandingPage: React.FC = () => {
         <Card id={`workspace-panel-${tab}`} role="tabpanel" className="mt-8 p-6 sm:p-8 border-hair">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hair pb-5">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-primary-700">
+              <p className="text-xs font-bold text-primary-700">
                 {tabs[tab].label}
               </p>
               <h3 className="mt-1.5 font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-ink-900">
@@ -447,16 +447,16 @@ export const LandingPage: React.FC = () => {
       {/* Enterprise Security & Compliance Banner */}
       <section id="governance" className="scroll-mt-24 bg-gradient-to-br from-primary-900 via-primary-800 to-ink-900 py-16 text-white">
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <p className="text-xs font-bold tracking-wider uppercase text-primary-200">
+          <p className="text-xs font-bold text-primary-200">
             Enterprise Security &amp; Compliance
           </p>
           <h2 className="mt-2 max-w-2xl font-display text-3xl sm:text-4xl font-bold tracking-tight">
-            Bank-grade privacy protection for every patient record
+            Privacy built into every patient record
           </h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
               ["Role-Based Access Control", "Strict RBAC scoping every clinical record to authorized medical staff.", <Icon.Lock size={20} />],
-              ["TLS 1.3 & AES-256", "Encryption in transit and at rest across the entire platform database.", <Icon.Shield size={20} />],
+              ["HTTPS and hashed passwords", "Traffic is encrypted in transit and passwords are stored only as bcrypt hashes.", <Icon.Shield size={20} />],
               ["SQL Injection Defense", "Parameterized queries and prepared statements applied across all endpoints.", <Icon.File size={20} />],
               ["Immutable Audit Ledger", "Append-only cryptographic ledger tracking every record creation and view.", <Icon.Pulse size={20} />],
             ].map(([t, b, icon]) => (
@@ -474,7 +474,7 @@ export const LandingPage: React.FC = () => {
 
       {/* Final Call to Action Card */}
       <section className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12 py-14 sm:py-18">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary-700 via-primary-600 to-care-500 p-8 sm:p-12 text-white shadow-elevated">
+        <div className="relative overflow-hidden rounded-3xl bg-primary-800 p-8 sm:p-12 text-white">
           <div className="max-w-2xl">
             <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">
               Start your connected health journey with MedraLink
@@ -519,7 +519,7 @@ export const LandingPage: React.FC = () => {
           <div className="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
             <div>
               <div className="flex items-center gap-2.5">
-                <img src="/logo.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
+                <img src="/logo.svg" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
                 <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
                   Medra<span className="text-primary-700">Link</span>
                 </span>
