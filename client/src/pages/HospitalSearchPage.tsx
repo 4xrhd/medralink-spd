@@ -1,67 +1,24 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Icon } from '../ui/primitives.js';
 import { cn } from '../utils/cn.js';
-import { SPECIALTIES, SpecialtyValue } from '../constants/specialties.js';
-
-/* -------------------------------------------------------------------------- */
-/*  Types                                                                       */
-/* -------------------------------------------------------------------------- */
-
-interface HospitalResult {
-  placeId: string;
-  name: string;
-  address: string;
-  lat: number;
-  lng: number;
-  openNow: boolean | null;
-  phone: string | null;
-  photoUrl: string | null;
-  distanceKm: number | null;
-  rating: number | null;
-}
-
-interface LatLng {
-  lat: number;
-  lng: number;
-}
+import { HospitalMap } from '../components/HospitalMap.js';
+import { SPECIALTIES, type SpecialtyValue } from '../constants/specialties.js';
+import { filterBySpecialty, findHospitalsNear, geocodeAddress, type HospitalResult, type LatLng } from '../services/osmHospitals.js';
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                     */
 /* -------------------------------------------------------------------------- */
 
-function haversineKm(a: LatLng, b: LatLng): number {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const sin2 =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((a.lat * Math.PI) / 180) *
-      Math.cos((b.lat * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(sin2), Math.sqrt(1 - sin2));
-}
-
-function fmtDist(km: number | null): string {
-  if (km === null) return '-';
+function fmtDist(km: number): string {
   if (km < 1) return `${Math.round(km * 1000)} m`;
   return `${km.toFixed(1)} km`;
 }
 
-function googleMapsDirectionsUrl(lat: number, lng: number, name: string): string {
-  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&destination_place_id=${encodeURIComponent(name)}`;
-}
-
-/* -------------------------------------------------------------------------- */
-/*  Declare google maps on window                                               */
-/* -------------------------------------------------------------------------- */
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    google: any;
-  }
+/** Plain Google Maps link: opening it needs no API key. */
+function googleMapsDirectionsUrl(lat: number, lng: number): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -71,21 +28,13 @@ declare global {
 export const HospitalSearchPage: React.FC = () => {
   useDocumentTitle('Emergency Hospital Search | MedraLink');
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mapRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const googleMapRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const markersRef = useRef<any[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const geocoderRef = useRef<any>(null);
-
-  const [mapsReady, setMapsReady] = useState(false);
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   const [locationError, setLocationError] = useState(false);
   const [manualAddress, setManualAddress] = useState('');
+  const [addressError, setAddressError] = useState('');
+  const [searchError, setSearchError] = useState('');
   const [searching, setSearching] = useState(false);
-  const [hospitals, setHospitals] = useState<HospitalResult[]>([]);
+  const [nearby, setNearby] = useState<HospitalResult[]>([]);
   const [searched, setSearched] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -101,216 +50,12 @@ export const HospitalSearchPage: React.FC = () => {
   };
   const specialtyLabel = SPECIALTIES.find((s) => s.value === specialty)?.label ?? 'All hospitals';
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
-
-  /* ---- Load Google Maps script ------------------------------------------- */
-  useEffect(() => {
-    if (!apiKey) return;
-
-    if (window.google?.maps) {
-      setMapsReady(true);
-      return;
-    }
-
-    const existing = document.querySelector('script[data-gmaps]');
-    if (existing) {
-      existing.addEventListener('load', () => setMapsReady(true));
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geocoding`;
-    script.async = true;
-    script.defer = true;
-    script.setAttribute('data-gmaps', 'true');
-    script.addEventListener('load', () => setMapsReady(true));
-    document.head.appendChild(script);
-  }, [apiKey]);
-
-  /* ---- Init map when script ready ---------------------------------------- */
-  useEffect(() => {
-    if (!mapsReady || !mapRef.current) return;
-    if (googleMapRef.current) return;
-
-    googleMapRef.current = new window.google.maps.Map(mapRef.current, {
-      zoom: 13,
-      center: { lat: 23.8103, lng: 90.4125 }, // Dhaka default
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: true,
-      styles: [
-        { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-        { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-      ],
-    });
-
-    geocoderRef.current = new window.google.maps.Geocoder();
-  }, [mapsReady]);
-
   /* ---- GPS auto-detect on mount ------------------------------------------ */
-  useEffect(() => {
+  const detectLocation = useCallback(() => {
     if (!navigator.geolocation) {
       setLocationError(true);
       return;
     }
-    setGpsLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setUserLocation(loc);
-        setGpsLoading(false);
-      },
-      () => {
-        setLocationError(true);
-        setGpsLoading(false);
-      },
-      { timeout: 8000 }
-    );
-  }, []);
-
-  /* ---- Place markers on map ---------------------------------------------- */
-  const placeMarkers = useCallback((results: HospitalResult[], center: LatLng) => {
-    if (!googleMapRef.current) return;
-
-    // Clear existing markers
-    markersRef.current.forEach((m) => m.setMap(null));
-    markersRef.current = [];
-
-    // User location marker
-    new window.google.maps.Marker({
-      position: center,
-      map: googleMapRef.current,
-      title: 'Your Location',
-      icon: {
-        path: window.google.maps.SymbolPath.CIRCLE,
-        scale: 9,
-        fillColor: '#2563EB',
-        fillOpacity: 1,
-        strokeColor: '#fff',
-        strokeWeight: 2.5,
-      },
-    });
-
-    googleMapRef.current.setCenter(center);
-    googleMapRef.current.setZoom(13);
-
-    results.forEach((h, idx) => {
-      const marker = new window.google.maps.Marker({
-        position: { lat: h.lat, lng: h.lng },
-        map: googleMapRef.current,
-        title: h.name,
-        label: {
-          text: String(idx + 1),
-          color: '#fff',
-          fontWeight: 'bold',
-          fontSize: '11px',
-        },
-        icon: {
-          path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z',
-          fillColor: '#DC2626',
-          fillOpacity: 1,
-          strokeColor: '#fff',
-          strokeWeight: 1.5,
-          scale: 1.6,
-          anchor: new window.google.maps.Point(12, 22),
-          labelOrigin: new window.google.maps.Point(12, 9),
-        },
-      });
-      markersRef.current.push(marker);
-      marker.addListener('click', () => {
-        setSelectedId(h.placeId);
-        document.getElementById(`hospital-card-${h.placeId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-    });
-  }, []);
-
-  /* ---- Core search logic ------------------------------------------------- */
-  const specialtyKeyword = SPECIALTIES.find((s) => s.value === specialty)?.keyword ?? '';
-  const doSearch = useCallback(
-    (loc: LatLng) => {
-      if (!mapsReady || !googleMapRef.current) return;
-
-      setSearching(true);
-      setSearched(false);
-      setHospitals([]);
-
-      const service = new window.google.maps.places.PlacesService(googleMapRef.current);
-      service.nearbySearch(
-        {
-          location: loc,
-          rankBy: window.google.maps.places.RankBy.DISTANCE,
-          type: 'hospital',
-          ...(specialtyKeyword ? { keyword: specialtyKeyword } : {}),
-        },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (results: any[], status: string) => {
-          setSearching(false);
-          setSearched(true);
-
-          const OK = 'OK';
-          const ZERO = 'ZERO_RESULTS';
-          if (status !== OK && status !== ZERO) {
-            setHospitals([]);
-            return;
-          }
-
-          const mapped: HospitalResult[] = (results || []).slice(0, 15).map((r: any) => {
-            const lat = r.geometry?.location?.lat() ?? 0;
-            const lng = r.geometry?.location?.lng() ?? 0;
-            const photoRef = r.photos?.[0];
-            const photoUrl = photoRef
-              ? photoRef.getUrl({ maxWidth: 200, maxHeight: 200 })
-              : null;
-
-            return {
-              placeId: r.place_id ?? String(Math.random()),
-              name: r.name ?? 'Unknown Hospital',
-              address: r.vicinity ?? '-',
-              lat,
-              lng,
-              openNow: r.opening_hours?.isOpen() ?? null,
-              phone: null,
-              photoUrl,
-              distanceKm: haversineKm(loc, { lat, lng }),
-              rating: r.rating ?? null,
-            };
-          });
-
-          // Sort by distance
-          mapped.sort((a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
-          setHospitals(mapped);
-          placeMarkers(mapped, loc);
-        }
-      );
-    },
-    [mapsReady, placeMarkers, specialtyKeyword]
-  );
-
-  /* ---- Search whenever location + maps are ready ------------------------- */
-  useEffect(() => {
-    if (userLocation && mapsReady && googleMapRef.current) {
-      doSearch(userLocation);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userLocation, mapsReady, specialty]);
-
-  /* ---- Manual address geocode -------------------------------------------- */
-  const handleManualSearch = () => {
-    if (!manualAddress.trim() || !geocoderRef.current) return;
-    geocoderRef.current.geocode({ address: manualAddress }, (results: any[], status: string) => {
-      if (status === 'OK' && results?.[0]?.geometry?.location) {
-        const loc: LatLng = {
-          lat: results[0].geometry.location.lat(),
-          lng: results[0].geometry.location.lng(),
-        };
-        setUserLocation(loc);
-        setLocationError(false);
-      }
-    });
-  };
-
-  /* ---- GPS retry --------------------------------------------------------- */
-  const retryGps = () => {
     setGpsLoading(true);
     setLocationError(false);
     navigator.geolocation.getCurrentPosition(
@@ -324,37 +69,63 @@ export const HospitalSearchPage: React.FC = () => {
       },
       { timeout: 8000 }
     );
+  }, []);
+
+  useEffect(() => {
+    detectLocation();
+  }, [detectLocation]);
+
+  /* ---- Load hospitals when the location changes -------------------------- */
+  useEffect(() => {
+    if (!userLocation) return;
+    let cancelled = false;
+    setSearching(true);
+    setSearched(false);
+    setSearchError('');
+    setSelectedId(null);
+    findHospitalsNear(userLocation)
+      .then((results) => {
+        if (!cancelled) setNearby(results);
+      })
+      .catch((err: Error) => {
+        if (cancelled) return;
+        setNearby([]);
+        setSearchError(err.message);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setSearching(false);
+        setSearched(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userLocation]);
+
+  // Specialty filtering runs in the browser: changing it needs no new request
+  const hospitals = useMemo(() => filterBySpecialty(nearby, specialty), [nearby, specialty]);
+
+  /* ---- Typed address (OpenStreetMap Nominatim) --------------------------- */
+  const handleManualSearch = async () => {
+    if (!manualAddress.trim()) return;
+    setAddressError('');
+    try {
+      const loc = await geocodeAddress(manualAddress.trim());
+      if (!loc) {
+        setAddressError('We could not find that place. Try a city or area name.');
+        return;
+      }
+      setUserLocation(loc);
+      setLocationError(false);
+    } catch (err) {
+      setAddressError((err as Error).message);
+    }
   };
 
-  /* ---- No API key guard -------------------------------------------------- */
-  if (!apiKey) {
-    return (
-      <div className="flex min-h-[80vh] flex-col items-center justify-center gap-6 px-4 text-center">
-        <div className="grid h-16 w-16 place-items-center rounded-2xl bg-rose-100 text-rose-600">
-          <Icon.Alert size={32} />
-        </div>
-        <div>
-          <h1 className="font-display text-xl font-bold text-ink-900">Google Maps API Key Missing</h1>
-          <p className="mt-2 max-w-sm text-sm text-ink-600">
-            Add{' '}
-            <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-rose-700">
-              VITE_GOOGLE_MAPS_API_KEY
-            </code>{' '}
-            to your{' '}
-            <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs">client/.env</code>{' '}
-            file and restart the dev server.
-          </p>
-        </div>
-        <Link
-          to="/patient"
-          className="inline-flex items-center gap-1.5 rounded-xl bg-primary-700 px-4 py-2 text-sm font-semibold text-white hover:bg-primary-800"
-        >
-          <Icon.Arrow size={14} className="rotate-180" />
-          Back to Dashboard
-        </Link>
-      </div>
-    );
-  }
+  const selectHospital = useCallback((placeId: string) => {
+    setSelectedId(placeId);
+    document.getElementById(`hospital-card-${placeId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, []);
 
   /* ---- Render ------------------------------------------------------------ */
   return (
@@ -389,63 +160,71 @@ export const HospitalSearchPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Location Status Bar */}
-          <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
-            {gpsLoading ? (
-              <div className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white">
-                <Icon.Loader size={16} className="text-white" />
-                <span>Detecting your location via GPS...</span>
+          {/* Location: GPS status plus a typed address that always works */}
+          <div className="mt-4 space-y-2">
+            <p className="flex items-center gap-2 text-sm text-white" role="status">
+              {gpsLoading ? (
+                <>
+                  <Icon.Loader size={16} className="text-white" />
+                  Detecting your location via GPS...
+                </>
+              ) : userLocation ? (
+                <>
+                  <Icon.MapPin size={16} className="shrink-0 text-rose-100" />
+                  Searching around your chosen location
+                </>
+              ) : (
+                <>
+                  <Icon.MapPin size={16} className="shrink-0 text-rose-100" />
+                  {locationError ? 'Location access is off. Type your area below.' : 'Type your area below.'}
+                </>
+              )}
+              <button
+                type="button"
+                onClick={detectLocation}
+                className="ml-1 rounded-lg bg-white/15 px-2 py-0.5 text-xs font-semibold hover:bg-white/25 transition-colors cursor-pointer"
+              >
+                Use my location
+              </button>
+            </p>
+            <form
+              className="flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleManualSearch();
+              }}
+            >
+              <label htmlFor="hospital-manual-location" className="sr-only">
+                City, area or address
+              </label>
+              <div className="relative flex-1">
+                <Icon.MapPin
+                  size={16}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-100 pointer-events-none"
+                />
+                <input
+                  id="hospital-manual-location"
+                  type="text"
+                  value={manualAddress}
+                  onChange={(e) => setManualAddress(e.target.value)}
+                  placeholder="City, area or address (e.g. Dhanmondi, Dhaka)"
+                  aria-describedby={addressError ? 'hospital-address-error' : undefined}
+                  className="w-full rounded-xl border border-white/30 bg-white/10 py-2.5 pl-9 pr-4 text-sm text-white placeholder-rose-100 outline-none focus:ring-2 focus:ring-white/60"
+                />
               </div>
-            ) : userLocation && !locationError ? (
-              <div className="flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm text-white">
-                <Icon.MapPin size={16} className="text-rose-200 shrink-0" />
-                <span>Location detected - searching nearby hospitals</span>
-                <button
-                  type="button"
-                  onClick={retryGps}
-                  className="ml-2 rounded-lg bg-white/10 px-2 py-0.5 text-xs font-semibold hover:bg-white/20 transition-colors cursor-pointer"
-                >
-                  Refresh
-                </button>
-              </div>
-            ) : (
-              /* Manual fallback */
-              <div className="flex flex-1 gap-2">
-                <div className="relative flex-1">
-                  <Icon.MapPin
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-300 pointer-events-none"
-                  />
-                  <input
-                    id="hospital-manual-location"
-                    type="text"
-                    value={manualAddress}
-                    onChange={(e) => setManualAddress(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleManualSearch()}
-                    placeholder="Type your city or address..."
-                    className="w-full rounded-xl border border-white/20 bg-white/10 py-2.5 pl-9 pr-4 text-sm text-white placeholder-rose-300 outline-none focus:ring-2 focus:ring-white/50"
-                  />
-                </div>
-                <button
-                  type="button"
-                  id="hospital-manual-search-btn"
-                  onClick={handleManualSearch}
-                  disabled={!manualAddress.trim() || !mapsReady}
-                  className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-rose-700 shadow-sm transition-colors hover:bg-rose-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                  Search
-                </button>
-                {locationError && (
-                  <button
-                    type="button"
-                    onClick={retryGps}
-                    title="Retry GPS"
-                    className="rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs font-semibold text-white hover:bg-white/20 transition-colors cursor-pointer"
-                  >
-                    <Icon.MapPin size={16} />
-                  </button>
-                )}
-              </div>
+              <button
+                type="submit"
+                id="hospital-manual-search-btn"
+                disabled={!manualAddress.trim()}
+                className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-rose-800 shadow-sm transition-colors hover:bg-rose-50 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+              >
+                Search
+              </button>
+            </form>
+            {addressError && (
+              <p id="hospital-address-error" role="alert" className="text-xs font-semibold text-white">
+                {addressError}
+              </p>
             )}
           </div>
         </div>
@@ -472,21 +251,14 @@ export const HospitalSearchPage: React.FC = () => {
           </select>
         </div>
 
-        {/* Embedded Google Map */}
-        <div
-          ref={mapRef}
-          id="hospital-map"
-          className="w-full rounded-2xl border border-hair shadow-sm overflow-hidden"
-          style={{ height: '340px', background: '#f0f0f0' }}
-          aria-label="Nearby hospitals map"
-        >
-          {!mapsReady && (
-            <div className="flex h-full items-center justify-center gap-2 text-ink-500">
-              <Icon.Loader size={20} />
-              <span className="text-sm font-medium">Loading map...</span>
-            </div>
-          )}
-        </div>
+        {/* Free OpenStreetMap map (no API key) */}
+        <HospitalMap center={userLocation} hospitals={hospitals} selectedId={selectedId} onSelect={selectHospital} />
+
+        {searchError && (
+          <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800">
+            {searchError}
+          </p>
+        )}
 
         {/* Results Header */}
         {searched && (
@@ -528,18 +300,9 @@ export const HospitalSearchPage: React.FC = () => {
                   <div className="grid h-7 w-7 place-items-center rounded-full bg-rose-600 text-xs font-bold text-white shadow-sm">
                     {idx + 1}
                   </div>
-                  {h.photoUrl ? (
-                    <img
-                      src={h.photoUrl}
-                      alt={`${h.name} photo`}
-                      className="h-[72px] w-[72px] rounded-xl object-cover border border-hair"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex h-[72px] w-[72px] items-center justify-center rounded-xl bg-rose-50 border border-rose-100">
-                      <Icon.Hospital size={28} className="text-rose-400" />
-                    </div>
-                  )}
+                  <div className="flex h-[56px] w-[56px] items-center justify-center rounded-xl bg-rose-50 border border-rose-100">
+                    <Icon.Hospital size={24} className="text-rose-700" />
+                  </div>
                 </div>
 
                 {/* Info */}
@@ -548,22 +311,9 @@ export const HospitalSearchPage: React.FC = () => {
                     <h2 className="font-display text-sm font-bold text-ink-900 leading-tight">
                       {h.name}
                     </h2>
-                    {h.openNow !== null && (
-                      <span
-                        className={cn(
-                          'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold shrink-0',
-                          h.openNow
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-rose-50 text-rose-700 border border-rose-200'
-                        )}
-                      >
-                        <span
-                          className={cn(
-                            'h-1.5 w-1.5 rounded-full',
-                            h.openNow ? 'bg-emerald-500' : 'bg-rose-500'
-                          )}
-                        />
-                        {h.openNow ? 'Open Now' : 'Closed'}
+                    {h.emergency && (
+                      <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-800 shrink-0">
+                        24/7 Emergency
                       </span>
                     )}
                   </div>
@@ -573,17 +323,14 @@ export const HospitalSearchPage: React.FC = () => {
                       <Icon.MapPin size={12} className="text-rose-500 shrink-0" />
                       <span className="truncate max-w-[200px]">{h.address}</span>
                     </span>
-                    {h.distanceKm !== null && (
+                    {(
                       <span className="flex items-center gap-1 font-semibold text-rose-700">
                         <Icon.Navigation size={12} className="shrink-0" />
                         {fmtDist(h.distanceKm)} away
                       </span>
                     )}
-                    {h.rating !== null && (
-                      <span className="flex items-center gap-1 text-amber-600">
-                        <span className="text-amber-400">*</span>
-                        {h.rating.toFixed(1)}
-                      </span>
+                    {h.specialities.length > 0 && (
+                      <span className="capitalize">{h.specialities.slice(0, 3).join(', ').replace(/_/g, ' ')}</span>
                     )}
                   </div>
 
@@ -606,7 +353,7 @@ export const HospitalSearchPage: React.FC = () => {
                       </span>
                     )}
                     <a
-                      href={googleMapsDirectionsUrl(h.lat, h.lng, h.name)}
+                      href={googleMapsDirectionsUrl(h.lat, h.lng)}
                       id={`hospital-directions-${h.placeId}`}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -662,7 +409,7 @@ export const HospitalSearchPage: React.FC = () => {
                 Enter your location to begin
               </p>
               <p className="mt-1 text-sm text-ink-600">
-                Allow location access above, or type your city to find nearby hospitals.
+                Allow location access above, or type your area to find nearby hospitals.
               </p>
             </div>
           </div>
@@ -675,7 +422,7 @@ export const HospitalSearchPage: React.FC = () => {
             <div className="text-xs text-amber-900">
               <p className="font-bold">In a life-threatening emergency, call 999 or 16263 immediately.</p>
               <p className="mt-0.5 font-normal">
-                Hospital availability and open/closed status is sourced from Google Places and may not reflect real-time emergency room capacity. Always call ahead for critical care.
+                Hospital data comes from OpenStreetMap, a free community map, and may be incomplete or out of date. It does not show real-time emergency room capacity. Always call ahead for critical care.
               </p>
             </div>
           </div>
