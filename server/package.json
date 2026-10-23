@@ -8,7 +8,8 @@
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "seed": "tsx src/db/seed.ts",
-    "test": "jest --detectOpenHandles --forceExit"
+    "test": "jest --detectOpenHandles --forceExit",
+    "test:coverage": "jest --runInBand --coverage --forceExit"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

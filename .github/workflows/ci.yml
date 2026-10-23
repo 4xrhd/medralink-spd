@@ -32,7 +32,7 @@ jobs:
         run: cd prototype/server && npm ci
 
       - name: Run Backend Automated Test Suite
-        run: cd prototype/server && npm test
+        run: cd prototype/server && npm run test:coverage
 
       - name: Install Client Dependencies
         run: cd prototype/client && npm ci
