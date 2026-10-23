@@ -144,3 +144,13 @@ so uploaded lab files do not persist.
 - Latency measurement script (p50 / p95) for the report.
 - Requirements traceability matrix in the SRS.
 - Rotate the Supabase database password.
+
+## 12. Hospital search by specialization
+
+- Patients can filter the Google Maps hospital search by specialization (emergency, cardiology,
+  neurology, pediatrics, maternity, orthopedics, oncology, kidney, eye, ENT, dental, mental health, burn).
+- The filter narrows the Google Places nearby search with a keyword and is kept in the URL
+  (`/hospitals?specialty=cardiology`), so a filtered search can be shared.
+- The patient portal's Emergency Services card has a specialization picker that opens the filtered search.
+- axe WCAG 2.1 AA: zero violations on the patient dashboard and the hospital search page.
+- Requires `VITE_GOOGLE_MAPS_API_KEY` (Maps JavaScript API and Places API) at build time.
