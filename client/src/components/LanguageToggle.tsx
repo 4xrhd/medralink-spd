@@ -20,7 +20,7 @@ export const LanguageToggle: React.FC<{ className?: string }> = ({ className = '
           aria-label={o.name}
           onClick={() => setLang(o.value)}
           className={`h-7 min-w-9 rounded-md px-2 text-xs font-semibold transition-colors duration-150 ${
-            o.value === 'bn' ? 'font-bangla text-[13px]' : ''
+            o.value === 'bn' ? 'font-bangla text-[0.8125rem]' : ''
           } ${lang === o.value ? 'bg-white text-ink-900 shadow-[0_1px_2px_rgb(20_33_28/0.12)]' : 'text-ink-600 hover:text-ink-900'}`}
         >
           {o.label}

@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
@@ -7,6 +8,7 @@ import api, { getApiErrorMessage } from '../services/api.js';
 import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
 
 function TimelineMarker({ active }: { active?: boolean }) {
+  const { t: tr } = useLanguage();
   return (
     <div className="relative flex flex-col items-center">
       <div
@@ -21,7 +23,8 @@ function TimelineMarker({ active }: { active?: boolean }) {
 }
 
 export const PatientTimelinePage: React.FC = () => {
-  useDocumentTitle('Longitudinal Patient Timeline');
+  const { t: tr } = useLanguage();
+  useDocumentTitle(tr('Longitudinal Patient Timeline'));
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const toast = useToast();
@@ -38,7 +41,7 @@ export const PatientTimelinePage: React.FC = () => {
         const res = await api.get(`/patients/${id}/timeline`);
         setData(res.data.data);
       } catch (err: any) {
-        setError(getApiErrorMessage(err, 'Failed to load medical timeline.'));
+        setError(getApiErrorMessage(err, tr('Failed to load medical timeline.')));
       } finally {
         setLoading(false);
       }
@@ -61,12 +64,12 @@ export const PatientTimelinePage: React.FC = () => {
       <div className="mx-auto max-w-4xl px-4 py-16 text-center">
         <Card className="p-8">
           <Icon.Alert size={36} className="mx-auto text-rose-500 mb-3" />
-          <p className="text-sm font-semibold text-rose-700">{error || 'Patient timeline data unavailable.'}</p>
+          <p className="text-sm font-semibold text-rose-700">{error || tr('Patient timeline data unavailable.')}</p>
           <Link
             to="/"
             className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:underline"
           >
-            <Icon.Arrow size={14} className="rotate-180" /> Return to Dashboard
+            <Icon.Arrow size={14} className="rotate-180" /> {tr("Return to Dashboard")}
           </Link>
         </Card>
       </div>
@@ -104,7 +107,7 @@ export const PatientTimelinePage: React.FC = () => {
           >
             <Icon.Arrow size={14} className="rotate-180" />
             <span>
-              Back to {user?.role === 'DOCTOR' ? 'Doctor Workstation' : user?.role === 'ADMIN' ? 'Governance Console' : 'Patient Health Portal'}
+              {tr(user?.role === 'DOCTOR' ? 'Back to Doctor Workstation' : user?.role === 'ADMIN' ? 'Back to Governance Console' : 'Back to Patient Health Portal')}
             </span>
           </button>
           <div className="flex items-center gap-2.5">
@@ -113,13 +116,13 @@ export const PatientTimelinePage: React.FC = () => {
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 rounded-xl border border-hair bg-white px-3.5 py-1.5 text-xs font-semibold text-primary-700 shadow-xs transition-colors hover:bg-slate-50 hover:text-primary-800 focus-visible:ring-2 focus-visible:ring-primary-600"
-              title="Download official longitudinal patient health dossier as PDF"
+              title={tr("Download official longitudinal patient health dossier as PDF")}
             >
               <Icon.Download size={14} className="text-primary-700" />
-              <span>Export Health Summary (PDF)</span>
+              <span>{tr("Export Health Summary (PDF)")}</span>
             </a>
             <Pill tone="emerald">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> Verified RBAC Medical Timeline
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> {tr("Verified RBAC Medical Timeline")}
             </Pill>
           </div>
         </div>
@@ -145,7 +148,7 @@ export const PatientTimelinePage: React.FC = () => {
                         : '-'}
                     </span>
                     <span className="inline-flex items-center gap-1 rounded-full bg-critical px-3 py-0.5 text-xs font-bold text-white shadow-xs">
-                      {patient?.blood_group ? `${patient.blood_group} Blood Group` : 'Blood Group N/A'}
+                      {patient?.blood_group ? `${patient.blood_group} Blood Group` : tr('Blood Group N/A')}
                     </span>
                   </div>
                 </div>
@@ -154,19 +157,19 @@ export const PatientTimelinePage: React.FC = () => {
               {/* 2xl Demographic Cluster */}
               <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-primary-100">
                 <div>
-                  <span className="text-primary-200 font-medium block text-xs">National ID (NID)</span>
+                  <span className="text-primary-200 font-medium block text-xs">{tr("National ID (NID)")}</span>
                   <span className="font-mono font-bold text-white text-sm">{patient?.nid_or_bid || '-'}</span>
                 </div>
                 <div>
-                  <span className="text-primary-200 font-medium block text-xs">Attending Physician</span>
+                  <span className="text-primary-200 font-medium block text-xs">{tr("Attending Physician")}</span>
                   <span className="font-semibold text-white text-sm">
-                    {timeline?.[0]?.doctor_name ? `${timeline[0].doctor_name}` : 'Consulting Clinician'}
+                    {timeline?.[0]?.doctor_name ? `${timeline[0].doctor_name}` : tr('Consulting Clinician')}
                   </span>
                 </div>
                 <div>
-                  <span className="text-primary-200 font-medium block text-xs">Primary Facility</span>
+                  <span className="text-primary-200 font-medium block text-xs">{tr("Primary Facility")}</span>
                   <span className="font-semibold text-white text-sm">
-                    {timeline?.[0]?.hospital_affiliation || 'MedraLink Network Clinic'}
+                    {timeline?.[0]?.hospital_affiliation || tr('MedraLink Network Clinic')}
                   </span>
                 </div>
               </div>
@@ -174,11 +177,11 @@ export const PatientTimelinePage: React.FC = () => {
               {/* Emergency Contact */}
               <div className="rounded-xl border border-white/20 bg-white/10 p-4 text-left backdrop-blur-xs">
                 <p className="text-xs font-medium text-primary-200">
-                  Emergency Contact
+                  {tr("Emergency Contact")}
                 </p>
                 <p className="mt-1 font-semibold text-white flex items-center gap-1.5">
                   <Icon.User size={14} className="text-primary-200 shrink-0" />
-                  <span>{patient?.emergency_contact_name || 'Not provided'}</span>{' '}
+                  <span>{patient?.emergency_contact_name || tr('Not provided')}</span>{' '}
                   {patient?.emergency_contact_relation && (
                     <span className="font-normal text-primary-200 text-xs">
                       ({patient.emergency_contact_relation})
@@ -197,10 +200,10 @@ export const PatientTimelinePage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-rose-200 bg-rose-50/70 px-6 py-3.5">
             <div className="flex items-center gap-2 shrink-0">
               <Icon.Alert size={18} className="text-critical shrink-0" />
-              <span className="text-xs font-semibold text-rose-900">Clinical Safety:</span>
+              <span className="text-xs font-semibold text-rose-900">{tr('Clinical Safety')}:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-medium text-rose-950">Allergies:</span>
+              <span className="font-medium text-rose-950">{tr('Allergies')}:</span>
               {allergies && allergies.length > 0 ? (
                 allergies.map((a: any, idx: number) => (
                   <span
@@ -212,10 +215,10 @@ export const PatientTimelinePage: React.FC = () => {
                   </span>
                 ))
               ) : (
-                <span className="text-rose-800 font-medium">No known drug allergies (NKDA)</span>
+                <span className="text-rose-800 font-medium">{tr("No known drug allergies (NKDA)")}</span>
               )}
               <span className="hidden sm:inline text-rose-300">•</span>
-              <span className="font-medium text-ink-900">Chronic Conditions:</span>
+              <span className="font-medium text-ink-900">{tr('Chronic Conditions')}:</span>
               {conditions && conditions.length > 0 ? (
                 conditions.map((c: any, idx: number) => (
                   <span
@@ -223,11 +226,11 @@ export const PatientTimelinePage: React.FC = () => {
                     className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 font-semibold text-ink-900 border border-hair-strong"
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-primary-600" />
-                    {c.condition_name} ({c.status || 'Managed'})
+                    {c.condition_name} ({c.status || tr('Managed')})
                   </span>
                 ))
               ) : (
-                <span className="text-slate-600 font-medium">No chronic conditions recorded</span>
+                <span className="text-slate-600 font-medium">{tr("No chronic conditions recorded")}</span>
               )}
             </div>
           </div>
@@ -235,9 +238,9 @@ export const PatientTimelinePage: React.FC = () => {
 
         {/* Section Heading */}
         <div className="pt-2">
-          <h2 className="font-display text-2xl font-bold tracking-tight text-ink-900">Longitudinal Health Timeline</h2>
+          <h2 className="font-display text-2xl font-bold tracking-tight text-ink-900">{tr("Longitudinal Health Timeline")}</h2>
           <p className="mt-1 text-sm text-ink-600">
-            A single continuous record of every consultation, accessible under strict RBAC.
+            {tr("A single continuous record of every consultation, accessible under strict RBAC.")}
           </p>
         </div>
 
@@ -251,7 +254,7 @@ export const PatientTimelinePage: React.FC = () => {
           <div className="space-y-8">
             {timeline.length === 0 ? (
               <Card className="p-8 text-center text-sm text-ink-400">
-                No consultation history recorded yet for this patient.
+                {tr("No consultation history recorded yet for this patient.")}
               </Card>
             ) : (
               timeline.map((record: any, index: number) => {
@@ -284,7 +287,7 @@ export const PatientTimelinePage: React.FC = () => {
                               {visitDateStr}
                             </h3>
                             <Pill tone="blue">
-                              {record.reason || 'General Clinical Review'}
+                              {record.reason || tr('General Clinical Review')}
                             </Pill>
                           </div>
                           <p className="mt-1.5 text-sm text-ink-600">
@@ -294,7 +297,7 @@ export const PatientTimelinePage: React.FC = () => {
                             </span>
                           </p>
                           <p className="text-sm text-ink-600">
-                            {record.doctor_hospital || 'Square Hospital, Dhaka'}
+                            {record.doctor_hospital || tr('Square Hospital, Dhaka')}
                           </p>
                         </div>
 
@@ -305,14 +308,14 @@ export const PatientTimelinePage: React.FC = () => {
                             rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
                             className="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-hair bg-white px-2.5 py-1 text-xs font-semibold text-primary-700 shadow-xs transition-colors hover:bg-slate-50 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
-                            title="Download Clinical Encounter Summary PDF"
+                            title={tr("Download Clinical Encounter Summary PDF")}
                           >
                             <Icon.Download size={12} className="text-primary-700" />
-                            <span className="hidden sm:inline">Encounter PDF</span>
+                            <span className="hidden sm:inline">{tr("Encounter PDF")}</span>
                           </a>
                           {isLatest && (
                             <Pill tone="emerald">
-                              <span className="h-1.5 w-1.5 rounded-full bg-success" /> Most Recent
+                              <span className="h-1.5 w-1.5 rounded-full bg-success" /> {tr("Most Recent")}
                             </Pill>
                           )}
                           <button
@@ -322,7 +325,7 @@ export const PatientTimelinePage: React.FC = () => {
                               toggleCard(record.id);
                             }}
                             aria-expanded={isAccordionOpen}
-                            aria-label={`Expand consultation from ${visitDateStr}`}
+                            aria-label={tr('Expand consultation from {date}', { date: visitDateStr })}
                             className="rounded-lg border border-hair p-1.5 text-ink-600 hover:text-ink-900 hover:bg-white transition-colors"
                           >
                             <Icon.Chevron
@@ -339,14 +342,14 @@ export const PatientTimelinePage: React.FC = () => {
                           {/* Chief Complaints */}
                           <div className="rounded-xl border border-hair bg-canvas p-4">
                             <p className="text-xs font-semibold text-slate-700">
-                              Chief Complaints
+                              {tr("Chief Complaints")}
                             </p>
                             <p className="mt-1 text-sm text-ink-900">
-                              {record.chief_complaint || 'No complaints recorded.'}
+                              {record.chief_complaint || tr('No complaints recorded.')}
                             </p>
                             {record.clinical_notes && (
                               <p className="mt-2 text-xs text-ink-600 border-t border-hair pt-2">
-                                <span className="font-semibold text-ink-900">Clinical Notes:</span> {record.clinical_notes}
+                                <span className="font-semibold text-ink-900">{tr('Clinical Notes')}:</span> {record.clinical_notes}
                               </p>
                             )}
                           </div>
@@ -355,31 +358,31 @@ export const PatientTimelinePage: React.FC = () => {
                           {record.vitals && (
                             <div>
                               <p className="text-xs font-semibold text-slate-700 mb-2">
-                                Clinical Vitals Telemetry
+                                {tr("Clinical Vitals Telemetry")}
                               </p>
                               <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
                                 <VitalPill
-                                  label="Blood Pressure"
+                                  label={tr("Blood Pressure")}
                                   value={record.vitals.systolic_bp ? `${record.vitals.systolic_bp}/${record.vitals.diastolic_bp}` : '145/92'}
                                   tone="amber"
                                 />
                                 <VitalPill
-                                  label="Pulse"
+                                  label={tr("Pulse")}
                                   value={record.vitals.heart_rate ? `${record.vitals.heart_rate} bpm` : '78 bpm'}
                                   tone="slate"
                                 />
                                 <VitalPill
-                                  label="Temp"
+                                  label={tr("Temp")}
                                   value={record.vitals.temperature ? `${record.vitals.temperature}°C` : '36.8°C'}
                                   tone="slate"
                                 />
                                 <VitalPill
-                                  label="SpO₂"
+                                  label={tr("SpO₂")}
                                   value={record.vitals.spo2 ? `${record.vitals.spo2}%` : '98%'}
                                   tone="emerald"
                                 />
                                 <VitalPill
-                                  label="BMI"
+                                  label={tr("BMI")}
                                   value={record.vitals.bmi ? `${record.vitals.bmi}` : '25.9'}
                                   tone="slate"
                                 />
@@ -391,7 +394,7 @@ export const PatientTimelinePage: React.FC = () => {
                           {record.diagnoses && record.diagnoses.length > 0 && (
                             <div>
                               <p className="text-xs font-semibold text-slate-700 mb-2">
-                                Codified Diagnosis (ICD-10)
+                                {tr("Codified Diagnosis (ICD-10)")}
                               </p>
                               <div className="flex flex-wrap gap-2">
                                 {record.diagnoses.map((d: any) => (
@@ -415,7 +418,7 @@ export const PatientTimelinePage: React.FC = () => {
                                     to={`/prescription/${record.prescription.id}`}
                                     className="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-success hover:bg-emerald-50"
                                   >
-                                    View ℞ Sheet
+                                    {tr("View ℞ Sheet")}
                                   </Link>
                                   <a
                                     href={`/api/v1/prescriptions/${record.prescription.id}/pdf?token=${token}`}
@@ -423,7 +426,7 @@ export const PatientTimelinePage: React.FC = () => {
                                     rel="noreferrer"
                                     className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-success"
                                   >
-                                    <Icon.Download size={14} /> Download Official PDF (℞)
+                                    <Icon.Download size={14} /> {tr("Download Official PDF (℞)")}
                                   </a>
                                 </div>
                               </div>
@@ -460,7 +463,7 @@ export const PatientTimelinePage: React.FC = () => {
                                         </div>
                                         <div>
                                           <p className="text-sm font-semibold text-ink-900">{lab.test_name}</p>
-                                          <p className="text-xs text-success font-medium">{lab.status || 'Completed'}</p>
+                                          <p className="text-xs text-success font-medium">{lab.status || tr('Completed')}</p>
                                         </div>
                                       </div>
                                       <button
@@ -469,14 +472,14 @@ export const PatientTimelinePage: React.FC = () => {
                                         onClick={() => toggleReport(lab.id)}
                                         className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:text-primary-700"
                                       >
-                                        {isOpen ? 'Hide details' : 'View scan / results'}
+                                        {isOpen ? 'Hide details' : tr('View scan / results')}
                                         <Icon.Arrow size={13} className={isOpen ? 'rotate-90' : ''} />
                                       </button>
                                     </div>
                                     {isOpen && (
                                       <div className="mt-3 rounded-lg bg-canvas px-4 py-3 text-xs text-ink-600 border border-hair">
-                                        <p className="font-semibold text-ink-900">Diagnostic Laboratory Finding:</p>
-                                        <p className="mt-1">{lab.results_summary || 'Normal physiological thresholds observed. Fasting blood sugar and lipid metrics authenticated.'}</p>
+                                        <p className="font-semibold text-ink-900">{tr('Diagnostic Laboratory Finding')}:</p>
+                                        <p className="mt-1">{lab.results_summary || tr('Normal physiological thresholds observed. Fasting blood sugar and lipid metrics authenticated.')}</p>
                                       </div>
                                     )}
                                   </div>
@@ -503,26 +506,26 @@ export const PatientTimelinePage: React.FC = () => {
                   <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                     <Icon.Clock size={16} />
                   </div>
-                  <h3 className="font-display text-sm font-bold text-ink-900">Timeline Analytics</h3>
+                  <h3 className="font-display text-sm font-bold text-ink-900">{tr("Timeline Analytics")}</h3>
                 </div>
                 <Pill tone="blue">{timeline.length} Records</Pill>
               </div>
 
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
-                  <span className="text-ink-600">Active Chronic Conditions</span>
+                  <span className="text-ink-600">{tr("Active Chronic Conditions")}</span>
                   <span className="font-bold text-ink-900">{conditions?.length || 1} Conditions</span>
                 </div>
                 <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
-                  <span className="text-ink-600">Documented Drug Allergies</span>
+                  <span className="text-ink-600">{tr("Documented Drug Allergies")}</span>
                   <span className="font-bold text-critical">{allergies?.length || 1} High-Alert</span>
                 </div>
                 <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
-                  <span className="text-ink-600">Cumulative Prescriptions</span>
+                  <span className="text-ink-600">{tr("Cumulative Prescriptions")}</span>
                   <span className="font-bold text-success">{timeline.filter((t: any) => t.prescription).length || 2} E-Prescriptions</span>
                 </div>
                 <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
-                  <span className="text-ink-600">Diagnostic Lab Streams</span>
+                  <span className="text-ink-600">{tr("Diagnostic Lab Streams")}</span>
                   <span className="font-bold text-audit">{timeline.reduce((acc: number, t: any) => acc + (t.labReports?.length || 0), 0) || 2} Reports</span>
                 </div>
               </div>
@@ -535,7 +538,7 @@ export const PatientTimelinePage: React.FC = () => {
                   className="flex min-h-[40px] items-center justify-center gap-2 w-full rounded-xl bg-primary-700 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
                 >
                   <Icon.Download size={14} />
-                  <span>Download Full Dossier (PDF)</span>
+                  <span>{tr("Download Full Dossier (PDF)")}</span>
                 </a>
               </div>
             </Card>
@@ -547,19 +550,19 @@ export const PatientTimelinePage: React.FC = () => {
                   <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success">
                     <Icon.Flask size={16} />
                   </div>
-                  <h3 className="font-display text-sm font-bold text-ink-900">Diagnostic Laboratory Archive</h3>
+                  <h3 className="font-display text-sm font-bold text-ink-900">{tr("Diagnostic Laboratory Archive")}</h3>
                 </div>
               </div>
 
               <div className="space-y-2.5 text-xs">
                 <div className="rounded-lg border border-hair bg-canvas p-3">
-                  <p className="font-semibold text-ink-900">Fast Blood Glucose &amp; HbA1c</p>
+                  <p className="font-semibold text-ink-900">{tr("Fast Blood Glucose & HbA1c")}</p>
                   <p className="text-xs text-success font-medium mt-0.5">5.8% (Optimal Glycemic Control)</p>
                   <p className="text-xs text-ink-500 font-mono mt-1">Square Diagnostics • 10 Aug 2026</p>
                 </div>
                 <div className="rounded-lg border border-hair bg-canvas p-3">
                   <p className="font-semibold text-ink-900">12-Lead Resting Electrocardiogram (ECG)</p>
-                  <p className="text-xs text-success font-medium mt-0.5">Normal Sinus Rhythm • 74 bpm</p>
+                  <p className="text-xs text-success font-medium mt-0.5">{tr("Normal Sinus Rhythm • 74 bpm")}</p>
                   <p className="text-xs text-ink-500 font-mono mt-1">NICVD Lab 3 • 10 Aug 2026</p>
                 </div>
               </div>
@@ -570,14 +573,14 @@ export const PatientTimelinePage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-emerald-400 font-bold">
                   <Icon.Shield size={16} />
-                  <span className="text-xs">Cryptographic RBAC Seal</span>
+                  <span className="text-xs">{tr("Cryptographic RBAC Seal")}</span>
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Verified
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> {tr("Verified")}
                 </span>
               </div>
               <p className="text-slate-300 leading-relaxed text-xs">
-                This longitudinal medical timeline is cryptographically verified against the MedraLink distributed ledger.
+                {tr("This longitudinal medical timeline is cryptographically verified against the MedraLink distributed ledger.")}
               </p>
               <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
                 <div className="flex items-center justify-between mb-1.5">
@@ -586,13 +589,13 @@ export const PatientTimelinePage: React.FC = () => {
                     type="button"
                     onClick={() => {
                       navigator.clipboard?.writeText('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
-                      toast.success('Copied SHA-256 integrity hash!');
+                      toast.success(tr('Copied SHA-256 integrity hash!'));
                     }}
-                    title="Copy hash to clipboard"
+                    title={tr("Copy hash to clipboard")}
                     className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
                   >
                     <Icon.Copy size={12} />
-                    <span>Copy</span>
+                    <span>{tr("Copy")}</span>
                   </button>
                 </div>
                 <p className="font-mono text-xs text-slate-300 break-all select-all leading-normal">

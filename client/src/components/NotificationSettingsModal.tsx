@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useState } from 'react';
 import { useNotifications } from '../context/NotificationContext.js';
 import { useToast } from '../context/ToastContext.js';
@@ -27,6 +28,7 @@ interface NotificationSettingsModalProps {
 }
 
 export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps> = ({ isOpen, onClose }) => {
+  const { t: tr } = useLanguage();
   const { settings, updateSettings } = useNotifications();
   const toast = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -35,9 +37,9 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
     try {
       setIsUpdating(true);
       await updateSettings({ [key]: !currentVal });
-      toast.success('Preferences updated successfully');
+      toast.success(tr('Preferences updated successfully'));
     } catch (err) {
-      toast.error('Failed to update preference');
+      toast.error(tr('Failed to update preference'));
     } finally {
       setIsUpdating(false);
     }
@@ -54,9 +56,9 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
         soundEnabled: true,
         emailDigest: false
       });
-      toast.success('Preferences reset to default values');
+      toast.success(tr('Preferences reset to default values'));
     } catch (err) {
-      toast.error('Failed to reset preferences');
+      toast.error(tr('Failed to reset preferences'));
     } finally {
       setIsUpdating(false);
     }
@@ -67,8 +69,8 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
       <Switch
         key={item.key}
         id={`notif-${item.key}`}
-        label={item.label}
-        description={item.description}
+        label={tr(item.label)}
+        description={tr(item.description)}
         checked={Boolean(settings[item.setting])}
         disabled={isUpdating}
         onChange={() => handleToggle(item.key, Boolean(settings[item.setting]))}
@@ -79,26 +81,26 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Notification preferences"
-      description="Choose which alerts you receive and how they reach you."
+      title={tr("Notification preferences")}
+      description={tr("Choose which alerts you receive and how they reach you.")}
       footer={
         <>
           <Button variant="ghost" size="sm" onClick={handleResetDefaults} disabled={isUpdating} className="mr-auto">
-            Reset to defaults
+            {tr("Reset to defaults")}
           </Button>
           <Button variant="primary" size="sm" onClick={onClose}>
-            Done
+            {tr("Done")}
           </Button>
         </>
       }
     >
       <div className="max-h-[50vh] space-y-5 overflow-y-auto pr-1">
         <section aria-labelledby="notif-clinical-heading" className="space-y-3">
-          <h3 id="notif-clinical-heading" className="text-sm font-semibold text-ink-900">Clinical alerts</h3>
+          <h3 id="notif-clinical-heading" className="text-sm font-semibold text-ink-900">{tr("Clinical alerts")}</h3>
           {group(CLINICAL_STREAMS)}
         </section>
         <section aria-labelledby="notif-delivery-heading" className="space-y-3">
-          <h3 id="notif-delivery-heading" className="text-sm font-semibold text-ink-900">Delivery</h3>
+          <h3 id="notif-delivery-heading" className="text-sm font-semibold text-ink-900">{tr("Delivery")}</h3>
           {group(DELIVERY_OPTIONS)}
         </section>
       </div>

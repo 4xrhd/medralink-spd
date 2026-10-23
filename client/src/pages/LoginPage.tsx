@@ -82,7 +82,7 @@ export const LoginPage: React.FC = () => {
                 <span className="font-display text-xl font-bold tracking-tight">
                   Medra<span className="text-primary-300">Link</span>
                 </span>
-                <p className="text-[11px] font-medium text-primary-200">
+                <p className="text-[0.6875rem] font-medium text-primary-200">
                   {tr("Clinical Portal")}
                 </p>
               </div>

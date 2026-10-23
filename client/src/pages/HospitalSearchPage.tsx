@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Select } from '../ui/forms.js';
 import { useSearchParams } from 'react-router-dom';
@@ -27,7 +28,8 @@ function googleMapsDirectionsUrl(lat: number, lng: number): string {
 /* -------------------------------------------------------------------------- */
 
 export const HospitalSearchPage: React.FC = () => {
-  useDocumentTitle('Emergency Hospital Search | MedraLink');
+  const { t: tr } = useLanguage();
+  useDocumentTitle(tr('Emergency Hospital Search | MedraLink'));
 
   const [userLocation, setUserLocation] = useState<LatLng | null>(null);
   const [locationError, setLocationError] = useState(false);
@@ -109,11 +111,11 @@ export const HospitalSearchPage: React.FC = () => {
   /* ---- Typed address (OpenStreetMap Nominatim) --------------------------- */
   const handleManualSearch = async () => {
     if (!manualAddress.trim()) return;
-    setAddressError('');
+    setAddressError(tr(''));
     try {
       const loc = await geocodeAddress(manualAddress.trim());
       if (!loc) {
-        setAddressError('We could not find that place. Try a city or area name.');
+        setAddressError(tr('We could not find that place. Try a city or area name.'));
         return;
       }
       setUserLocation(loc);
@@ -142,22 +144,22 @@ export const HospitalSearchPage: React.FC = () => {
               </div>
               <div>
                 <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
-                  Emergency Hospital Finder
+                  {tr("Emergency Hospital Finder")}
                 </h1>
                 <p className="mt-0.5 text-sm text-rose-100">
-                  Locate the nearest hospital to your current position
+                  {tr("Locate the nearest hospital to your current position")}
                 </p>
               </div>
             </div>
             <div className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-left backdrop-blur-sm">
-              <p className="text-xs font-medium text-rose-200">National Emergency Hotline</p>
+              <p className="text-xs font-medium text-rose-200">{tr("National Emergency Hotline")}</p>
               <a
                 href="tel:16263"
                 className="mt-0.5 font-mono text-lg font-bold text-white hover:underline"
               >
                 16263
               </a>
-              <p className="text-[11px] text-rose-200">Toll-free 24/7 medical triage</p>
+              <p className="text-[0.6875rem] text-rose-200">{tr("Toll-free 24/7 medical triage")}</p>
             </div>
           </div>
 
@@ -167,17 +169,17 @@ export const HospitalSearchPage: React.FC = () => {
               {gpsLoading ? (
                 <>
                   <Icon.Loader size={16} className="text-white" />
-                  Detecting your location via GPS...
+                  {tr("Detecting your location via GPS...")}
                 </>
               ) : userLocation ? (
                 <>
                   <Icon.MapPin size={16} className="shrink-0 text-rose-100" />
-                  Searching around your chosen location
+                  {tr("Searching around your chosen location")}
                 </>
               ) : (
                 <>
                   <Icon.MapPin size={16} className="shrink-0 text-rose-100" />
-                  {locationError ? 'Location access is off. Type your area below.' : 'Type your area below.'}
+                  {locationError ? 'Location access is off. Type your area below.' : tr('Type your area below.')}
                 </>
               )}
               <button
@@ -185,7 +187,7 @@ export const HospitalSearchPage: React.FC = () => {
                 onClick={detectLocation}
                 className="ml-1 rounded-lg bg-white/15 px-2 py-0.5 text-xs font-semibold hover:bg-white/25 transition-colors cursor-pointer"
               >
-                Use my location
+                {tr("Use my location")}
               </button>
             </p>
             <form
@@ -196,7 +198,7 @@ export const HospitalSearchPage: React.FC = () => {
               }}
             >
               <label htmlFor="hospital-manual-location" className="sr-only">
-                City, area or address
+                {tr("City, area or address")}
               </label>
               <div className="relative flex-1">
                 <Icon.MapPin
@@ -208,7 +210,7 @@ export const HospitalSearchPage: React.FC = () => {
                   type="text"
                   value={manualAddress}
                   onChange={(e) => setManualAddress(e.target.value)}
-                  placeholder="City, area or address (e.g. Dhanmondi, Dhaka)"
+                  placeholder={tr("City, area or address (e.g. Dhanmondi, Dhaka)")}
                   aria-describedby={addressError ? 'hospital-address-error' : undefined}
                   className="w-full rounded-xl border border-white/30 bg-white/10 py-2.5 pl-9 pr-4 text-sm text-white placeholder-rose-100 outline-none focus:ring-2 focus:ring-white/60"
                 />
@@ -219,7 +221,7 @@ export const HospitalSearchPage: React.FC = () => {
                 disabled={!manualAddress.trim()}
                 className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-rose-800 shadow-sm transition-colors hover:bg-rose-50 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
               >
-                Search
+                {tr("Search")}
               </button>
             </form>
             {addressError && (
@@ -238,7 +240,7 @@ export const HospitalSearchPage: React.FC = () => {
         <div className="flex flex-col gap-2 rounded-2xl border border-hair bg-white p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
           <label htmlFor="hospital-specialty" className="flex items-center gap-2 text-sm font-semibold text-ink-900">
             <Icon.Stethoscope size={16} className="text-primary-700" />
-            Specialization
+            {tr("Specialization")}
           </label>
           <Select
             id="hospital-specialty"
@@ -247,7 +249,7 @@ export const HospitalSearchPage: React.FC = () => {
             className="sm:w-72"
           >
             {SPECIALTIES.map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
+              <option key={s.value} value={s.value}>{tr(s.label)}</option>
             ))}
           </Select>
         </div>
@@ -264,8 +266,12 @@ export const HospitalSearchPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-ink-600">
               {hospitals.length > 0
-                ? `Showing ${hospitals.length} ${specialty ? `${specialtyLabel} ` : ''}hospitals near you, sorted by distance`
-                : `No ${specialty ? `${specialtyLabel} ` : ''}hospitals found in this area`}
+                ? specialty
+                  ? tr('Showing {n} {type} hospitals near you, sorted by distance', { n: hospitals.length, type: tr(specialtyLabel) })
+                  : tr('Showing {n} hospitals near you, sorted by distance', { n: hospitals.length })
+                : specialty
+                  ? tr('No {type} hospitals found in this area', { type: tr(specialtyLabel) })
+                  : tr('No hospitals found in this area')}
             </p>
           </div>
         )}
@@ -274,13 +280,13 @@ export const HospitalSearchPage: React.FC = () => {
         {searching && !searched && (
           <div className="flex items-center justify-center gap-3 py-12 text-ink-500">
             <Icon.Loader size={24} />
-            <span className="text-sm font-medium">Finding nearby hospitals...</span>
+            <span className="text-sm font-medium">{tr("Finding nearby hospitals...")}</span>
           </div>
         )}
 
         {/* Hospital Result Cards */}
         {hospitals.length > 0 && (
-          <div className="space-y-3" role="list" aria-label="Nearby hospital results">
+          <div className="space-y-3" role="list" aria-label={tr("Nearby hospital results")}>
             {hospitals.map((h, idx) => (
               <div
                 key={h.placeId}
@@ -311,7 +317,7 @@ export const HospitalSearchPage: React.FC = () => {
                       {h.name}
                     </h2>
                     {h.emergency && (
-                      <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-800 shrink-0">
+                      <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-rose-800 shrink-0">
                         24/7 Emergency
                       </span>
                     )}
@@ -325,7 +331,7 @@ export const HospitalSearchPage: React.FC = () => {
                     {(
                       <span className="flex items-center gap-1 font-semibold text-rose-700">
                         <Icon.Navigation size={12} className="shrink-0" />
-                        {fmtDist(h.distanceKm)} away
+                        {tr('{distance} away', { distance: fmtDist(h.distanceKm) })}
                       </span>
                     )}
                     {h.specialities.length > 0 && (
@@ -343,12 +349,12 @@ export const HospitalSearchPage: React.FC = () => {
                         className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100"
                       >
                         <Icon.Phone size={13} />
-                        Call
+                        {tr("Call")}
                       </a>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 rounded-xl border border-hair bg-slate-50 px-3 py-1.5 text-xs font-medium text-ink-400 cursor-default">
                         <Icon.Phone size={13} />
-                        Call (N/A)
+                        {tr("Call (N/A)")}
                       </span>
                     )}
                     <a
@@ -360,7 +366,7 @@ export const HospitalSearchPage: React.FC = () => {
                       className="inline-flex items-center gap-1.5 rounded-xl border border-primary-300 bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-700 transition-colors hover:bg-blue-100"
                     >
                       <Icon.Navigation size={13} />
-                      Get Directions
+                      {tr("Get Directions")}
                     </a>
                   </div>
                 </div>
@@ -377,12 +383,12 @@ export const HospitalSearchPage: React.FC = () => {
             </div>
             <div>
               <p className="font-display text-base font-bold text-ink-900">
-                No hospitals found nearby
+                {tr("No hospitals found nearby")}
               </p>
               <p className="mt-1 text-sm text-ink-600">
                 {specialty
-                  ? `No ${specialtyLabel} hospitals were found near this location.`
-                  : 'Try a different location using the address input above.'}
+                  ? tr('No {type} hospitals were found near this location.', { type: tr(specialtyLabel) })
+                  : tr('Try a different location using the address input above.')}
               </p>
             </div>
             {specialty && (
@@ -391,7 +397,7 @@ export const HospitalSearchPage: React.FC = () => {
                 onClick={() => setSpecialty('')}
                 className="rounded-xl border border-hair bg-white px-4 py-2 text-sm font-semibold text-primary-700 hover:bg-slate-50"
               >
-                Show all hospitals
+                {tr("Show all hospitals")}
               </button>
             )}
           </div>
@@ -405,10 +411,10 @@ export const HospitalSearchPage: React.FC = () => {
             </div>
             <div>
               <p className="font-display text-base font-bold text-ink-900">
-                Enter your location to begin
+                {tr("Enter your location to begin")}
               </p>
               <p className="mt-1 text-sm text-ink-600">
-                Allow location access above, or type your area to find nearby hospitals.
+                {tr("Allow location access above, or type your area to find nearby hospitals.")}
               </p>
             </div>
           </div>
@@ -419,9 +425,9 @@ export const HospitalSearchPage: React.FC = () => {
           <div className="flex items-start gap-3">
             <Icon.Alert size={18} className="mt-0.5 shrink-0 text-amber-600" />
             <div className="text-xs text-amber-900">
-              <p className="font-bold">In a life-threatening emergency, call 999 or 16263 immediately.</p>
+              <p className="font-bold">{tr("In a life-threatening emergency, call 999 or 16263 immediately.")}</p>
               <p className="mt-0.5 font-normal">
-                Hospital data comes from OpenStreetMap, a free community map, and may be incomplete or out of date. It does not show real-time emergency room capacity. Always call ahead for critical care.
+                {tr("Hospital data comes from OpenStreetMap, a free community map, and may be incomplete or out of date. It does not show real-time emergency room capacity. Always call ahead for critical care.")}
               </p>
             </div>
           </div>

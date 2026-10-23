@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useEffect, useState } from 'react';
 import { Select } from '../ui/forms.js';
 import { Link } from 'react-router-dom';
@@ -9,7 +10,8 @@ import { SPECIALTIES } from '../constants/specialties.js';
 import { Card, Icon, Pill, Badge, Button, MetricCard, VitalPill } from '../ui/primitives.js';
 
 export const PatientDashboard: React.FC = () => {
-  useDocumentTitle('Patient Health Records & Prescriptions');
+  const { t: tr } = useLanguage();
+  useDocumentTitle(tr('Patient Health Records & Prescriptions'));
   const toast = useToast();
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
@@ -92,9 +94,9 @@ export const PatientDashboard: React.FC = () => {
                       type="button"
                       onClick={() => {
                         navigator.clipboard?.writeText(patientUid);
-                        toast.success(`Copied Medra-UID: ${patientUid}`);
+                        toast.success(tr('Copied Medra-UID: {id}', { id: patientUid }));
                       }}
-                      title="Click to copy Medra-UID"
+                      title={tr("Click to copy Medra-UID")}
                       className="inline-flex items-center gap-1 rounded-md bg-white/15 hover:bg-white/25 px-2 py-0.5 font-mono text-xs text-white transition-colors cursor-pointer"
                     >
                       <span>{patientUid}</span>
@@ -116,19 +118,19 @@ export const PatientDashboard: React.FC = () => {
               {/* 2xl Demographic Cluster */}
               <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-primary-100">
                 <div>
-                  <span className="text-primary-200 font-medium block text-xs">National ID (NID)</span>
+                  <span className="text-primary-200 font-medium block text-xs">{tr("National ID (NID)")}</span>
                   <span className="font-mono font-bold text-white text-sm">{data?.patient?.nid_or_bid || '-'}</span>
                 </div>
                 <div>
-                  <span className="text-primary-200 font-medium block text-xs">Attending Physician</span>
+                  <span className="text-primary-200 font-medium block text-xs">{tr("Attending Physician")}</span>
                   <span className="font-semibold text-white text-sm">
-                    {data?.recentPrescriptions?.[0]?.doctor_name || 'Primary Care Physician'}
+                    {data?.recentPrescriptions?.[0]?.doctor_name || tr('Primary Care Physician')}
                   </span>
                 </div>
                 <div>
-                  <span className="text-primary-200 font-medium block text-xs">Primary Facility</span>
+                  <span className="text-primary-200 font-medium block text-xs">{tr("Primary Facility")}</span>
                   <span className="font-semibold text-white text-sm">
-                    {data?.recentPrescriptions?.[0]?.hospital_affiliation || 'MedraLink Network Clinic'}
+                    {data?.recentPrescriptions?.[0]?.hospital_affiliation || tr('MedraLink Network Clinic')}
                   </span>
                 </div>
               </div>
@@ -136,11 +138,11 @@ export const PatientDashboard: React.FC = () => {
               {/* Emergency Contact */}
               <div className="rounded-xl border border-white/20 bg-white/10 p-4 text-left backdrop-blur-xs">
                 <p className="text-xs font-medium text-primary-200">
-                  Emergency Contact
+                  {tr("Emergency Contact")}
                 </p>
                 <p className="mt-1 font-semibold text-white flex items-center gap-1.5">
                   <Icon.User size={14} className="text-primary-200 shrink-0" />
-                  <span>{data?.patient?.emergency_contact_name || 'Not provided'}</span>{' '}
+                  <span>{data?.patient?.emergency_contact_name || tr('Not provided')}</span>{' '}
                   {data?.patient?.emergency_contact_relation && (
                     <span className="font-normal text-primary-200 text-xs">
                       ({data.patient.emergency_contact_relation})
@@ -159,10 +161,10 @@ export const PatientDashboard: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-rose-200 bg-rose-50/70 px-6 py-3.5">
             <div className="flex items-center gap-2 shrink-0">
               <Icon.Alert size={18} className="text-critical shrink-0" />
-              <span className="text-xs font-semibold text-rose-900">Clinical Safety:</span>
+              <span className="text-xs font-semibold text-rose-900">{tr('Clinical Safety')}:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-medium text-rose-950">Allergies:</span>
+              <span className="font-medium text-rose-950">{tr('Allergies')}:</span>
               {allergies && allergies.length > 0 ? (
                 allergies.map((a: any, idx: number) => (
                   <span
@@ -174,10 +176,10 @@ export const PatientDashboard: React.FC = () => {
                   </span>
                 ))
               ) : (
-                <span className="text-rose-800 font-medium">None Recorded</span>
+                <span className="text-rose-800 font-medium">{tr("None Recorded")}</span>
               )}
               <span className="hidden sm:inline text-rose-300">•</span>
-              <span className="font-medium text-ink-900">Chronic Conditions:</span>
+              <span className="font-medium text-ink-900">{tr('Chronic Conditions')}:</span>
               {conditions && conditions.length > 0 ? (
                 conditions.map((c: any, idx: number) => (
                   <span
@@ -185,11 +187,11 @@ export const PatientDashboard: React.FC = () => {
                     className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 font-semibold text-ink-900 border border-hair-strong"
                   >
                     <span className="h-1.5 w-1.5 rounded-full bg-primary-600" />
-                    {c.condition_name} ({c.status || 'Active'})
+                    {c.condition_name} ({c.status || tr('Active')})
                   </span>
                 ))
               ) : (
-                <span className="text-amber-800 font-medium">None Recorded</span>
+                <span className="text-amber-800 font-medium">{tr("None Recorded")}</span>
               )}
             </div>
           </div>
@@ -198,37 +200,37 @@ export const PatientDashboard: React.FC = () => {
         {/* 4-Metric Row with MetricCard */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
-            title="Total Consultations"
+            title={tr("Total Consultations")}
             value={data?.stats?.totalVisits ?? '3'}
-            subtext="Recorded clinical visits"
+            subtext={tr("Recorded clinical visits")}
             icon={<Icon.Stethoscope size={20} />}
             iconTone="blue"
           />
           <MetricCard
-            title="Active Prescriptions"
+            title={tr("Active Prescriptions")}
             value={data?.stats?.activePrescriptionsCount ?? '2'}
-            subtext="Verified regimens"
+            subtext={tr("Verified regimens")}
             icon={<Icon.Pill size={20} />}
             iconTone="emerald"
           />
           <MetricCard
-            title="Diagnostic Lab Reports"
+            title={tr("Diagnostic Lab Reports")}
             value={data?.stats?.labReportsCount ?? 0}
-            subtext="Reports available"
+            subtext={tr("Reports available")}
             icon={<Icon.Flask size={20} />}
             iconTone="purple"
           />
           <MetricCard
-            title="Next Scheduled Review"
+            title={tr("Next Scheduled Review")}
             value={
               data?.recentPrescriptions?.[0]?.follow_up_date
                 ? new Date(data.recentPrescriptions[0].follow_up_date).toLocaleDateString()
-                : 'Routine Review'
+                : tr('Routine Review')
             }
             subtext={
               data?.recentPrescriptions?.[0]?.follow_up_date
-                ? 'Follow-up Consultation'
-                : 'As advised by doctor'
+                ? tr('Follow-up Consultation')
+                : tr('As advised by doctor')
             }
             icon={<Icon.Calendar size={20} />}
             iconTone="amber"
@@ -238,8 +240,8 @@ export const PatientDashboard: React.FC = () => {
         {/* Action Bar & Quick Timeline Access */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="font-display text-xl font-bold text-ink-900">Clinical Biometrics &amp; Regimens</h2>
-            <p className="text-sm text-ink-600">Summary of latest vital signs and current active prescriptions.</p>
+            <h2 className="font-display text-xl font-bold text-ink-900">{tr("Clinical Biometrics & Regimens")}</h2>
+            <p className="text-sm text-ink-600">{tr("Summary of latest vital signs and current active prescriptions.")}</p>
           </div>
           {patientId && (
             <Link
@@ -247,7 +249,7 @@ export const PatientDashboard: React.FC = () => {
               className="inline-flex items-center gap-2 rounded-xl bg-primary-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-800"
             >
               <Icon.Clock size={16} />
-              <span>Open Longitudinal Timeline</span>
+              <span>{tr("Open Longitudinal Timeline")}</span>
               <Icon.Arrow size={14} />
             </Link>
           )}
@@ -262,18 +264,18 @@ export const PatientDashboard: React.FC = () => {
                 <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                   <Icon.Pulse size={16} />
                 </div>
-                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Recent Clinical Biometrics</h2>
+                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">{tr("Recent Clinical Biometrics")}</h2>
               </div>
               {data?.latestVitals?.visit_date && (
                 <span className="font-mono text-xs font-medium text-ink-600">
-                  Captured: {new Date(data.latestVitals.visit_date).toLocaleDateString()}
+                  {tr('Captured: {date}', { date: new Date(data.latestVitals.visit_date).toLocaleDateString() })}
                 </span>
               )}
             </div>
 
             <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
               <VitalPill
-                label="Blood Pressure"
+                label={tr("Blood Pressure")}
                 value={
                   data?.latestVitals?.systolic_bp && data?.latestVitals?.diastolic_bp
                     ? `${data.latestVitals.systolic_bp}/${data.latestVitals.diastolic_bp}`
@@ -282,27 +284,27 @@ export const PatientDashboard: React.FC = () => {
                 tone={data?.latestVitals?.systolic_bp ? 'amber' : 'slate'}
               />
               <VitalPill
-                label="Heart Rate"
+                label={tr("Heart Rate")}
                 value={data?.latestVitals?.heart_rate ? `${data.latestVitals.heart_rate} bpm` : '-'}
                 tone="slate"
               />
               <VitalPill
-                label="Body Temp"
+                label={tr("Body Temp")}
                 value={data?.latestVitals?.temperature ? `${data.latestVitals.temperature}°C` : '-'}
                 tone="slate"
               />
               <VitalPill
-                label="Oxygen (SpO₂)"
+                label={tr("Oxygen (SpO₂)")}
                 value={data?.latestVitals?.spo2 ? `${data.latestVitals.spo2}%` : '-'}
                 tone={data?.latestVitals?.spo2 ? 'emerald' : 'slate'}
               />
               <VitalPill
-                label="Body Weight"
+                label={tr("Body Weight")}
                 value={data?.latestVitals?.weight_kg ? `${data.latestVitals.weight_kg} kg` : '-'}
                 tone="slate"
               />
               <VitalPill
-                label="BMI Index"
+                label={tr("BMI Index")}
                 value={data?.latestVitals?.bmi ? `${data.latestVitals.bmi}` : '-'}
                 tone={data?.latestVitals?.bmi ? 'amber' : 'slate'}
               />
@@ -316,7 +318,7 @@ export const PatientDashboard: React.FC = () => {
                 <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success">
                   <Icon.Pill size={16} />
                 </div>
-                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Active Electronic Prescriptions</h2>
+                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">{tr("Active Electronic Prescriptions")}</h2>
               </div>
             </div>
 
@@ -333,7 +335,7 @@ export const PatientDashboard: React.FC = () => {
                         <span className="text-xs text-ink-900 font-semibold">{rx.doctor_name}</span>
                       </div>
                       <p className="mt-1 font-mono text-xs text-success">
-                        Issued: {new Date(rx.issue_date).toLocaleDateString()} • {rx.specialization || 'Cardiology'}
+                        {tr('Issued: {date}', { date: new Date(rx.issue_date).toLocaleDateString() })} • {rx.specialization || 'Cardiology'}
                       </p>
                     </div>
 
@@ -343,7 +345,7 @@ export const PatientDashboard: React.FC = () => {
                         className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-success shadow-xs hover:bg-emerald-50 transition-colors"
                       >
                         <Icon.ExternalLink size={12} />
-                        <span>View ℞</span>
+                        <span>{tr('View ℞')}</span>
                       </Link>
                       <a
                         href={`/api/v1/prescriptions/${rx.id}/pdf?token=${localStorage.getItem('medralink_token')}`}
@@ -352,7 +354,7 @@ export const PatientDashboard: React.FC = () => {
                         className="inline-flex items-center gap-1 rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-success transition-colors"
                       >
                         <Icon.Download size={13} />
-                        <span>PDF</span>
+                        <span>{tr("PDF")}</span>
                       </a>
                     </div>
                   </div>
@@ -362,14 +364,14 @@ export const PatientDashboard: React.FC = () => {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5">
                     <div>
                       <span className="font-mono text-xs font-bold text-success">RX-4029</span>
-                      <p className="text-xs text-emerald-800 font-semibold mt-0.5">Tab. Amlocard 5mg (1+0+0) • Tab. Napa Extra</p>
-                      <p className="text-[11px] text-success mt-0.5">Dr. Ahmed Tariq • Square Hospital</p>
+                      <p className="text-xs text-emerald-800 font-semibold mt-0.5">{tr("Tab. Amlocard 5mg (1+0+0) • Tab. Napa Extra")}</p>
+                      <p className="text-[0.6875rem] text-success mt-0.5">{tr("Dr. Ahmed Tariq • Square Hospital")}</p>
                     </div>
                     <Link
                       to={`/patient/timeline/${patientId}`}
                       className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-success px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-success transition-colors self-end sm:self-auto"
                     >
-                      <span>View in Timeline</span>
+                      <span>{tr("View in Timeline")}</span>
                       <Icon.Arrow size={12} />
                     </Link>
                   </div>
@@ -387,21 +389,21 @@ export const PatientDashboard: React.FC = () => {
                   <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                     <Icon.Shield size={16} />
                   </div>
-                  <h3 className="font-display text-base font-bold text-ink-900">Patient Care Navigator</h3>
+                  <h3 className="font-display text-base font-bold text-ink-900">{tr("Patient Care Navigator")}</h3>
                 </div>
               </div>
 
               <div className="space-y-3">
                 <div className="rounded-xl border border-hair bg-canvas p-3 text-xs">
-                  <p className="font-semibold text-ink-900">Direct Longitudinal Access</p>
+                  <p className="font-semibold text-ink-900">{tr("Direct Longitudinal Access")}</p>
                   <p className="mt-1 text-ink-600">
-                    Full access to codified diagnoses, medications, and laboratory values.
+                    {tr("Full access to codified diagnoses, medications, and laboratory values.")}
                   </p>
                   <Link
                     to={`/patient/timeline/${patientId}`}
                     className="mt-2.5 inline-flex items-center gap-1.5 font-bold text-primary-700 hover:underline"
                   >
-                    <span>Browse complete visit timeline</span>
+                    <span>{tr("Browse complete visit timeline")}</span>
                     <Icon.Arrow size={12} />
                   </Link>
                 </div>
@@ -409,10 +411,10 @@ export const PatientDashboard: React.FC = () => {
                 <div className="rounded-xl border border-rose-300 bg-rose-50 p-3 text-xs">
                   <div className="flex items-center gap-2 font-bold text-rose-900 mb-2.5">
                     <Icon.Alert size={13} className="text-rose-600 shrink-0" />
-                    <span>Emergency Services</span>
+                    <span>{tr("Emergency Services")}</span>
                   </div>
                   <label htmlFor="dashboard-hospital-specialty" className="mb-1 block font-semibold text-rose-900">
-                    Specialization
+                    {tr("Specialization")}
                   </label>
                   <Select
                     id="dashboard-hospital-specialty"
@@ -422,7 +424,7 @@ export const PatientDashboard: React.FC = () => {
                     className="mb-2"
                   >
                     {SPECIALTIES.map((s) => (
-                      <option key={s.value} value={s.value}>{s.label}</option>
+                      <option key={s.value} value={s.value}>{tr(s.label)}</option>
                     ))}
                   </Select>
                   <Link
@@ -430,10 +432,10 @@ export const PatientDashboard: React.FC = () => {
                     className="flex items-center justify-center gap-2 w-full rounded-xl bg-rose-700 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-rose-800 active:scale-[0.98]"
                   >
                     <Icon.Hospital size={13} />
-                    Find nearby hospitals
+                    {tr("Find nearby hospitals")}
                   </Link>
                   <p className="mt-2.5 font-mono font-bold text-critical text-sm">Call 16263</p>
-                  <p className="mt-0.5 text-ink-600">Toll-free 24/7 national health line</p>
+                  <p className="mt-0.5 text-ink-600">{tr("Toll-free 24/7 national health line")}</p>
                 </div>
               </div>
             </Card>

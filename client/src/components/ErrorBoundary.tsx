@@ -77,7 +77,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <summary className="cursor-pointer font-semibold text-primary-700 hover:underline select-none">
                   View Technical Diagnostics
                 </summary>
-                <div className="mt-2 font-mono text-[11px] text-critical whitespace-pre-wrap overflow-x-auto max-h-40 bg-white p-2.5 rounded border border-hair">
+                <div className="mt-2 font-mono text-[0.6875rem] text-critical whitespace-pre-wrap overflow-x-auto max-h-40 bg-white p-2.5 rounded border border-hair">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </div>

@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ConfirmModal } from '../components/ConfirmModal.js';
 import { useToast } from '../context/ToastContext.js';
@@ -9,7 +10,8 @@ import { Card, Icon, Pill, Badge, Button, MetricCard, Input } from '../ui/primit
 import { DataTable, TBody, THead, Td, Th, Tr } from '../ui/table.js';
 
 export const AdminDashboard: React.FC = () => {
-  useDocumentTitle('Enterprise Governance & Audit Ledger');
+  const { t: tr } = useLanguage();
+  useDocumentTitle(tr('Enterprise Governance & Audit Ledger'));
   const toast = useToast();
 
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -45,7 +47,7 @@ export const AdminDashboard: React.FC = () => {
       setAuditTotal(res.data.data?.total ?? 0);
     } catch (err) {
       console.error('Error fetching audit logs:', err);
-      toast.error('Failed to load audit logs');
+      toast.error(tr('Failed to load audit logs'));
     }
   }, [auditFilterRole, debouncedAuditSearch, last24Hours, auditFrom, auditTo, toast]);
 
@@ -60,7 +62,7 @@ export const AdminDashboard: React.FC = () => {
       setDoctors(docsRes.data.data || []);
     } catch (err) {
       console.error('Error fetching admin data:', err);
-      toast.error('Failed to load governance telemetry');
+      toast.error(tr('Failed to load governance telemetry'));
     } finally {
       setLoading(false);
     }
@@ -73,11 +75,11 @@ export const AdminDashboard: React.FC = () => {
   const handleApproveDoctor = async (doctorId: string, doctorName: string) => {
     try {
       await api.patch(`/doctors/${doctorId}/verify`, { isVerified: true });
-      toast.success(`Accreditation approved for ${doctorName}`);
+      toast.success(tr('Accreditation approved for {name}', { name: doctorName }));
       await fetchStats();
     } catch (err) {
       console.error('Failed to approve doctor verification:', err);
-      toast.error('Failed to approve doctor accreditation.');
+      toast.error(tr('Failed to approve doctor accreditation.'));
     }
   };
 
@@ -86,12 +88,12 @@ export const AdminDashboard: React.FC = () => {
     setIsRevoking(true);
     try {
       await api.patch(`/doctors/${revokeTarget.id}/verify`, { isVerified: false });
-      toast.warning(`Accreditation revoked for ${revokeTarget.name}`);
+      toast.warning(tr('Accreditation revoked for {name}', { name: revokeTarget.name }));
       setRevokeTarget(null);
       await fetchStats();
     } catch (err) {
       console.error('Failed to update doctor verification:', err);
-      toast.error('Failed to revoke doctor accreditation.');
+      toast.error(tr('Failed to revoke doctor accreditation.'));
     } finally {
       setIsRevoking(false);
     }
@@ -101,10 +103,10 @@ export const AdminDashboard: React.FC = () => {
     try {
       await navigator.clipboard?.writeText(hash);
       setCopiedHash(hash);
-      toast.info('SHA-256 integrity hash copied to clipboard');
+      toast.info(tr('SHA-256 integrity hash copied to clipboard'));
       setTimeout(() => setCopiedHash((c) => (c === hash ? null : c)), 1500);
     } catch {
-      toast.error('Could not access clipboard');
+      toast.error(tr('Could not access clipboard'));
     }
   };
 
@@ -127,15 +129,15 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-canvas pb-16">
       {/* Enterprise Governance Telemetry Banner */}
-      <section aria-label="Governance Telemetry Banner" className="border-b border-hair bg-white">
+      <section aria-label={tr("Governance Telemetry Banner")} className="border-b border-hair bg-white">
         <div className="mx-auto flex max-w-[1200px] 2xl:max-w-[1720px] flex-wrap items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12 py-5">
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
-              Administration
+              {tr("Administration")}
             </h1>
             <p className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-ink-600">
               <span className="inline-flex items-center gap-1.5 font-medium text-success">
-                <span className="h-2 w-2 rounded-full bg-success" /> Platform Health: Operational
+                <span className="h-2 w-2 rounded-full bg-success" /> {tr("Platform Health: Operational")}
               </span>
               <span className="text-ink-400" aria-hidden="true">|</span>
               <span className="tabular font-medium">{stats?.totalAuditLogs ?? 0} audit events recorded</span>
@@ -145,12 +147,12 @@ export const AdminDashboard: React.FC = () => {
           <div className="flex items-center gap-3 rounded-xl border border-hair bg-slate-50 px-3.5 py-2 shadow-xs">
             <img
               src="/assets/verified_seal.png"
-              alt="Cryptographically verified ledger seal"
+              alt={tr("Cryptographically verified ledger seal")}
               className="h-8 w-8 object-contain"
               loading="lazy"
             />
             <div className="text-right">
-              <p className="text-xs font-semibold text-primary-700">Append-only audit ledger</p>
+              <p className="text-xs font-semibold text-primary-700">{tr("Append-only audit ledger")}</p>
               <p className="text-xs text-ink-600">Each entry chained by SHA-256</p>
             </div>
           </div>
@@ -161,39 +163,39 @@ export const AdminDashboard: React.FC = () => {
         {/* 4 Standardized Metric KPI Cards */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
-            title="Registered Patient Records"
+            title={tr("Registered Patient Records")}
             value={stats?.totalPatients ?? 0}
-            subtext="National health registry index"
+            subtext={tr("National health registry index")}
             icon={<Icon.User size={20} />}
             iconTone="blue"
-            status={{ label: "Live", tone: "emerald" }}
+            status={{ label: tr("Live"), tone: "emerald" }}
           />
 
           <MetricCard
-            title="Accredited Physicians"
+            title={tr("Accredited Physicians")}
             value={stats?.totalDoctors ?? 0}
-            subtext="BMDC Form-C certified"
+            subtext={tr("BMDC Form-C certified")}
             icon={<Icon.Stethoscope size={20} />}
             iconTone="emerald"
-            status={{ label: "Live", tone: "emerald" }}
+            status={{ label: tr("Live"), tone: "emerald" }}
           />
 
           <MetricCard
-            title="Consultations Processed"
+            title={tr("Consultations Processed")}
             value={stats?.totalRecords ?? 0}
-            subtext="Unified clinical records"
+            subtext={tr("Unified clinical records")}
             icon={<Icon.File size={20} />}
             iconTone="navy"
-            status={{ label: "Live", tone: "emerald" }}
+            status={{ label: tr("Live"), tone: "emerald" }}
           />
 
           <MetricCard
-            title="Cryptographic Audit Entries"
+            title={tr("Cryptographic Audit Entries")}
             value={stats?.totalAuditLogs ?? 0}
-            subtext="SHA-256 validated ledger"
+            subtext={tr("SHA-256 validated ledger")}
             icon={<Icon.Shield size={20} />}
             iconTone="purple"
-            status={{ label: "Live", tone: "emerald" }}
+            status={{ label: tr("Live"), tone: "emerald" }}
           />
         </div>
 
@@ -202,26 +204,26 @@ export const AdminDashboard: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hair px-4 py-4 sm:px-6">
             <div>
               <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">
-                Physician Credential Verification &amp; Onboarding
+                {tr("Physician Credential Verification & Onboarding")}
               </h2>
               <p className="mt-0.5 text-sm text-ink-600">
-                Approve or revoke BMDC accreditation with instant cryptographic validation status.
+                {tr("Approve or revoke BMDC accreditation with instant cryptographic validation status.")}
               </p>
             </div>
             <Pill tone={pendingDoctorsCount ? 'amber' : 'emerald'}>
-              {pendingDoctorsCount ? `${pendingDoctorsCount} Pending Review` : 'Review Queue Clear'}
+              {pendingDoctorsCount ? tr('{n} Pending Review', { n: pendingDoctorsCount }) : tr('Review Queue Clear')}
             </Pill>
           </div>
 
-          <DataTable minWidth="min-w-[900px]" caption="Physician credentials">
+          <DataTable minWidth="min-w-[900px]" caption={tr("Physician credentials")}>
               <THead>
                 <tr>
-                  <Th>Doctor Name &amp; UID</Th>
-                  <Th>BMDC License</Th>
-                  <Th>Specialization</Th>
-                  <Th>Hospital Affiliation</Th>
-                  <Th>Status</Th>
-                  <Th className="text-right">Action</Th>
+                  <Th>{tr("Doctor Name & UID")}</Th>
+                  <Th>{tr("BMDC License")}</Th>
+                  <Th>{tr("Specialization")}</Th>
+                  <Th>{tr("Hospital Affiliation")}</Th>
+                  <Th>{tr("Status")}</Th>
+                  <Th className="text-right">{tr("Action")}</Th>
                 </tr>
               </THead>
               <TBody>
@@ -238,7 +240,7 @@ export const AdminDashboard: React.FC = () => {
                       <Td className="text-ink-600">{doc.hospital_affiliation}</Td>
                       <Td>
                         <Badge tone={isAccredited ? 'emerald' : 'amber'} dot>
-                          {isAccredited ? 'Accredited' : 'Pending'}
+                          {isAccredited ? 'Accredited' : tr('Pending')}
                         </Badge>
                       </Td>
                       <Td className="text-right">
@@ -249,7 +251,7 @@ export const AdminDashboard: React.FC = () => {
                               variant="clinical"
                               onClick={() => handleApproveDoctor(doc.id, doc.full_name)}
                             >
-                              Approve
+                              {tr("Approve")}
                             </Button>
                           ) : (
                             <Button
@@ -258,7 +260,7 @@ export const AdminDashboard: React.FC = () => {
                               className="border-rose-200 text-critical hover:bg-rose-50 hover:text-rose-700"
                               onClick={() => setRevokeTarget({ id: doc.id, name: doc.full_name })}
                             >
-                              Revoke
+                              {tr("Revoke")}
                             </Button>
                           )}
                         </div>
@@ -279,19 +281,19 @@ export const AdminDashboard: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2">
               <Icon.Shield size={18} className="text-audit" />
               <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">
-                Cryptographic Audit Trail Inspector
+                {tr("Cryptographic Audit Trail Inspector")}
               </h2>
-              <Pill tone="purple">Append-Only SHA-256</Pill>
+              <Pill tone="purple">{tr('Append-Only SHA-256')}</Pill>
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-hair bg-white px-3 py-2 sm:flex-none focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-50 transition-all">
                 <Icon.Search size={15} className="text-ink-600 shrink-0" />
                 <input
-                  aria-label="Search audit entries"
+                  aria-label={tr("Search audit entries")}
                   value={auditSearch}
                   onChange={(event) => setAuditSearch(event.target.value)}
-                  placeholder="Search action, resource, or actor…"
+                  placeholder={tr("Search action, resource, or actor…")}
                   className="min-w-0 w-full bg-transparent text-xs text-ink-900 outline-none placeholder:text-ink-400 sm:w-64"
                 />
                 {auditSearch && (
@@ -299,7 +301,7 @@ export const AdminDashboard: React.FC = () => {
                     type="button"
                     onClick={() => setAuditSearch('')}
                     className="text-ink-600 hover:text-ink-900 text-xs px-1"
-                    aria-label="Clear search"
+                    aria-label={tr("Clear search")}
                   >
                     ✕
                   </button>
@@ -334,11 +336,11 @@ export const AdminDashboard: React.FC = () => {
                     : 'border-hair bg-white text-ink-600 hover:border-hair-strong'
                 }`}
               >
-                <Icon.Clock size={14} /> Last 24 hours
+                <Icon.Clock size={14} /> {tr("Last 24 hours")}
               </button>
 
               <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
-                From
+                {tr("From")}
                 <Input
                   type="date"
                   value={auditFrom}
@@ -349,7 +351,7 @@ export const AdminDashboard: React.FC = () => {
                 />
               </label>
               <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
-                To
+                {tr("To")}
                 <Input
                   type="date"
                   value={auditTo}
@@ -364,15 +366,15 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          <DataTable minWidth="min-w-[960px]" caption="Audit entries">
+          <DataTable minWidth="min-w-[960px]" caption={tr("Audit entries")}>
             <THead>
               <tr>
-                <Th>Time</Th>
-                <Th>Actor</Th>
-                <Th>Action</Th>
-                <Th>Resource</Th>
-                <Th>Details</Th>
-                <Th>SHA-256 hash</Th>
+                <Th>{tr("Time")}</Th>
+                <Th>{tr("Actor")}</Th>
+                <Th>{tr("Action")}</Th>
+                <Th>{tr("Resource")}</Th>
+                <Th>{tr("Details")}</Th>
+                <Th>{tr("SHA-256 hash")}</Th>
               </tr>
             </THead>
             <TBody>
@@ -386,7 +388,7 @@ export const AdminDashboard: React.FC = () => {
                     </Td>
                     <Td>
                       <Pill tone={roleTone(l.actor_role)} size="sm">{l.actor_role}</Pill>
-                      <span className="mt-1 block text-xs text-ink-600">{l.actor_name || 'System'}</span>
+                      <span className="mt-1 block text-xs text-ink-600">{l.actor_name || tr('System')}</span>
                     </Td>
                     <Td className="whitespace-nowrap font-mono text-xs font-semibold text-primary-700">{l.action}</Td>
                     <Td className="font-mono text-xs text-audit">{l.target_resource}</Td>
@@ -401,8 +403,8 @@ export const AdminDashboard: React.FC = () => {
                           <button
                             onClick={() => copy(hash)}
                             type="button"
-                            aria-label={`Copy integrity hash for ${l.action}`}
-                            title={isCopied ? 'Copied' : 'Copy full hash'}
+                            aria-label={tr('Copy integrity hash for {action}', { action: l.action })}
+                            title={isCopied ? 'Copied' : tr('Copy full hash')}
                             className={`grid h-7 w-7 place-items-center rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
                               isCopied ? 'border-emerald-200 bg-emerald-50 text-success' : 'border-hair text-ink-600 hover:bg-slate-100 hover:text-primary-700'
                             }`}
@@ -419,7 +421,7 @@ export const AdminDashboard: React.FC = () => {
               {filteredAuditLogs.length === 0 && (
                 <tr>
                   <Td colSpan={6} className="py-12 text-center text-sm text-ink-600">
-                    No audit entries match these filters.
+                    {tr("No audit entries match these filters.")}
                   </Td>
                 </tr>
               )}
@@ -430,20 +432,19 @@ export const AdminDashboard: React.FC = () => {
         {/* Destructive Action Confirmation Dialog */}
         <ConfirmModal
           isOpen={Boolean(revokeTarget)}
-          title="Revoke Physician BMDC Accreditation?"
+          title={tr("Revoke Physician BMDC Accreditation?")}
           message={
             <div className="space-y-2">
               <p>
-                Are you sure you want to revoke the accreditation of{' '}
-                <strong className="text-ink-900">{revokeTarget?.name}</strong>?
+                {tr('Revoke the accreditation of {name}?', { name: revokeTarget?.name ?? '' })}
               </p>
               <p className="text-xs text-critical font-medium bg-rose-50 p-2.5 rounded-xl border border-rose-200">
-                Revoking will immediately suspend this physician's authority to issue or cryptographically sign new clinical prescriptions across MedraLink.
+                {tr("Revoking will immediately suspend this physician's authority to issue or cryptographically sign new clinical prescriptions across MedraLink.")}
               </p>
             </div>
           }
-          confirmLabel="Revoke Accreditation"
-          cancelLabel="Keep Accredited"
+          confirmLabel={tr("Revoke Accreditation")}
+          cancelLabel={tr("Keep Accredited")}
           isDestructive={true}
           isLoading={isRevoking}
           onConfirm={handleConfirmRevoke}

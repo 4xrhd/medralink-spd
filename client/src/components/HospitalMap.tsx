@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -28,6 +29,7 @@ function numberedIcon(n: number, selected: boolean): L.DivIcon {
  * numbered pin per hospital. Clicking a pin selects the matching result card.
  */
 export const HospitalMap: React.FC<HospitalMapProps> = ({ center, hospitals, selectedId, onSelect }) => {
+  const { t: tr } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
@@ -37,7 +39,7 @@ export const HospitalMap: React.FC<HospitalMapProps> = ({ center, hospitals, sel
     const map = L.map(containerRef.current, { zoomControl: true }).setView([DHAKA.lat, DHAKA.lng], 12);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">{tr("OpenStreetMap")}</a> contributors',
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;
@@ -90,7 +92,7 @@ export const HospitalMap: React.FC<HospitalMapProps> = ({ center, hospitals, sel
       ref={containerRef}
       id="hospital-map"
       role="region"
-      aria-label="Map of nearby hospitals"
+      aria-label={tr("Map of nearby hospitals")}
       className="w-full rounded-2xl border border-hair shadow-sm overflow-hidden z-0"
       style={{ height: '340px', background: '#f0f0f0' }}
     />

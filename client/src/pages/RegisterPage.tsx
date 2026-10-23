@@ -99,7 +99,7 @@ export const RegisterPage: React.FC = () => {
                 <span className="font-display text-xl font-bold tracking-tight">
                   Medra<span className="text-primary-300">Link</span>
                 </span>
-                <p className="text-[11px] font-medium text-primary-200">
+                <p className="text-[0.6875rem] font-medium text-primary-200">
                   {tr("Registration Portal")}
                 </p>
               </div>
@@ -162,7 +162,7 @@ export const RegisterPage: React.FC = () => {
 
           <div className="relative z-10 pt-8 border-t border-white/10 text-xs text-primary-200/80 flex items-center justify-between">
             <span>{tr("Clinical Standards Compliant")}</span>
-            <span className="font-mono text-[11px] text-primary-300">{tr("BMDC Guidelines")}</span>
+            <span className="font-mono text-[0.6875rem] text-primary-300">{tr("BMDC Guidelines")}</span>
           </div>
         </div>
 

@@ -185,7 +185,7 @@ export const Navbar: React.FC = () => {
             aria-label={tr("MedraLink home")}
           >
             <img src="/logo-mark.png" alt="" className="h-8 w-8 object-contain" />
-            <span className="font-display text-[19px] font-bold tracking-[-0.02em] text-ink-900">{tr("MedraLink")}</span>
+            <span className="font-display text-[1.1875rem] font-bold tracking-[-0.02em] text-ink-900">{tr("MedraLink")}</span>
           </Link>
           {getRoleBadge()}
         </div>
@@ -256,7 +256,7 @@ export const Navbar: React.FC = () => {
                 >
                   <Icon.Bell size={18} />
                   {unreadCount > 0 && (
-                    <span aria-hidden="true" className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-critical px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                    <span aria-hidden="true" className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-critical px-1 text-[0.625rem] font-bold leading-none text-white ring-2 ring-white">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -326,7 +326,7 @@ export const Navbar: React.FC = () => {
                         <span>{tr("Unread")}</span>
                         {unreadCount > 0 && (
                           <span
-                            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                            className={`rounded-full px-1.5 py-0.2 text-[0.625rem] ${
                               activeFilter === 'unread'
                                 ? 'bg-white/20 text-white'
                                 : 'bg-rose-100 text-rose-700 font-bold'

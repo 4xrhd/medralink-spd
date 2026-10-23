@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Select, Switch } from '../ui/forms.js';
 import { DataTable, TBody, THead, Td, Th, Tr } from '../ui/table.js';
@@ -27,6 +28,7 @@ const statusTone = (s: AdminUser['status']) => (s === 'ACTIVE' ? 'emerald' : s =
 
 /** User account management: list, filter by role, suspend or reactivate. */
 export const AdminUsersPanel: React.FC = () => {
+  const { t: tr } = useLanguage();
   const toast = useToast();
   const { user: me } = useAuth();
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -39,7 +41,7 @@ export const AdminUsersPanel: React.FC = () => {
       const res = await api.get('/admin/users', { params: role ? { role } : {} });
       setUsers(res.data.data || []);
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to load users.'));
+      toast.error(getApiErrorMessage(err, tr('Failed to load users.')));
     }
   }, [role, toast]);
 
@@ -57,7 +59,7 @@ export const AdminUsersPanel: React.FC = () => {
       setTarget(null);
       await load();
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to update user.'));
+      toast.error(getApiErrorMessage(err, tr('Failed to update user.')));
     } finally {
       setSaving(false);
     }
@@ -68,31 +70,31 @@ export const AdminUsersPanel: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hair px-4 py-4 sm:px-6">
         <div className="flex items-center gap-2">
           <Icon.User size={18} className="text-primary-700" />
-          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">User Accounts</h2>
+          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">{tr("User Accounts")}</h2>
         </div>
         <label className="flex items-center gap-2 text-xs font-semibold text-ink-600">
-          Role
+          {tr("Role")}
           <Select
             value={role}
             onChange={(e) => setRole(e.target.value)}
             selectSize="sm"
             className="w-auto"
           >
-            <option value="">All roles</option>
-            <option value="PATIENT">Patient</option>
-            <option value="DOCTOR">Doctor</option>
-            <option value="ADMIN">Admin</option>
+            <option value="">{tr("All roles")}</option>
+            <option value="PATIENT">{tr("Patient")}</option>
+            <option value="DOCTOR">{tr("Doctor")}</option>
+            <option value="ADMIN">{tr("Admin")}</option>
           </Select>
         </label>
       </div>
-      <DataTable caption="User accounts">
+      <DataTable caption={tr("User accounts")}>
         <THead>
           <tr>
-            <Th>Name</Th>
-            <Th>Email</Th>
-            <Th>Role</Th>
-            <Th>Status</Th>
-            <Th className="text-right">Action</Th>
+            <Th>{tr("Name")}</Th>
+            <Th>{tr("Email")}</Th>
+            <Th>{tr("Role")}</Th>
+            <Th>{tr("Status")}</Th>
+            <Th className="text-right">{tr("Action")}</Th>
           </tr>
         </THead>
         <TBody>
@@ -123,8 +125,8 @@ export const AdminUsersPanel: React.FC = () => {
         title={target?.status === 'SUSPENDED' ? 'Reactivate account?' : 'Suspend account?'}
         message={
           target?.status === 'SUSPENDED'
-            ? `${target?.full_name} will be able to sign in again.`
-            : `${target?.full_name} will be signed out immediately and cannot sign in until reactivated.`
+            ? tr('{name} will be able to sign in again.', { name: target?.full_name ?? '' })
+            : tr('{name} will be signed out immediately and cannot sign in until reactivated.', { name: target?.full_name ?? '' })
         }
         confirmLabel={target?.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
         isDestructive={target?.status !== 'SUSPENDED'}
@@ -138,6 +140,7 @@ export const AdminUsersPanel: React.FC = () => {
 
 /** System parameters editor backed by GET/PUT /admin/settings. */
 export const AdminSettingsPanel: React.FC = () => {
+  const { t: tr } = useLanguage();
   const toast = useToast();
   const [settings, setSettings] = useState<SystemSetting[]>([]);
   const [draft, setDraft] = useState<Record<string, string>>({});
@@ -151,7 +154,7 @@ export const AdminSettingsPanel: React.FC = () => {
         setSettings(rows);
         setDraft(Object.fromEntries(rows.map((r) => [r.key, r.value])));
       })
-      .catch((err) => toast.error(getApiErrorMessage(err, 'Failed to load settings.')));
+      .catch((err) => toast.error(getApiErrorMessage(err, tr('Failed to load settings.'))));
   }, [toast]);
 
   const save = async (e: React.FormEvent) => {
@@ -160,16 +163,16 @@ export const AdminSettingsPanel: React.FC = () => {
       Object.entries(draft).filter(([key, value]) => settings.find((s) => s.key === key)?.value !== value)
     );
     if (Object.keys(changed).length === 0) {
-      toast.info('No changes to save.');
+      toast.info(tr('No changes to save.'));
       return;
     }
     setSaving(true);
     try {
       await api.put('/admin/settings', { settings: changed });
       setSettings((prev) => prev.map((s) => (s.key in changed ? { ...s, value: changed[s.key] } : s)));
-      toast.success('System settings saved.');
+      toast.success(tr('System settings saved.'));
     } catch (err) {
-      toast.error(getApiErrorMessage(err, 'Failed to save settings.'));
+      toast.error(getApiErrorMessage(err, tr('Failed to save settings.')));
     } finally {
       setSaving(false);
     }
@@ -180,7 +183,7 @@ export const AdminSettingsPanel: React.FC = () => {
       <form onSubmit={save}>
         <div className="flex items-center gap-2 border-b border-hair px-4 py-4 sm:px-6">
           <Icon.Sliders size={18} className="text-primary-700" />
-          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">System Parameters</h2>
+          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">{tr("System Parameters")}</h2>
         </div>
         <div className="grid gap-4 px-4 py-5 sm:grid-cols-2 sm:px-6">
           {settings.map((s) =>
@@ -189,13 +192,13 @@ export const AdminSettingsPanel: React.FC = () => {
               <div key={s.key} className="sm:col-span-2">
                 <Switch
                   id={`setting-${s.key}`}
-                  label={s.description}
+                  label={tr(s.description)}
                   checked={draft[s.key] === 'true'}
                   onChange={(next) => setDraft((d) => ({ ...d, [s.key]: String(next) }))}
                 />
               </div>
             ) : (
-              <FormField key={s.key} label={s.description} htmlFor={`setting-${s.key}`}>
+              <FormField key={s.key} label={tr(s.description)} htmlFor={`setting-${s.key}`}>
                 <Input
                   id={`setting-${s.key}`}
                   inputMode={s.numeric ? 'numeric' : undefined}
@@ -208,7 +211,7 @@ export const AdminSettingsPanel: React.FC = () => {
           )}
         </div>
         <div className="border-t border-hair px-4 py-3 sm:px-6">
-          <Button type="submit" isLoading={saving}>Save settings</Button>
+          <Button type="submit" isLoading={saving}>{tr("Save settings")}</Button>
         </div>
       </form>
     </Card>

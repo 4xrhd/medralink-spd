@@ -1,6 +1,9 @@
 // Bangla UI strings, keyed by the English text shown in the app.
 // A missing key falls back to English, so pages can be translated one at a time.
+import { bnApp } from './bn-app.js';
+
 export const bn: Record<string, string> = {
+  ...bnApp,
   // Navigation and account menu
   'Product': 'পরিষেবা',
   'How it works': 'কীভাবে কাজ করে',
@@ -66,7 +69,7 @@ export const bn: Record<string, string> = {
   'Most patients carry their medical history in a bag of loose prescriptions. MedraLink replaces that with one record every doctor you visit can read.': 'বেশিরভাগ রোগী তাদের চিকিৎসার ইতিহাস একগাদা খোলা প্রেসক্রিপশনে বহন করেন। মেড্রালিংক তার বদলে দেয় একটি রেকর্ড, যা আপনার প্রত্যেক ডাক্তার পড়তে পারেন।',
   'Fragmented physical medical records and prescriptions': 'ছড়িয়ে থাকা কাগজের মেডিকেল রেকর্ড ও প্রেসক্রিপশন',
   'Lost between visits': 'ভিজিটের মাঝে হারিয়ে যায়',
-  'Old prescriptions and test results go missing, so tests get repeated and the next doctor starts from scratch.': 'পুরনো প্রেসক্রিপশন ও টেস্ট রিপোর্ট হারিয়ে যায়, তাই টেস্ট আবার করতে হয় এবং পরের ডাক্তারকে শুরু থেকে শুরু করতে হয়।',
+  'Old prescriptions and test results go missing, so tests get repeated and the next doctor starts from scratch.': 'পুরনো প্রেসক্রিপশন ও টেস্ট রিপোর্ট হারিয়ে যায়, তাই টেস্ট আবার করতে হয় এবং পরের ডাক্তারকে নতুন করে শুরু করতে হয়।',
   'The problem': 'সমস্যা',
   'Pharmaceutical bottles with alert badge illustrating contraindications': 'সতর্কতা চিহ্নসহ ওষুধের বোতল',
   'Allergies nobody saw': 'যে অ্যালার্জি কেউ দেখেনি',
@@ -74,7 +77,7 @@ export const bn: Record<string, string> = {
   'The risk': 'ঝুঁকি',
   'Connected digital medical timeline ribbon with diagnostic nodes': 'সংযুক্ত ডিজিটাল মেডিকেল টাইমলাইন',
   'One record that follows you': 'একটি রেকর্ড, যা আপনার সাথে থাকে',
-  'Every consultation, prescription and lab report in one timeline, visible only to you and the doctors treating you.': 'প্রতিটি পরামর্শ, প্রেসক্রিপশন ও ল্যাব রিপোর্ট এক টাইমলাইনে, যা শুধু আপনি ও আপনার চিকিৎসক দেখতে পান।',
+  'Every consultation, prescription and lab report in one timeline, visible only to you and the doctors treating you.': 'প্রতিটি পরামর্শ, প্রেসক্রিপশন ও ল্যাব রিপোর্ট এক টাইমলাইনে, যা শুধু আপনি ও আপনার চিকিৎসারত ডাক্তার দেখতে পান।',
   'With MedraLink': 'মেড্রালিংকের সাথে',
   'Three steps from first sign-up to a record that keeps itself up to date.': 'সাইন আপ থেকে সবসময় হালনাগাদ রেকর্ড পর্যন্ত তিনটি ধাপ।',
   'Create your account': 'অ্যাকাউন্ট খুলুন',
@@ -146,7 +149,7 @@ export const bn: Record<string, string> = {
   'Register as a doctor': 'ডাক্তার হিসেবে নিবন্ধন',
   'Need urgent emergency medical assistance? Please dial 999 or proceed immediately to the nearest hospital emergency room.': 'জরুরি চিকিৎসা সহায়তা দরকার? ৯৯৯ নম্বরে ফোন করুন অথবা এখনই নিকটস্থ হাসপাতালের জরুরি বিভাগে যান।',
   'MedraLink Logo': 'মেড্রালিংক লোগো',
-  'One medical record shared between patients and the doctors who treat them.': 'রোগী ও তাদের চিকিৎসকের মধ্যে ভাগ করা একটি মেডিকেল রেকর্ড।',
+  'One medical record shared between patients and the doctors who treat them.': 'রোগী ও তাদের চিকিৎসারত ডাক্তারের মধ্যে ভাগ করা একটি মেডিকেল রেকর্ড।',
   'Create an account': 'অ্যাকাউন্ট খুলুন',
   'Find care': 'চিকিৎসা খুঁজুন',
   'Hospitals near you': 'কাছের হাসপাতাল',
@@ -192,7 +195,7 @@ export const bn: Record<string, string> = {
   'Unique Health ID (HID)': 'অনন্য হেলথ আইডি (HID)',
   'A permanent digital health identifier linked to your national clinical timeline.': 'আপনার চিকিৎসা টাইমলাইনের সাথে যুক্ত একটি স্থায়ী ডিজিটাল স্বাস্থ্য পরিচয়।',
   'Verified BMDC Practitioner Status': 'যাচাইকৃত বিএমডিসি চিকিৎসক',
-  'Doctors undergo registration and verification before gaining prescribing privileges.': 'প্রেসক্রিপশন দেওয়ার অনুমতির আগে ডাক্তারদের নিবন্ধন ও যাচাই হয়।',
+  'Doctors undergo registration and verification before gaining prescribing privileges.': 'প্রেসক্রিপশন দেওয়ার অনুমতি পাওয়ার আগে ডাক্তারদের নিবন্ধন ও যাচাই করা হয়।',
   'Patient-Controlled Consent': 'রোগী-নিয়ন্ত্রিত অনুমতি',
   'Only authorized doctors can view your timeline during an active clinical encounter.': 'শুধু অনুমোদিত ডাক্তার চিকিৎসার সময় আপনার টাইমলাইন দেখতে পারেন।',
   'Clinical Standards Compliant': 'চিকিৎসা মানদণ্ড অনুযায়ী',
@@ -214,9 +217,9 @@ export const bn: Record<string, string> = {
   'Female': 'নারী',
   'Other': 'অন্যান্য',
   'Blood group': 'রক্তের গ্রুপ',
-  'Medical specialization': 'বিশেষজ্ঞতা',
+  'Medical specialization': 'বিশেষত্ব',
   'BMDC license number': 'বিএমডিসি লাইসেন্স নম্বর',
   'Degrees & qualifications': 'ডিগ্রি ও যোগ্যতা',
-  'Hospital affiliation': 'হাসপাতাল',
+  'Hospital affiliation': 'কর্মরত হাসপাতাল',
   'Complete Registration': 'নিবন্ধন সম্পন্ন করুন',
 };

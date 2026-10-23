@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Alert, Select, Textarea } from '../ui/forms.js';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
@@ -22,7 +23,8 @@ const inputCls =
   "w-full rounded-xl border border-hair bg-white px-3.5 py-2.5 text-sm text-ink-900 outline-none transition-colors placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50";
 
 export const NewConsultationPage: React.FC = () => {
-  useDocumentTitle('New Consultation & E-Prescription');
+  const { t: tr } = useLanguage();
+  useDocumentTitle(tr('New Consultation & E-Prescription'));
   const toast = useToast();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -150,7 +152,7 @@ export const NewConsultationPage: React.FC = () => {
     if (!customIcd.trim()) return;
     setDiagnoses([
       ...diagnoses,
-      { icd10Code: 'CUSTOM', diagnosisTitle: customIcd.trim(), severity: 'MODERATE' }
+      { icd10Code: tr('CUSTOM'), diagnosisTitle: customIcd.trim(), severity: tr('MODERATE') }
     ]);
     setCustomIcd('');
   };
@@ -193,12 +195,12 @@ export const NewConsultationPage: React.FC = () => {
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!chiefComplaint.trim()) {
-      setError('Please provide the Chief Complaint.');
+      setError(tr('Please provide the Chief Complaint.'));
       return;
     }
 
     setIsSubmitting(true);
-    setError('');
+    setError(tr(''));
 
     try {
       const payload = {
@@ -242,7 +244,7 @@ export const NewConsultationPage: React.FC = () => {
       const res = await api.post('/consultations', payload);
       const { prescriptionId } = res.data.data || {};
 
-      toast.success('Consultation finalized & cryptographic prescription issued!');
+      toast.success(tr('Consultation finalized & cryptographic prescription issued!'));
 
       if (prescriptionId) {
         navigate(`/prescription/${prescriptionId}`);
@@ -250,7 +252,7 @@ export const NewConsultationPage: React.FC = () => {
         navigate(`/patient/timeline/${selectedPatientId}`);
       }
     } catch (err: any) {
-      const msg = getApiErrorMessage(err, 'Failed to submit consultation record.');
+      const msg = getApiErrorMessage(err, tr('Failed to submit consultation record.'));
       setError(msg);
       toast.error(msg);
     } finally {
@@ -265,7 +267,7 @@ export const NewConsultationPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-canvas pb-36 sm:pb-28">
       {/* Attending Physician Letterhead Banner */}
-      <section aria-label="Attending Physician Letterhead" className="border-b border-hair bg-white">
+      <section aria-label={tr("Attending Physician Letterhead")} className="border-b border-hair bg-white">
         <div className="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="flex items-center gap-3">
             <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary-700 text-white shadow-sm">
@@ -274,7 +276,7 @@ export const NewConsultationPage: React.FC = () => {
             <div>
               <p className="font-display text-lg font-bold tracking-tight text-ink-900">{doctorName}</p>
               <p className="text-xs text-ink-600">
-                BMDC License: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span> • {hospitalAffiliation}
+                {tr('BMDC License')}: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span> • {hospitalAffiliation}
               </p>
             </div>
           </div>
@@ -292,21 +294,21 @@ export const NewConsultationPage: React.FC = () => {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3.5">
               <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary-700 font-bold text-white">
-                {selectedPatient?.full_name ? selectedPatient.full_name.slice(0, 2).toUpperCase() : 'RA'}
+                {selectedPatient?.full_name ? selectedPatient.full_name.slice(0, 2).toUpperCase() : tr('RA')}
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-display text-lg font-bold tracking-tight text-ink-900">
-                    {selectedPatient?.full_name || 'Rahim Ahmed'}
+                    {selectedPatient?.full_name || tr('Rahim Ahmed')}
                   </span>
                   <span className="font-mono text-xs text-ink-400">
-                    {selectedPatient?.patient_uid || 'P-1001'}
+                    {selectedPatient?.patient_uid || tr('P-1001')}
                   </span>
                 </div>
                 <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                  <Pill tone="crimson">{selectedPatient?.blood_group || 'O+'}</Pill>
+                  <Pill tone="crimson">{selectedPatient?.blood_group || tr('O+')}</Pill>
                   <span className="text-ink-600">
-                    {selectedPatient?.gender || 'Male'} •{' '}
+                    {selectedPatient?.gender || tr('Male')} •{' '}
                     {selectedPatient?.date_of_birth ? `${new Date().getFullYear() - new Date(selectedPatient.date_of_birth).getFullYear()} Yrs` : '45 Yrs'}
                   </span>
                   <span className="text-ink-400">| 📱 {selectedPatient?.phone || '+8801712345678'}</span>
@@ -317,25 +319,25 @@ export const NewConsultationPage: React.FC = () => {
             {/* Center Clinical Safety & Emergency Telemetry (Fills empty space on 1920px) */}
             <div className="hidden 2xl:flex items-center gap-4">
               <div className="flex items-center gap-2 rounded-xl bg-amber-50/90 border border-amber-200/80 px-3 py-1.5 text-xs">
-                <span className="font-bold text-amber-800">Allergy Alert:</span>
-                <span className="font-semibold text-warning">Penicillin (Severe)</span>
+                <span className="font-bold text-amber-800">{tr('Allergy Alert')}:</span>
+                <span className="font-semibold text-warning">{tr("Penicillin (Severe)")}</span>
                 <span className="text-amber-400">•</span>
-                <span className="font-semibold text-warning">Sulfa Drugs</span>
+                <span className="font-semibold text-warning">{tr("Sulfa Drugs")}</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-ink-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
-                <span className="text-ink-400">Emergency:</span>
-                <span className="font-semibold text-ink-900">{selectedPatient?.emergency_contact_name || 'Nasreen Ahmed'}</span>
-                <span className="text-ink-600">({selectedPatient?.emergency_contact_relation || 'Spouse'})</span>
+                <span className="text-ink-400">{tr('Emergency')}:</span>
+                <span className="font-semibold text-ink-900">{selectedPatient?.emergency_contact_name || tr('Nasreen Ahmed')}</span>
+                <span className="text-ink-600">({selectedPatient?.emergency_contact_relation || tr('Spouse')})</span>
                 <span className="font-mono text-primary-700">{selectedPatient?.emergency_contact_phone || '+8801712345678'}</span>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <label className="text-xs font-semibold text-slate-600">
-                Switch Patient:
+                {tr('Switch Patient')}:
               </label>
               <Select
-                aria-label="Select Patient"
+                aria-label={tr("Select Patient")}
                 value={selectedPatientId}
                 onChange={(e) => setSelectedPatientId(e.target.value)}
                 selectSize="sm"
@@ -351,7 +353,7 @@ export const NewConsultationPage: React.FC = () => {
                 to={`/patient/timeline/${selectedPatientId}`}
                 className="rounded-xl border border-hair bg-white px-3 py-2 text-xs font-semibold text-primary-700 transition-colors hover:border-hair-strong"
               >
-                View Full Timeline
+                {tr("View Full Timeline")}
               </Link>
             </div>
           </div>
@@ -363,8 +365,8 @@ export const NewConsultationPage: React.FC = () => {
           <Card className="space-y-6 p-6">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hair pb-3">
               <div>
-                <h3 className="font-display text-xl font-bold tracking-tight text-ink-900">Clinical Observations &amp; Telemetry</h3>
-                <p className="mt-1 text-xs text-ink-600">Capture symptoms, examination findings, and vitals matrix</p>
+                <h3 className="font-display text-xl font-bold tracking-tight text-ink-900">{tr("Clinical Observations & Telemetry")}</h3>
+                <p className="mt-1 text-xs text-ink-600">{tr("Capture symptoms, examination findings, and vitals matrix")}</p>
               </div>
             </div>
 
@@ -372,15 +374,15 @@ export const NewConsultationPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between">
                 <label htmlFor="consult-complaint" className="block text-xs font-semibold text-slate-700">
-                  Chief Complaints
+                  {tr("Chief Complaints")}
                 </label>
-                <span className="text-xs font-medium text-ink-400">Primary patient symptoms</span>
+                <span className="text-xs font-medium text-ink-400">{tr("Primary patient symptoms")}</span>
               </div>
               <Textarea
                 rows={3}
                 value={chiefComplaint}
                 onChange={(e) => setChiefComplaint(e.target.value)}
-                placeholder="e.g. Mild exertional chest tightness and occipital headaches for 2 weeks..."
+                placeholder={tr("e.g. Mild exertional chest tightness and occipital headaches for 2 weeks...")}
                 id="consult-complaint"
                 className="mt-1.5"
               />
@@ -390,15 +392,15 @@ export const NewConsultationPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between">
                 <label htmlFor="consult-notes" className="block text-xs font-semibold text-slate-700">
-                  Clinical Examination &amp; Diagnosis Notes
+                  {tr("Clinical Examination & Diagnosis Notes")}
                 </label>
-                <span className="text-xs font-medium text-ink-400">Physical examination findings</span>
+                <span className="text-xs font-medium text-ink-400">{tr("Physical examination findings")}</span>
               </div>
               <Textarea
                 rows={4}
                 value={clinicalNotes}
                 onChange={(e) => setClinicalNotes(e.target.value)}
-                placeholder="Examination findings, physical status, cardiovascular auscultation..."
+                placeholder={tr("Examination findings, physical status, cardiovascular auscultation...")}
                 id="consult-notes"
                 className="mt-1.5 min-h-[108px]"
               />
@@ -408,23 +410,23 @@ export const NewConsultationPage: React.FC = () => {
             <div>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label className="block text-xs font-semibold text-slate-800">
-                  Vitals Capture Matrix
+                  {tr("Vitals Capture Matrix")}
                 </label>
                 <span className="inline-flex items-center gap-1 rounded-md bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700 border border-primary-100">
-                  <Icon.Activity size={13} /> Auto-Computed BMI
+                  <Icon.Activity size={13} /> {tr("Auto-Computed BMI")}
                 </span>
               </div>
 
               <div className="mt-2.5 grid grid-cols-2 gap-3">
                 {[
-                  { label: 'Systolic BP', unit: 'mmHg', val: systolicBp, set: setSystolicBp, ph: '120' },
-                  { label: 'Diastolic BP', unit: 'mmHg', val: diastolicBp, set: setDiastolicBp, ph: '80' },
-                  { label: 'Heart Rate', unit: 'bpm', val: heartRate, set: setHeartRate, ph: '72' },
-                  { label: 'Temperature', unit: '°C', val: temperature, set: setTemperature, ph: '36.6' },
-                  { label: 'Resp Rate', unit: '/min', val: respiratoryRate, set: setRespiratoryRate, ph: '16' },
-                  { label: 'SpO₂', unit: '%', val: spo2, set: setSpo2, ph: '98' },
-                  { label: 'Weight', unit: 'kg', val: weightKg, set: setWeightKg, ph: '70' },
-                  { label: 'Height', unit: 'cm', val: heightCm, set: setHeightCm, ph: '170' },
+                  { label: tr('Systolic BP'), unit: 'mmHg', val: systolicBp, set: setSystolicBp, ph: '120' },
+                  { label: tr('Diastolic BP'), unit: 'mmHg', val: diastolicBp, set: setDiastolicBp, ph: '80' },
+                  { label: tr('Heart Rate'), unit: 'bpm', val: heartRate, set: setHeartRate, ph: '72' },
+                  { label: tr('Temperature'), unit: '°C', val: temperature, set: setTemperature, ph: '36.6' },
+                  { label: tr('Resp Rate'), unit: '/min', val: respiratoryRate, set: setRespiratoryRate, ph: '16' },
+                  { label: tr('SpO₂'), unit: '%', val: spo2, set: setSpo2, ph: '98' },
+                  { label: tr('Weight'), unit: 'kg', val: weightKg, set: setWeightKg, ph: '70' },
+                  { label: tr('Height'), unit: 'cm', val: heightCm, set: setHeightCm, ph: '170' },
                 ].map((v) => (
                   <div
                     key={v.label}
@@ -432,10 +434,10 @@ export const NewConsultationPage: React.FC = () => {
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-slate-700">
-                        {v.label}
+                        {tr(v.label)}
                       </span>
                       <span className="rounded bg-slate-200/80 px-2 py-0.5 font-mono text-xs font-semibold text-ink-700">
-                        {v.unit}
+                        {tr(v.unit)}
                       </span>
                     </div>
                     <div className="mt-1.5">
@@ -455,10 +457,10 @@ export const NewConsultationPage: React.FC = () => {
               {/* Real-time BMI Display Badge */}
               <div className={`mt-3 flex items-center justify-between rounded-xl px-4 py-2.5 ${toneCls[bmiTone]} shadow-2xs`}>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold">Computed BMI:</span>
+                  <span className="text-xs font-semibold">{tr('Computed BMI')}:</span>
                   {bmiCategory && (
                     <span className="rounded-md bg-white/80 px-2 py-0.5 text-xs font-extrabold shadow-xs">
-                      {bmiCategory}
+                      {tr(bmiCategory)}
                     </span>
                   )}
                 </div>
@@ -469,7 +471,7 @@ export const NewConsultationPage: React.FC = () => {
             {/* ICD-10 Diagnosis Codification */}
             <div>
               <label className="block text-xs font-semibold text-slate-700">
-                ICD-10 Diagnosis Codification
+                {tr("ICD-10 Diagnosis Codification")}
               </label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {COMMON_ICD10.map((item) => {
@@ -487,7 +489,7 @@ export const NewConsultationPage: React.FC = () => {
                       }`}
                     >
                       {on && <Icon.Check size={12} className="mr-1 inline" />}
-                      [{item.code}] {item.title}
+                      [{item.code}] {tr(item.title)}
                     </button>
                   );
                 })}
@@ -496,7 +498,7 @@ export const NewConsultationPage: React.FC = () => {
               <div className="mt-3 flex items-center gap-2 rounded-xl border border-dashed border-hair-strong px-3 py-2 bg-white">
                 <Icon.Search size={16} className="text-ink-400" />
                 <input
-                  aria-label="Search or add custom ICD-10 diagnosis"
+                  aria-label={tr("Search or add custom ICD-10 diagnosis")}
                   value={customIcd}
                   onChange={(e) => setCustomIcd(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomDiagnosis())}
@@ -509,7 +511,7 @@ export const NewConsultationPage: React.FC = () => {
                     onClick={addCustomDiagnosis}
                     className="text-xs font-semibold text-primary-700 hover:underline"
                   >
-                    Add
+                    {tr("Add")}
                   </button>
                 )}
               </div>
@@ -522,71 +524,71 @@ export const NewConsultationPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span className="font-serif text-3xl font-bold text-primary-700">℞</span>
                 <div>
-                  <h3 className="font-display text-lg font-bold text-ink-900">Electronic Prescription Formulation</h3>
-                  <p className="text-xs text-ink-600">Valid BMDC digital medication regimen</p>
+                  <h3 className="font-display text-lg font-bold text-ink-900">{tr("Electronic Prescription Formulation")}</h3>
+                  <p className="text-xs text-ink-600">{tr("Valid BMDC digital medication regimen")}</p>
                 </div>
               </div>
             </div>
 
             {/* Dynamic Medication Table */}
-            <div className="overflow-x-auto rounded-xl border border-hair" aria-label="Prescription medicine table">
+            <div className="overflow-x-auto rounded-xl border border-hair" aria-label={tr("Prescription medicine table")}>
               <div className="grid min-w-[620px] grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] gap-2 bg-canvas px-3.5 py-2.5 text-xs font-semibold text-ink-600">
-                <span>Medicine Name</span>
-                <span>Dosage</span>
-                <span>Frequency</span>
-                <span>Duration</span>
-                <span>Instructions</span>
+                <span>{tr("Medicine Name")}</span>
+                <span>{tr("Dosage")}</span>
+                <span>{tr("Frequency")}</span>
+                <span>{tr("Duration")}</span>
+                <span>{tr("Instructions")}</span>
                 <span />
               </div>
 
               <div className="min-w-[620px] divide-y divide-hair">
                 {prescriptionItems.length === 0 ? (
                   <div className="py-8 text-center bg-white px-4">
-                    <p className="text-xs font-semibold text-ink-900">No medications added to this prescription yet</p>
+                    <p className="text-xs font-semibold text-ink-900">{tr("No medications added to this prescription yet")}</p>
                     <p className="mt-1 text-xs text-ink-600">
-                      Click "+ Add Medicine Row" below to prescribe medicines for this consultation.
+                      {tr("Click \"+ Add Medicine Row\" below to prescribe medicines for this consultation.")}
                     </p>
                   </div>
                 ) : (
                   prescriptionItems.map((item) => (
                     <div key={item.id} className="grid grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] items-center gap-2 px-3 py-2 bg-white">
                       <Input inputSize="sm"
-                        aria-label="Medicine Name"
+                        aria-label={tr("Medicine Name")}
                         value={item.medicationName}
                         onChange={(e) => updatePrescriptionRow(item.id, 'medicationName', e.target.value)}
-                        placeholder="e.g. Tab. Amlocard"
+                        placeholder={tr("e.g. Tab. Amlocard")}
                       />
                       <Input inputSize="sm"
-                        aria-label="Dosage"
+                        aria-label={tr("Dosage")}
                         value={item.dosage}
                         onChange={(e) => updatePrescriptionRow(item.id, 'dosage', e.target.value)}
                         placeholder="5mg"
                       />
                       <Input inputSize="sm"
-                        aria-label="Frequency"
+                        aria-label={tr("Frequency")}
                         value={item.frequency}
                         onChange={(e) => updatePrescriptionRow(item.id, 'frequency', e.target.value)}
                         placeholder="1+0+0"
                         className="tabular font-mono"
                       />
                       <Input inputSize="sm"
-                        aria-label="Duration"
+                        aria-label={tr("Duration")}
                         value={item.duration}
                         onChange={(e) => updatePrescriptionRow(item.id, 'duration', e.target.value)}
                         placeholder="30 Days"
                       />
                       <Input inputSize="sm"
-                        aria-label="Instructions"
+                        aria-label={tr("Instructions")}
                         value={item.instructions}
                         onChange={(e) => updatePrescriptionRow(item.id, 'instructions', e.target.value)}
-                        placeholder="After breakfast"
+                        placeholder={tr("After breakfast")}
                       />
                       <button
                         type="button"
-                        aria-label="Delete medicine row"
+                        aria-label={tr("Delete medicine row")}
                         onClick={() => removePrescriptionRow(item.id)}
                         className="grid h-8 w-8 place-items-center rounded-lg transition-colors text-ink-400 hover:bg-rose-50 hover:text-critical focus:outline-none focus-visible:ring-2 focus-visible:ring-critical"
-                        title="Remove medicine row"
+                        title={tr("Remove medicine row")}
                       >
                         <Icon.Trash size={14} />
                       </button>
@@ -598,7 +600,7 @@ export const NewConsultationPage: React.FC = () => {
 
             {/* Quick Frequency Helper Bar */}
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-              <span className="text-[11px] font-semibold text-ink-600">Quick Dosage Frequency:</span>
+              <span className="text-[0.6875rem] font-semibold text-ink-600">{tr('Quick Dosage Frequency')}:</span>
               {[
                 ['1+0+0', 'Morning'],
                 ['1+0+1', 'Morning & Night'],
@@ -615,8 +617,8 @@ export const NewConsultationPage: React.FC = () => {
                       updatePrescriptionRow(lastId, 'frequency', freq);
                     }
                   }}
-                  className="rounded-lg border border-hair bg-white px-2 py-0.5 font-mono text-[11px] font-semibold text-primary-700 hover:bg-slate-50 hover:border-primary-600 transition-colors"
-                  title={`Apply ${freq} (${tip}) to row`}
+                  className="rounded-lg border border-hair bg-white px-2 py-0.5 font-mono text-[0.6875rem] font-semibold text-primary-700 hover:bg-slate-50 hover:border-primary-600 transition-colors"
+                  title={tr('Apply {freq} ({tip}) to row', { freq, tip: tr(tip) })}
                 >
                   {freq}
                 </button>
@@ -629,26 +631,26 @@ export const NewConsultationPage: React.FC = () => {
               onClick={addPrescriptionRow}
               className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-hair-strong py-2.5 text-xs font-semibold text-primary-700 transition-colors hover:border-primary-600 hover:bg-primary-50"
             >
-              <Icon.Plus size={15} /> Add Medicine Row
+              <Icon.Plus size={15} /> {tr("Add Medicine Row")}
             </button>
 
             {/* Lifestyle & Dietary Advice */}
             <div>
               <label className="block text-xs font-semibold text-ink-900">
-                Lifestyle &amp; Dietary Advice
+                {tr("Lifestyle & Dietary Advice")}
               </label>
               <Textarea
                 rows={3}
                 value={rxInstructions}
                 onChange={(e) => setRxInstructions(e.target.value)}
-                placeholder="e.g. Low sodium diet, brisk walking 30 minutes daily, monitor BP twice weekly."
+                placeholder={tr("e.g. Low sodium diet, brisk walking 30 minutes daily, monitor BP twice weekly.")}
                 className="mt-1.5"
               />
             </div>
 
             {/* Follow-up recommendation */}
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-hair bg-canvas p-3">
-              <label htmlFor="follow-up-date" className="text-xs font-semibold text-ink-900">Scheduled Chamber Follow-up</label>
+              <label htmlFor="follow-up-date" className="text-xs font-semibold text-ink-900">{tr("Scheduled Chamber Follow-up")}</label>
               <Input inputSize="sm"
                 id="follow-up-date"
                 type="date"
@@ -660,7 +662,7 @@ export const NewConsultationPage: React.FC = () => {
             {/* Diagnostic Laboratory Requisition */}
             <div className="rounded-xl border border-hair bg-canvas p-4">
               <p className="text-xs font-semibold text-ink-900">
-                Diagnostic Laboratory Requisition
+                {tr("Diagnostic Laboratory Requisition")}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {PRESET_LABS.map((lab) => {
@@ -696,12 +698,12 @@ export const NewConsultationPage: React.FC = () => {
             {chiefComplaint.trim() ? (
               <>
                 <Icon.Check size={16} className="text-success" />
-                <span>Ready to issue</span>
+                <span>{tr("Ready to issue")}</span>
               </>
             ) : (
               <>
                 <Icon.Alert size={16} className="text-warning" />
-                <span>Add the chief complaint to issue this prescription</span>
+                <span>{tr("Add the chief complaint to issue this prescription")}</span>
               </>
             )}
           </p>
@@ -712,7 +714,7 @@ export const NewConsultationPage: React.FC = () => {
               onClick={() => navigate('/doctor')}
               className="flex-1 sm:flex-none"
             >
-              Cancel
+              {tr("Cancel")}
             </Button>
             <Button
               variant="primary"
@@ -722,7 +724,7 @@ export const NewConsultationPage: React.FC = () => {
               icon={<Icon.Lock size={16} />}
               className="flex-1 sm:flex-none"
             >
-              {isSubmitting ? 'Digitally Signing & Issuing...' : 'Finalize, Digitally Sign & Issue Prescription'}
+              {isSubmitting ? 'Digitally Signing & Issuing...' : tr('Finalize, Digitally Sign & Issue Prescription')}
             </Button>
           </div>
         </div>

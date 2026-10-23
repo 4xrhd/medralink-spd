@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
@@ -8,7 +9,8 @@ import api from '../services/api.js';
 import { Card, Icon, Pill, Badge, MetricCard, EmptyState } from '../ui/primitives.js';
 
 export const DoctorDashboard: React.FC = () => {
-  useDocumentTitle('Physician Portal - Clinical Workspace');
+  const { t: tr } = useLanguage();
+  useDocumentTitle(tr('Physician Portal - Clinical Workspace'));
   const toast = useToast();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -77,7 +79,7 @@ export const DoctorDashboard: React.FC = () => {
       .catch((err) => {
         if (active) {
           console.error('Patient search error:', err);
-          toast.error('Failed to search patients from clinical registry.');
+          toast.error(tr('Failed to search patients from clinical registry.'));
         }
       })
       .finally(() => {
@@ -123,13 +125,13 @@ export const DoctorDashboard: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-primary-700">{greeting}</span>
+                <span className="text-xs font-semibold text-primary-700">{tr(greeting)}</span>
                 <span className="text-xs text-ink-400">•</span>
                 <span className="text-xs text-ink-600 font-medium">{currentDateStr}</span>
               </div>
               <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-ink-900">{doctorName}</h1>
               <p className="mt-0.5 text-sm text-ink-600">
-                BMDC License: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span> • {hospitalName}
+                {tr('BMDC License')}: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span> • {hospitalName}
               </p>
             </div>
           </div>
@@ -148,11 +150,11 @@ export const DoctorDashboard: React.FC = () => {
               <Icon.Search size={20} className="text-ink-400" />
             )}
             <input
-              aria-label="Search patients"
+              aria-label={tr("Search patients")}
               value={searchQuery}
               onChange={(e) => handleSearchInput(e.target.value)}
               onFocus={() => setSearchFocused(true)}
-              placeholder="Search patients by name, ID or phone"
+              placeholder={tr("Search patients by name, ID or phone")}
               className="w-full bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-400"
             />
             {searchQuery && (
@@ -164,7 +166,7 @@ export const DoctorDashboard: React.FC = () => {
                 }}
                 className="rounded-lg px-2 py-1 text-xs font-semibold text-ink-400 hover:bg-slate-100 hover:text-ink-600 transition-colors"
               >
-                Clear
+                {tr("Clear")}
               </button>
             )}
           </div>
@@ -175,17 +177,17 @@ export const DoctorDashboard: React.FC = () => {
               <div className="flex items-center justify-between border-b border-hair bg-canvas px-5 py-3">
                 <p className="text-xs font-semibold text-ink-900">
                   {isSearching
-                    ? 'Searching database...'
+                    ? tr('Searching database...')
                     : searchResults.length > 0
                     ? `${searchResults.length} Matching Patient Records`
-                    : 'Search Results'}
+                    : tr('Search Results')}
                 </p>
                 <button
                   type="button"
                   onClick={() => setSearchFocused(false)}
                   className="rounded-lg px-2 py-0.5 text-xs font-semibold text-ink-600 hover:bg-slate-200 transition-colors"
                 >
-                  Close [Esc]
+                  {tr('Close [Esc]')}
                 </button>
               </div>
 
@@ -194,7 +196,7 @@ export const DoctorDashboard: React.FC = () => {
                   {searchResults.map((pt) => {
                     const initials = pt.full_name
                       ? pt.full_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
-                      : 'PT';
+                      : tr('PT');
                     return (
                       <div key={pt.id} className="flex flex-wrap items-center justify-between gap-4 p-5 hover:bg-canvas transition-colors">
                         <div className="flex items-center gap-3.5">
@@ -206,9 +208,9 @@ export const DoctorDashboard: React.FC = () => {
                               {pt.full_name} <span className="ml-1 font-mono text-xs font-semibold text-primary-700 bg-primary-50 px-2 py-0.5 rounded-md">{pt.patient_uid}</span>
                             </p>
                             <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                              <Pill tone="crimson">{pt.blood_group || 'Blood N/A'}</Pill>
+                              <Pill tone="crimson">{pt.blood_group || tr('Blood N/A')}</Pill>
                               <span className="text-xs text-ink-600">
-                                {pt.gender} • {pt.date_of_birth ? `${new Date().getFullYear() - new Date(pt.date_of_birth).getFullYear()} Yrs` : 'Adult'}
+                                {pt.gender} • {pt.date_of_birth ? `${new Date().getFullYear() - new Date(pt.date_of_birth).getFullYear()} Yrs` : tr('Adult')}
                               </span>
                               <span className="text-xs font-mono text-ink-600">📱 {pt.phone}</span>
                             </div>
@@ -220,13 +222,13 @@ export const DoctorDashboard: React.FC = () => {
                             to={`/patient/timeline/${pt.id}`}
                             className="min-h-[36px] inline-flex items-center justify-center rounded-xl border border-hair bg-white px-3.5 py-1.5 text-xs font-semibold text-primary-700 transition-all hover:border-hair-strong hover:bg-slate-50"
                           >
-                            Review Timeline
+                            {tr("Review Timeline")}
                           </Link>
                           <Link
                             to={`/doctor/new-consultation?patientId=${pt.id}`}
                             className="min-h-[36px] inline-flex items-center justify-center rounded-xl bg-primary-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary-800"
                           >
-                            Open Consultation
+                            {tr("Open Consultation")}
                           </Link>
                         </div>
                       </div>
@@ -237,8 +239,8 @@ export const DoctorDashboard: React.FC = () => {
                 <div className="p-4">
                   <EmptyState
                     icon={<Icon.Search size={22} />}
-                    title={`No patient records matching "${searchQuery}"`}
-                    description="Try searching by full Medra-UID, mobile phone number, or national identification."
+                    title={tr('No patient records matching "{query}"', { query: searchQuery })}
+                    description={tr("Try searching by full Medra-UID, mobile phone number, or national identification.")}
                   />
                 </div>
               ) : null}
@@ -249,27 +251,27 @@ export const DoctorDashboard: React.FC = () => {
         {/* 4 Standardized Metric KPI Cards */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 [&>*:first-child]:col-span-2 lg:[&>*:first-child]:col-span-1">
           <MetricCard
-            title="Today's Appointment Queue"
+            title={tr("Today's Appointment Queue")}
             value={data?.stats?.todayAppointmentsCount || 0}
-            subtext="Patients waiting"
+            subtext={tr("Patients waiting")}
             icon={<Icon.Clock size={22} />}
             iconTone="blue"
-            status={{ label: "Live Queue", tone: "blue" }}
+            status={{ label: tr("Live Queue"), tone: "blue" }}
           />
 
           <MetricCard
-            title="Total Consultations"
+            title={tr("Total Consultations")}
             value={data?.stats?.totalConsultations || 0}
-            subtext="Visits logged to date"
+            subtext={tr("Visits logged to date")}
             icon={<Icon.CheckCircle size={22} />}
             iconTone="emerald"
-            status={{ label: "Active", tone: "emerald" }}
+            status={{ label: tr("Active"), tone: "emerald" }}
           />
 
           <MetricCard
-            title="E-Prescriptions Issued"
+            title={tr("E-Prescriptions Issued")}
             value={data?.stats?.totalPrescriptionsIssued || 0}
-            subtext="Cryptographically signed"
+            subtext={tr("Cryptographically signed")}
             icon={<Icon.File size={22} />}
             iconTone="purple"
           />
@@ -285,7 +287,7 @@ export const DoctorDashboard: React.FC = () => {
                 <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                   <Icon.Clock size={16} />
                 </div>
-                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Today's Scheduled Consultations</h2>
+                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">{tr("Today's Scheduled Consultations")}</h2>
               </div>
             </div>
 
@@ -302,14 +304,14 @@ export const DoctorDashboard: React.FC = () => {
                         <span className="text-sm font-bold text-ink-900">{apt.patient_name}</span>
                         <span className="font-mono text-xs text-ink-400">({apt.patient_uid})</span>
                       </div>
-                      <p className="mt-1 text-xs text-ink-600">{apt.reason || 'General Follow-up Consultation'}</p>
+                      <p className="mt-1 text-xs text-ink-600">{apt.reason || tr('General Follow-up Consultation')}</p>
                     </div>
 
                     <Link
                       to={`/doctor/new-consultation?patientId=${apt.patient_id}&appointmentId=${apt.id}`}
                       className="rounded-lg bg-primary-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-800"
                     >
-                      Consult Now
+                      {tr("Consult Now")}
                     </Link>
                   </div>
                 ))
@@ -317,13 +319,13 @@ export const DoctorDashboard: React.FC = () => {
                 <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-hair-strong bg-canvas px-6 py-8 text-center">
                   <img
                     src="/assets/queue_empty.png"
-                    alt="All clinical appointments completed"
+                    alt={tr("All clinical appointments completed")}
                     className="mb-3 h-24 w-auto object-contain transition-transform duration-200 hover:scale-105"
                     loading="lazy"
                   />
-                  <p className="text-sm font-bold text-ink-900">No appointments pending in queue</p>
+                  <p className="text-sm font-bold text-ink-900">{tr("No appointments pending in queue")}</p>
                   <p className="mt-1 max-w-xs text-xs text-ink-600">
-                    All patient consultations for this clinical shift are completed or ready for check-in.
+                    {tr("All patient consultations for this clinical shift are completed or ready for check-in.")}
                   </p>
                 </div>
               )}
@@ -337,7 +339,7 @@ export const DoctorDashboard: React.FC = () => {
                 <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success">
                   <Icon.Stethoscope size={16} />
                 </div>
-                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Recent Clinical Records Logged</h2>
+                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">{tr("Recent Clinical Records Logged")}</h2>
               </div>
             </div>
 
@@ -364,7 +366,7 @@ export const DoctorDashboard: React.FC = () => {
                         to={`/patient/timeline/${c.patient_id}`}
                         className="rounded-lg border border-hair px-3 py-1.5 text-xs font-semibold text-primary-700 hover:border-hair-strong"
                       >
-                        Timeline
+                        {tr("Timeline")}
                       </Link>
                       {c.prescription_id && (
                         <Link
@@ -382,9 +384,9 @@ export const DoctorDashboard: React.FC = () => {
                   <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-success">
                     <Icon.Stethoscope size={20} />
                   </div>
-                  <p className="text-sm font-bold text-ink-900">No consultations logged yet</p>
+                  <p className="text-sm font-bold text-ink-900">{tr("No consultations logged yet")}</p>
                   <p className="mt-1 text-xs text-ink-600">
-                    New consultations completed in this session will appear here in real-time.
+                    {tr("New consultations completed in this session will appear here in real-time.")}
                   </p>
                 </div>
               )}
@@ -400,7 +402,7 @@ export const DoctorDashboard: React.FC = () => {
                   <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
                     <Icon.Activity size={16} />
                   </div>
-                  <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">Clinical Quick Actions</h2>
+                  <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">{tr("Clinical Quick Actions")}</h2>
                 </div>
               </div>
 
@@ -414,8 +416,8 @@ export const DoctorDashboard: React.FC = () => {
                       <Icon.Plus size={16} />
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-bold">New Walk-In Consultation</p>
-                      <p className="text-xs text-primary-100">Ad-hoc patient intake &amp; prescription</p>
+                      <p className="text-sm font-bold">{tr("New Walk-In Consultation")}</p>
+                      <p className="text-xs text-primary-100">{tr("Ad-hoc patient intake & prescription")}</p>
                     </div>
                   </div>
                   <Icon.Arrow size={14} className="text-blue-200" />
@@ -434,11 +436,11 @@ export const DoctorDashboard: React.FC = () => {
                       <Icon.Search size={15} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-ink-900">Lookup Medical Archive</p>
-                      <p className="text-[11px] text-ink-600">Search by NID or Medra-UID</p>
+                      <p className="text-xs font-bold text-ink-900">{tr("Lookup Medical Archive")}</p>
+                      <p className="text-[0.6875rem] text-ink-600">{tr("Search by NID or Medra-UID")}</p>
                     </div>
                   </div>
-                  <span className="font-mono text-[10px] text-ink-400 border border-hair px-1.5 py-0.5 rounded bg-white">⌘K</span>
+                  <span className="font-mono text-[0.625rem] text-ink-400 border border-hair px-1.5 py-0.5 rounded bg-white">⌘K</span>
                 </button>
               </div>
             </Card>

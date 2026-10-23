@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
@@ -6,6 +7,7 @@ import api, { getApiErrorMessage } from '../services/api.js';
 import { Icon } from '../ui/primitives.js';
 
 function QR() {
+  const { t: tr } = useLanguage();
   // Deterministic pseudo-random QR-style grid matching Figma
   const cells = [];
   for (let i = 0; i < 121; i++) {
@@ -22,7 +24,8 @@ function QR() {
 }
 
 export const PrescriptionViewPage: React.FC = () => {
-  useDocumentTitle('Official Digital Prescription');
+  const { t: tr } = useLanguage();
+  useDocumentTitle(tr('Official Digital Prescription'));
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -36,7 +39,7 @@ export const PrescriptionViewPage: React.FC = () => {
         const res = await api.get(`/prescriptions/${id}`);
         setData(res.data.data);
       } catch (err: any) {
-        setError(getApiErrorMessage(err, 'Failed to load prescription.'));
+        setError(getApiErrorMessage(err, tr('Failed to load prescription.')));
       } finally {
         setLoading(false);
       }
@@ -57,12 +60,12 @@ export const PrescriptionViewPage: React.FC = () => {
       <div className="min-h-screen bg-ink-600 px-4 py-16 text-center text-white">
         <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl">
           <Icon.Alert size={36} className="mx-auto text-rose-400 mb-3" />
-          <p className="text-sm font-semibold">{error || 'Prescription record not found.'}</p>
+          <p className="text-sm font-semibold">{error || tr('Prescription record not found.')}</p>
           <Link
             to="/"
             className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-semibold text-primary-700 hover:bg-slate-100"
           >
-            <Icon.Arrow size={14} className="rotate-180" /> Return to Workstation
+            <Icon.Arrow size={14} className="rotate-180" /> {tr("Return to Workstation")}
           </Link>
         </div>
       </div>
@@ -133,7 +136,7 @@ export const PrescriptionViewPage: React.FC = () => {
           }}
           className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white"
         >
-          <Icon.Arrow size={14} className="rotate-180" /> Back to Records
+          <Icon.Arrow size={14} className="rotate-180" /> {tr("Back to Records")}
         </button>
         <div className="flex items-center gap-2">
           <button
@@ -141,7 +144,7 @@ export const PrescriptionViewPage: React.FC = () => {
             onClick={() => window.print()}
             className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-white/10 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white"
           >
-            <Icon.Download size={14} /> Print Document
+            <Icon.Download size={14} /> {tr("Print Document")}
           </button>
           <a
             href={pdfDownloadUrl}
@@ -149,7 +152,7 @@ export const PrescriptionViewPage: React.FC = () => {
             rel="noreferrer"
             className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-white px-3.5 py-2 text-xs font-semibold text-primary-700 shadow-sm transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-primary-600"
           >
-            <Icon.Download size={14} /> Official PDF (℞)
+            <Icon.Download size={14} /> {tr("Official PDF (℞)")}
           </a>
         </div>
       </div>
@@ -159,17 +162,17 @@ export const PrescriptionViewPage: React.FC = () => {
         {/* Header banner */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-primary-700 px-6 sm:px-8 py-5 text-white">
           <div className="flex items-center gap-3">
-            <img src="/logo-mark.png" alt="MedraLink Logo" className="h-11 w-11 object-contain shrink-0" />
+            <img src="/logo-mark.png" alt={tr("MedraLink Logo")} className="h-11 w-11 object-contain shrink-0" />
             <div>
-              <p className="font-display text-lg sm:text-xl font-bold tracking-tight leading-tight">MedraLink Clinical Health System</p>
-              <p className="text-xs text-primary-200">National Digital E-Prescription Registry</p>
+              <p className="font-display text-lg sm:text-xl font-bold tracking-tight leading-tight">{tr("MedraLink Clinical Health System")}</p>
+              <p className="text-xs text-primary-200">{tr("National Digital E-Prescription Registry")}</p>
             </div>
           </div>
           <div className="text-left sm:text-right">
             <span className="rounded-md bg-white/20 px-2.5 py-1 font-mono text-xs font-bold text-white">
-              Rx ID: {data.prescription_uid}
+              {tr('Rx ID')}: {data.prescription_uid}
             </span>
-            <p className="mt-1.5 text-xs text-primary-200">Issued: {issueDateFormatted}</p>
+            <p className="mt-1.5 text-xs text-primary-200">{tr('Issued: {date}', { date: issueDateFormatted })}</p>
           </div>
         </div>
 
@@ -181,13 +184,13 @@ export const PrescriptionViewPage: React.FC = () => {
               <p className="text-xs font-medium text-ink-600">{qualifications}</p>
               <p className="text-xs font-semibold text-primary-700">{specialization}</p>
               <p className="mt-1 font-mono text-xs text-ink-600">
-                BMDC Registration No: {doctorLicense}
+                {tr('BMDC Registration No')}: {doctorLicense}
               </p>
             </div>
             <div className="text-left sm:text-right text-xs text-ink-600">
-              <p className="font-semibold text-ink-900">Chamber: {hospitalAffiliation}</p>
+              <p className="font-semibold text-ink-900">{tr('Chamber')}: {hospitalAffiliation}</p>
               <p>{chamberDetails}</p>
-              <p className="mt-1 font-mono text-xs text-ink-600">Tel: {doctorPhone}</p>
+              <p className="mt-1 font-mono text-xs text-ink-600">{tr('Tel')}: {doctorPhone}</p>
             </div>
           </div>
 
@@ -216,7 +219,7 @@ export const PrescriptionViewPage: React.FC = () => {
               <p className="text-ink-600">
                 <span className="font-semibold text-ink-900">Vitals: </span>
                 <span className="tabular">
-                  BP: {data.vitals.systolic_bp && data.vitals.diastolic_bp ? `${data.vitals.systolic_bp}/${data.vitals.diastolic_bp} mmHg` : '-'}
+                  {tr('BP')}: {data.vitals.systolic_bp && data.vitals.diastolic_bp ? `${data.vitals.systolic_bp}/${data.vitals.diastolic_bp} mmHg` : '-'}
                   {data.vitals.heart_rate ? ` | Pulse: ${data.vitals.heart_rate} bpm` : ''}
                   {data.vitals.temperature ? ` | Temp: ${data.vitals.temperature}°C` : ''}
                   {data.vitals.weight_kg ? ` | Weight: ${data.vitals.weight_kg} kg` : ''}
@@ -231,11 +234,11 @@ export const PrescriptionViewPage: React.FC = () => {
                 data.diagnoses.map((d: any) => (
                   <span key={d.id || d.icd10_code} className="mr-2">
                     ICD-10: [{d.icd10_code}] {d.diagnosis_title}{' '}
-                    <span className="font-medium text-success">({d.severity || 'Active'})</span>
+                    <span className="font-medium text-success">({d.severity || tr('Active')})</span>
                   </span>
                 ))
               ) : (
-                <span className="text-ink-600 italic">None recorded</span>
+                <span className="text-ink-600 italic">{tr("None recorded")}</span>
               )}
             </p>
           </div>
@@ -252,18 +255,18 @@ export const PrescriptionViewPage: React.FC = () => {
                 <thead>
                   <tr className="border-b border-hair-strong text-left text-xs font-semibold text-ink-600">
                     <th className="w-6 py-2 font-bold">#</th>
-                    <th className="py-2 font-bold">Medicine Name &amp; Generic</th>
-                    <th className="py-2 font-bold">Dosage</th>
-                    <th className="py-2 font-bold">Frequency</th>
-                    <th className="py-2 font-bold">Duration</th>
-                    <th className="py-2 font-bold">Instructions</th>
+                    <th className="py-2 font-bold">{tr("Medicine Name & Generic")}</th>
+                    <th className="py-2 font-bold">{tr("Dosage")}</th>
+                    <th className="py-2 font-bold">{tr("Frequency")}</th>
+                    <th className="py-2 font-bold">{tr("Duration")}</th>
+                    <th className="py-2 font-bold">{tr("Instructions")}</th>
                   </tr>
                 </thead>
                 <tbody className="text-ink-900">
                   {items.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-6 text-center text-xs text-ink-600">
-                        No medications prescribed in this session.
+                        {tr("No medications prescribed in this session.")}
                       </td>
                     </tr>
                   ) : (
@@ -273,7 +276,7 @@ export const PrescriptionViewPage: React.FC = () => {
                         <td className="py-2.5 pr-2">
                           <p className="font-semibold text-ink-900">{item.medication_name}</p>
                           {item.generic_name && (
-                            <p className="text-[10px] text-ink-600">({item.generic_name})</p>
+                            <p className="text-[0.625rem] text-ink-600">({item.generic_name})</p>
                           )}
                         </td>
                         <td className="py-2.5 tabular">{item.dosage}</td>
@@ -281,7 +284,7 @@ export const PrescriptionViewPage: React.FC = () => {
                           <span className="font-mono font-semibold text-primary-700">{item.frequency}</span>
                         </td>
                         <td className="py-2.5 tabular">{item.duration}</td>
-                        <td className="py-2.5 text-ink-600">{item.instructions || 'As directed'}</td>
+                        <td className="py-2.5 text-ink-600">{item.instructions || tr('As directed')}</td>
                       </tr>
                     ))
                   )}
@@ -292,16 +295,16 @@ export const PrescriptionViewPage: React.FC = () => {
             {/* Advice & Follow-up */}
             <div className="mt-5 rounded-lg bg-canvas p-3.5 border border-hair">
               <p className="text-xs font-semibold text-ink-900">
-                Physician's Clinical Advice
+                {tr("Physician's Clinical Advice")}
               </p>
               <p className="mt-1 text-xs text-ink-900 leading-relaxed">
-                {data.instructions || 'Continue prescribed medications as advised. Maintain routine follow-up.'}
+                {data.instructions || tr('Continue prescribed medications as advised. Maintain routine follow-up.')}
               </p>
               {data.follow_up_date && (
                 <p className="mt-2 text-xs">
                   <span className="font-semibold text-primary-700">Follow-up: </span>
                   <span className="text-ink-600">
-                    Review in chamber on {new Date(data.follow_up_date).toLocaleDateString()}.
+                    {tr('Review in chamber on {date}.', { date: new Date(data.follow_up_date).toLocaleDateString() })}
                   </span>
                 </p>
               )}
@@ -313,10 +316,10 @@ export const PrescriptionViewPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <QR />
               <div className="max-w-[190px]">
-                <p className="text-[10px] leading-relaxed text-ink-600">
-                  Authenticated electronic medical record generated via MedraLink Clinical Infrastructure. Scan to verify on national registry.
+                <p className="text-[0.625rem] leading-relaxed text-ink-600">
+                  {tr("Authenticated electronic medical record generated via MedraLink Clinical Infrastructure. Scan to verify on national registry.")}
                 </p>
-                <p className="mt-0.5 font-mono text-[9px] text-ink-400">
+                <p className="mt-0.5 font-mono text-[0.5625rem] text-ink-400">
                   SHA-256: {data.prescription_uid ? `${data.prescription_uid.toLowerCase()}-verified` : 'Record Verified'}
                 </p>
               </div>
@@ -326,7 +329,7 @@ export const PrescriptionViewPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <img
                 src="/assets/verified_seal.png"
-                alt="MedraLink Cryptographically Verified Seal"
+                alt={tr("MedraLink Cryptographically Verified Seal")}
                 className="h-16 w-16 shrink-0 object-contain opacity-95 transition-opacity hover:opacity-100"
                 loading="lazy"
               />
@@ -336,10 +339,10 @@ export const PrescriptionViewPage: React.FC = () => {
                     {doctorName.replace('Dr. ', '')}
                   </span>
                 </div>
-                <p className="inline-flex items-center gap-1 text-[10px] font-semibold text-success">
-                  <Icon.Lock size={11} /> Cryptographically Signed
+                <p className="inline-flex items-center gap-1 text-[0.625rem] font-semibold text-success">
+                  <Icon.Lock size={11} /> {tr("Cryptographically Signed")}
                 </p>
-                <p className="text-[10px] text-ink-600">{doctorName} • {doctorLicense}</p>
+                <p className="text-[0.625rem] text-ink-600">{doctorName} • {doctorLicense}</p>
               </div>
             </div>
           </div>

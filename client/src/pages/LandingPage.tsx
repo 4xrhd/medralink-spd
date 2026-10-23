@@ -219,7 +219,7 @@ export const LandingPage: React.FC = () => {
                   <div className="flex items-center gap-1.5">
                     <Icon.Capsule size={15} /> {tr("Prescription")}
                   </div>
-                  <span className="font-mono text-[10px] text-emerald-700">{tr("QR code attached")}</span>
+                  <span className="font-mono text-[0.625rem] text-emerald-700">{tr("QR code attached")}</span>
                 </div>
                 <div className="space-y-1.5 text-xs text-ink-900 font-medium">
                   <div className="flex flex-wrap justify-between gap-x-3 tabular">
@@ -431,7 +431,7 @@ export const LandingPage: React.FC = () => {
                   {icon}
                 </div>
                 <p className="mt-4 font-display text-lg font-semibold">{tr(t as string)}</p>
-                <p className="mt-1.5 text-[15px] leading-relaxed text-slate-300">{tr(b as string)}</p>
+                <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-slate-300">{tr(b as string)}</p>
               </div>
             ))}
           </div>

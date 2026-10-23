@@ -344,7 +344,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes: Record<string, string> = {
-      sm: "min-h-[36px] h-9 px-3.5 text-[13px] gap-1.5 rounded-lg font-semibold",
+      sm: "min-h-[36px] h-9 px-3.5 text-[0.8125rem] gap-1.5 rounded-lg font-semibold",
       md: "min-h-[40px] h-10 px-4 text-sm gap-2 rounded-xl font-semibold",
       lg: "min-h-[48px] h-12 px-5 text-base gap-2.5 rounded-xl font-semibold",
     };
