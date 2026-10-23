@@ -152,7 +152,7 @@ export const DoctorDashboard: React.FC = () => {
               value={searchQuery}
               onChange={(e) => handleSearchInput(e.target.value)}
               onFocus={() => setSearchFocused(true)}
-              placeholder="Search Patient by Medra-UID, National ID, Name, or Mobile Number..."
+              placeholder="Search patients by name, ID or phone"
               className="w-full bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-400"
             />
             {searchQuery && (
@@ -247,7 +247,7 @@ export const DoctorDashboard: React.FC = () => {
         </div>
 
         {/* 4 Standardized Metric KPI Cards */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 [&>*:first-child]:col-span-2 lg:[&>*:first-child]:col-span-1">
           <MetricCard
             title="Today's Appointment Queue"
             value={data?.stats?.todayAppointmentsCount || 0}

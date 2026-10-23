@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
-import { Icon } from '../ui/primitives.js';
+import React, { useRef } from 'react';
+import { Button, Icon } from '../ui/primitives.js';
+import { Modal } from '../ui/modal.js';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -17,7 +18,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
   isOpen,
   title,
   message,
-  confirmLabel = 'Confirm Action',
+  confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   isDestructive = false,
   isLoading = false,
@@ -26,87 +27,41 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 }) => {
   const confirmBtnRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      // Focus confirm button when opened
-      setTimeout(() => {
-        confirmBtnRef.current?.focus();
-      }, 50);
-
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && !isLoading) {
-          onCancel();
-        }
-      };
-
-      document.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.removeEventListener('keydown', handleKeyDown);
-      };
-    }
-  }, [isOpen, isLoading, onCancel]);
-
-  if (!isOpen) return null;
-
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-modal-title"
-      aria-describedby="confirm-modal-desc"
-      className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
-    >
-      <div
-        className="w-full max-w-md rounded-2xl border border-hair bg-white p-6 shadow-2xl animate-in zoom-in-95 duration-150"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start gap-3.5">
-          <div
-            className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl border ${
-              isDestructive
-                ? 'bg-rose-50 border-rose-200 text-critical'
-                : 'bg-primary-50 border-primary-100 text-primary-700'
-            }`}
-          >
-            {isDestructive ? <Icon.Alert size={20} /> : <Icon.Shield size={20} />}
-          </div>
-
-          <div className="flex-1">
-            <h2 id="confirm-modal-title" className="font-display text-base font-bold text-ink-900">
-              {title}
-            </h2>
-            <div id="confirm-modal-desc" className="mt-2 text-xs sm:text-sm text-ink-600 leading-relaxed">
-              {message}
-            </div>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onCancel}
+      title={title}
+      description={message}
+      size="sm"
+      dismissible={!isLoading}
+      initialFocusRef={confirmBtnRef}
+      icon={
+        <div
+          className={`grid h-10 w-10 place-items-center rounded-xl border ${
+            isDestructive ? 'border-rose-200 bg-rose-50 text-critical' : 'border-primary-100 bg-primary-50 text-primary-700'
+          }`}
+        >
+          {isDestructive ? <Icon.Alert size={20} /> : <Icon.Shield size={20} />}
         </div>
-
-        <div className="mt-6 flex flex-wrap items-center justify-end gap-2.5 sm:gap-3 border-t border-hair pt-4">
-          <button
-            type="button"
-            disabled={isLoading}
-            onClick={onCancel}
-            className="inline-flex min-h-[38px] items-center justify-center rounded-xl border border-hair bg-white px-4 py-2 text-xs font-semibold text-ink-900 shadow-xs hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 disabled:opacity-50"
-          >
+      }
+      footer={
+        <>
+          <Button variant="secondary" size="sm" disabled={isLoading} onClick={onCancel}>
             {cancelLabel}
-          </button>
-          <button
+          </Button>
+          <Button
             ref={confirmBtnRef}
-            type="button"
-            disabled={isLoading}
+            variant={isDestructive ? 'destructive' : 'primary'}
+            size="sm"
+            isLoading={isLoading}
             onClick={onConfirm}
-            className={`inline-flex min-h-[38px] items-center justify-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold text-white shadow-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 ${
-              isDestructive
-                ? 'bg-critical hover:bg-rose-700 focus-visible:ring-critical'
-                : 'bg-primary-600 hover:bg-primary-700 focus-visible:ring-primary-600'
-            }`}
           >
-            {isLoading && <Icon.Loader size={14} className="text-white shrink-0 animate-spin" />}
-            <span>{confirmLabel}</span>
-          </button>
-        </div>
-      </div>
-    </div>
+            {confirmLabel}
+          </Button>
+        </>
+      }
+    />
   );
 };
 

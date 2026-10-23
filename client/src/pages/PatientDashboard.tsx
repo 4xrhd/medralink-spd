@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Select } from '../ui/forms.js';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
@@ -195,7 +196,7 @@ export const PatientDashboard: React.FC = () => {
         </Card>
 
         {/* 4-Metric Row with MetricCard */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
             title="Total Consultations"
             value={data?.stats?.totalVisits ?? '3'}
@@ -413,16 +414,17 @@ export const PatientDashboard: React.FC = () => {
                   <label htmlFor="dashboard-hospital-specialty" className="mb-1 block font-semibold text-rose-900">
                     Specialization
                   </label>
-                  <select
+                  <Select
                     id="dashboard-hospital-specialty"
                     value={hospitalSpecialty}
                     onChange={(e) => setHospitalSpecialty(e.target.value)}
-                    className="mb-2 h-9 w-full rounded-lg border border-rose-200 bg-white px-2 text-xs text-ink-900 outline-none focus:ring-2 focus:ring-rose-200"
+                    selectSize="sm"
+                    className="mb-2"
                   >
                     {SPECIALTIES.map((s) => (
                       <option key={s.value} value={s.value}>{s.label}</option>
                     ))}
-                  </select>
+                  </Select>
                   <Link
                     to={hospitalSpecialty ? `/hospitals?specialty=${hospitalSpecialty}` : '/hospitals'}
                     className="flex items-center justify-center gap-2 w-full rounded-xl bg-rose-700 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-rose-800 active:scale-[0.98]"

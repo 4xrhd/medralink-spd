@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, Select } from '../ui/forms.js';
 import { useSearchParams } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Icon } from '../ui/primitives.js';
@@ -239,25 +240,23 @@ export const HospitalSearchPage: React.FC = () => {
             <Icon.Stethoscope size={16} className="text-primary-700" />
             Specialization
           </label>
-          <select
+          <Select
             id="hospital-specialty"
             value={specialty}
             onChange={(e) => setSpecialty(e.target.value as SpecialtyValue)}
-            className="h-10 w-full rounded-xl border border-hair-strong bg-white px-3 text-sm text-ink-900 outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-100 sm:w-72"
+            className="sm:w-72"
           >
             {SPECIALTIES.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
-          </select>
+          </Select>
         </div>
 
         {/* Free OpenStreetMap map (no API key) */}
         <HospitalMap center={userLocation} hospitals={hospitals} selectedId={selectedId} onSelect={selectHospital} />
 
         {searchError && (
-          <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800">
-            {searchError}
-          </p>
+          <Alert>{searchError}</Alert>
         )}
 
         {/* Results Header */}

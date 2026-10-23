@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Alert, Select } from '../ui/forms.js';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
@@ -79,8 +80,6 @@ export const RegisterPage: React.FC = () => {
     }
   };
 
-  const selectCls =
-    'w-full h-11 rounded-xl border border-hair-strong bg-white px-3.5 text-sm text-ink-900 outline-none transition-colors hover:border-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100';
 
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 bg-canvas">
@@ -260,10 +259,7 @@ export const RegisterPage: React.FC = () => {
             </div>
 
             {error && (
-              <div className="mb-5 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs font-medium text-rose-800">
-                <Icon.Alert size={16} className="shrink-0 text-rose-600" />
-                <span>{error}</span>
-              </div>
+              <Alert className="mb-5">{error}</Alert>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -342,24 +338,22 @@ export const RegisterPage: React.FC = () => {
                   </FormField>
 
                   <FormField label="Gender" htmlFor="reg-gender">
-                    <select
+                    <Select
                       id="reg-gender"
                       value={gender}
-                      onChange={(e: any) => setGender(e.target.value)}
-                      className={selectCls}
+                      onChange={(e) => setGender(e.target.value as typeof gender)}
                     >
                       <option value="MALE">Male</option>
                       <option value="FEMALE">Female</option>
                       <option value="OTHER">Other</option>
-                    </select>
+                    </Select>
                   </FormField>
 
                   <FormField label="Blood group" htmlFor="reg-bloodgroup">
-                    <select
+                    <Select
                       id="reg-bloodgroup"
                       value={bloodGroup}
                       onChange={(e) => setBloodGroup(e.target.value)}
-                      className={selectCls}
                     >
                       <option value="A+">A+</option>
                       <option value="A-">A-</option>
@@ -369,7 +363,7 @@ export const RegisterPage: React.FC = () => {
                       <option value="AB-">AB-</option>
                       <option value="O+">O+</option>
                       <option value="O-">O-</option>
-                    </select>
+                    </Select>
                   </FormField>
                 </div>
               ) : (

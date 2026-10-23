@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { Select, Switch } from '../ui/forms.js';
+import { DataTable, TBody, THead, Td, Th, Tr } from '../ui/table.js';
 import api, { getApiErrorMessage } from '../services/api.js';
 import { useToast } from '../context/ToastContext.js';
 import { useAuth } from '../context/AuthContext.js';
 import { ConfirmModal } from './ConfirmModal.js';
-import { Button, Card, Icon, Pill } from '../ui/primitives.js';
+import { Button, Card, Icon, Pill, Input, FormField } from '../ui/primitives.js';
 
 interface AdminUser {
   id: string;
@@ -70,53 +72,52 @@ export const AdminUsersPanel: React.FC = () => {
         </div>
         <label className="flex items-center gap-2 text-xs font-semibold text-ink-600">
           Role
-          <select
+          <Select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="rounded-lg border border-hair bg-white px-2 py-1.5 text-xs text-ink-900"
+            selectSize="sm"
+            className="w-auto"
           >
             <option value="">All roles</option>
             <option value="PATIENT">Patient</option>
             <option value="DOCTOR">Doctor</option>
             <option value="ADMIN">Admin</option>
-          </select>
+          </Select>
         </label>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
-          <thead>
-            <tr className="border-b border-hair bg-canvas text-left text-xs font-semibold text-ink-600">
-              <th scope="col" className="px-6 py-2.5">Name</th>
-              <th scope="col" className="px-3 py-2.5">Email</th>
-              <th scope="col" className="px-3 py-2.5">Role</th>
-              <th scope="col" className="px-3 py-2.5">Status</th>
-              <th scope="col" className="px-6 py-2.5 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-hair">
-            {users.map((u) => (
-              <tr key={u.id}>
-                <td className="px-6 py-3 font-semibold text-ink-900">{u.full_name}</td>
-                <td className="px-3 py-3 text-ink-600">{u.email}</td>
-                <td className="px-3 py-3"><Pill tone="slate">{u.role}</Pill></td>
-                <td className="px-3 py-3"><Pill tone={statusTone(u.status)}>{u.status}</Pill></td>
-                <td className="px-6 py-3 text-right">
-                  {u.id !== me?.id && (
-                    <Button
-                      size="sm"
-                      variant={u.status === 'SUSPENDED' ? 'secondary' : 'outline'}
-                      onClick={() => setTarget(u)}
-                      aria-label={`${u.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'} ${u.full_name}`}
-                    >
-                      {u.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
-                    </Button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable caption="User accounts">
+        <THead>
+          <tr>
+            <Th>Name</Th>
+            <Th>Email</Th>
+            <Th>Role</Th>
+            <Th>Status</Th>
+            <Th className="text-right">Action</Th>
+          </tr>
+        </THead>
+        <TBody>
+          {users.map((u) => (
+            <Tr key={u.id}>
+              <Td className="font-semibold">{u.full_name}</Td>
+              <Td className="text-ink-600">{u.email}</Td>
+              <Td><Pill tone="slate">{u.role}</Pill></Td>
+              <Td><Pill tone={statusTone(u.status)}>{u.status}</Pill></Td>
+              <Td className="text-right">
+                {u.id !== me?.id && (
+                  <Button
+                    size="sm"
+                    variant={u.status === 'SUSPENDED' ? 'secondary' : 'outline'}
+                    onClick={() => setTarget(u)}
+                    aria-label={`${u.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'} ${u.full_name}`}
+                  >
+                    {u.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
+                  </Button>
+                )}
+              </Td>
+            </Tr>
+          ))}
+        </TBody>
+      </DataTable>
       <ConfirmModal
         isOpen={Boolean(target)}
         title={target?.status === 'SUSPENDED' ? 'Reactivate account?' : 'Suspend account?'}
@@ -182,21 +183,29 @@ export const AdminSettingsPanel: React.FC = () => {
           <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">System Parameters</h2>
         </div>
         <div className="grid gap-4 px-4 py-5 sm:grid-cols-2 sm:px-6">
-          {settings.map((s) => (
-            <div key={s.key} className="space-y-1.5">
-              <label htmlFor={`setting-${s.key}`} className="block text-xs font-semibold text-ink-900">
-                {s.description}
-              </label>
-              <input
-                id={`setting-${s.key}`}
-                inputMode={s.numeric ? 'numeric' : undefined}
-                pattern={s.numeric ? '[0-9]{1,4}' : undefined}
-                value={draft[s.key] ?? ''}
-                onChange={(e) => setDraft((d) => ({ ...d, [s.key]: e.target.value }))}
-                className="h-10 w-full rounded-xl border border-hair-strong bg-white px-3 text-sm text-ink-900 focus:border-primary-600 focus:ring-2 focus:ring-primary-100 outline-none"
-              />
-            </div>
-          ))}
+          {settings.map((s) =>
+            // On/off settings are switches, so nobody has to type "true"
+            s.value === 'true' || s.value === 'false' ? (
+              <div key={s.key} className="sm:col-span-2">
+                <Switch
+                  id={`setting-${s.key}`}
+                  label={s.description}
+                  checked={draft[s.key] === 'true'}
+                  onChange={(next) => setDraft((d) => ({ ...d, [s.key]: String(next) }))}
+                />
+              </div>
+            ) : (
+              <FormField key={s.key} label={s.description} htmlFor={`setting-${s.key}`}>
+                <Input
+                  id={`setting-${s.key}`}
+                  inputMode={s.numeric ? 'numeric' : undefined}
+                  pattern={s.numeric ? '[0-9]{1,4}' : undefined}
+                  value={draft[s.key] ?? ''}
+                  onChange={(e) => setDraft((d) => ({ ...d, [s.key]: e.target.value }))}
+                />
+              </FormField>
+            )
+          )}
         </div>
         <div className="border-t border-hair px-4 py-3 sm:px-6">
           <Button type="submit" isLoading={saving}>Save settings</Button>

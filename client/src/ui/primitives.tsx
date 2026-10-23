@@ -300,6 +300,7 @@ export const Icon = {
    2. Buttons
    ========================================================================== */
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** "clinical" is an older name for "primary" and renders the same. */
   variant?: "primary" | "clinical" | "secondary" | "outline" | "destructive" | "ghost" | "soft";
   size?: "sm" | "md" | "lg";
   isLoading?: boolean;
@@ -326,11 +327,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles =
       "inline-flex items-center justify-center font-semibold transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]";
 
-    const variants: Record<string, string> = {
+    const variants: Record<Exclude<NonNullable<ButtonProps["variant"]>, "clinical">, string> = {
       primary:
         "bg-primary-700 hover:bg-primary-800 text-white border border-transparent shadow-sm shadow-primary-600/20 focus-visible:ring-primary-600",
-      clinical:
-        "bg-primary-700 hover:bg-primary-800 text-white border border-transparent shadow-sm focus-visible:ring-primary-700",
       secondary:
         "bg-white hover:bg-primary-50 text-ink-900 border border-hair-strong hover:border-primary-300 shadow-subtle focus-visible:ring-primary-600",
       outline:
@@ -355,7 +354,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         disabled={disabled || isLoading}
         aria-busy={isLoading}
-        className={cn(baseStyles, variants[variant], sizes[size], className)}
+        className={cn(baseStyles, variants[variant === "clinical" ? "primary" : variant], sizes[size], className)}
         {...props}
       >
         {isLoading ? (
@@ -504,6 +503,17 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   inputSize?: "sm" | "md";
 }
 
+/** Border, focus and disabled styling shared by every text field, select and textarea. */
+export function fieldClasses(error = false, disabled = false): string {
+  return cn(
+    "w-full border bg-white text-ink-900 outline-none transition-colors duration-150 placeholder:text-ink-400",
+    error
+      ? "border-critical focus:border-critical focus:ring-2 focus:ring-rose-100"
+      : "border-hair-strong hover:border-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100",
+    disabled && "bg-slate-100 text-slate-500 cursor-not-allowed"
+  );
+}
+
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   (
     {
@@ -532,15 +542,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           disabled={disabled}
+          aria-invalid={error || undefined}
           className={cn(
-            "w-full border bg-white text-ink-900 outline-none transition-all duration-150 placeholder:text-ink-400",
+            fieldClasses(error, disabled),
             sizeClasses[inputSize],
             leftIcon && "pl-10",
             rightElement && "pr-10",
-            error
-              ? "border-critical focus:border-critical focus:ring-2 focus:ring-rose-100"
-              : "border-hair-strong hover:border-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100",
-            disabled && "bg-slate-100 text-slate-500 cursor-not-allowed",
             className
           )}
           {...props}

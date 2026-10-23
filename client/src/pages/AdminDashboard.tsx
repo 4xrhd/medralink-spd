@@ -5,7 +5,8 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
 import { useDebounce } from '../hooks/useDebounce.js';
 import { AdminUsersPanel, AdminSettingsPanel } from '../components/AdminPanels.js';
-import { Card, Icon, Pill, Badge, Button, MetricCard } from '../ui/primitives.js';
+import { Card, Icon, Pill, Badge, Button, MetricCard, Input } from '../ui/primitives.js';
+import { DataTable, TBody, THead, Td, Th, Tr } from '../ui/table.js';
 
 export const AdminDashboard: React.FC = () => {
   useDocumentTitle('Enterprise Governance & Audit Ledger');
@@ -158,7 +159,7 @@ export const AdminDashboard: React.FC = () => {
 
       <main className="mx-auto max-w-[1200px] 2xl:max-w-[1720px] space-y-6 px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
         {/* 4 Standardized Metric KPI Cards */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <MetricCard
             title="Registered Patient Records"
             value={stats?.totalPatients ?? 0}
@@ -212,36 +213,35 @@ export const AdminDashboard: React.FC = () => {
             </Pill>
           </div>
 
-          <div className="overflow-x-auto" aria-label="Physician credential table">
-            <table className="min-w-[900px] w-full text-sm">
-              <thead>
-                <tr className="border-b border-hair bg-canvas text-left text-xs font-semibold text-ink-600">
-                  <th className="px-6 py-3 font-semibold">Doctor Name &amp; UID</th>
-                  <th className="px-4 py-3 font-semibold">BMDC License</th>
-                  <th className="px-4 py-3 font-semibold">Specialization</th>
-                  <th className="px-4 py-3 font-semibold">Hospital Affiliation</th>
-                  <th className="px-4 py-3 font-semibold">Status</th>
-                  <th className="px-6 py-3 text-right font-semibold">Action</th>
+          <DataTable minWidth="min-w-[900px]" caption="Physician credentials">
+              <THead>
+                <tr>
+                  <Th>Doctor Name &amp; UID</Th>
+                  <Th>BMDC License</Th>
+                  <Th>Specialization</Th>
+                  <Th>Hospital Affiliation</Th>
+                  <Th>Status</Th>
+                  <Th className="text-right">Action</Th>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-hair">
+              </THead>
+              <TBody>
                 {doctors.map((doc) => {
                   const isAccredited = Boolean(doc.is_verified);
                   return (
-                    <tr key={doc.id} className="hover:bg-canvas transition-colors">
-                      <td className="px-6 py-3.5">
+                    <Tr key={doc.id}>
+                      <Td>
                         <p className="font-semibold text-ink-900">{doc.full_name}</p>
                         <p className="font-mono text-xs text-ink-500">{doc.doctor_uid || doc.id}</p>
-                      </td>
-                      <td className="px-4 py-3.5 font-mono text-xs font-medium text-ink-600">{doc.bmdc_license_number}</td>
-                      <td className="px-4 py-3.5 text-ink-600">{doc.specialization}</td>
-                      <td className="px-4 py-3.5 text-ink-600">{doc.hospital_affiliation}</td>
-                      <td className="px-4 py-3.5">
+                      </Td>
+                      <Td className="whitespace-nowrap font-mono text-xs font-medium text-ink-600">{doc.bmdc_license_number}</Td>
+                      <Td className="text-ink-600">{doc.specialization}</Td>
+                      <Td className="text-ink-600">{doc.hospital_affiliation}</Td>
+                      <Td>
                         <Badge tone={isAccredited ? 'emerald' : 'amber'} dot>
                           {isAccredited ? 'Accredited' : 'Pending'}
                         </Badge>
-                      </td>
-                      <td className="px-6 py-3.5 text-right">
+                      </Td>
+                      <Td className="text-right">
                         <div className="flex justify-end gap-2">
                           {!isAccredited ? (
                             <Button
@@ -262,13 +262,12 @@ export const AdminDashboard: React.FC = () => {
                             </Button>
                           )}
                         </div>
-                      </td>
-                    </tr>
+                      </Td>
+                    </Tr>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
+              </TBody>
+            </DataTable>
         </Card>
 
         <AdminUsersPanel />
@@ -340,21 +339,23 @@ export const AdminDashboard: React.FC = () => {
 
               <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
                 From
-                <input
+                <Input
                   type="date"
                   value={auditFrom}
                   disabled={last24Hours}
                   onChange={(e) => setAuditFrom(e.target.value)}
-                  className="rounded-lg border border-hair bg-white px-2 py-1.5 text-xs text-ink-900 disabled:opacity-50"
+                  inputSize="sm"
+                  className="w-auto"
                 />
               </label>
               <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
                 To
-                <input
+                <Input
                   type="date"
                   value={auditTo}
                   onChange={(e) => setAuditTo(e.target.value)}
-                  className="rounded-lg border border-hair bg-white px-2 py-1.5 text-xs text-ink-900"
+                  inputSize="sm"
+                  className="w-auto"
                 />
               </label>
               <span className="text-xs text-ink-600" aria-live="polite">
@@ -363,78 +364,67 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto" aria-label="Cryptographic audit entries">
-            <table className="min-w-[1050px] w-full font-mono text-xs">
-              <thead>
-                <tr className="border-b border-hair bg-canvas text-left font-sans text-xs font-semibold text-ink-600">
-                  <th className="px-6 py-2.5 font-semibold">Timestamp</th>
-                  <th className="px-3 py-2.5 font-semibold">Actor Role</th>
-                  <th className="px-3 py-2.5 font-semibold">Action</th>
-                  <th className="px-3 py-2.5 font-semibold">Target Resource</th>
-                  <th className="px-3 py-2.5 font-semibold">Transaction Context</th>
-                  <th className="px-6 py-2.5 font-semibold">SHA-256 Integrity Hash</th>
+          <DataTable minWidth="min-w-[960px]" caption="Audit entries">
+            <THead>
+              <tr>
+                <Th>Time</Th>
+                <Th>Actor</Th>
+                <Th>Action</Th>
+                <Th>Resource</Th>
+                <Th>Details</Th>
+                <Th>SHA-256 hash</Th>
+              </tr>
+            </THead>
+            <TBody>
+              {filteredAuditLogs.map((l, i) => {
+                const hash = l.sha256_hash || '-';
+                const isCopied = copiedHash === hash && hash !== '-';
+                return (
+                  <Tr key={l.id || i}>
+                    <Td className="tabular whitespace-nowrap text-xs text-ink-600">
+                      {l.timestamp ? new Date(l.timestamp).toLocaleString() : '-'}
+                    </Td>
+                    <Td>
+                      <Pill tone={roleTone(l.actor_role)} size="sm">{l.actor_role}</Pill>
+                      <span className="mt-1 block text-xs text-ink-600">{l.actor_name || 'System'}</span>
+                    </Td>
+                    <Td className="whitespace-nowrap font-mono text-xs font-semibold text-primary-700">{l.action}</Td>
+                    <Td className="font-mono text-xs text-audit">{l.target_resource}</Td>
+                    <Td className="max-w-xs text-xs text-ink-600">{l.details || '-'}</Td>
+                    <Td>
+                      <div className="flex items-center gap-2">
+                        {/* Short form keeps the table readable; the full hash is in the tooltip and the copy */}
+                        <span className="font-mono text-xs text-ink-900" title={hash}>
+                          {hash.length > 12 ? `${hash.slice(0, 12)}...` : hash}
+                        </span>
+                        {hash !== '-' && (
+                          <button
+                            onClick={() => copy(hash)}
+                            type="button"
+                            aria-label={`Copy integrity hash for ${l.action}`}
+                            title={isCopied ? 'Copied' : 'Copy full hash'}
+                            className={`grid h-7 w-7 place-items-center rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
+                              isCopied ? 'border-emerald-200 bg-emerald-50 text-success' : 'border-hair text-ink-600 hover:bg-slate-100 hover:text-primary-700'
+                            }`}
+                          >
+                            {isCopied ? <Icon.Check size={12} /> : <Icon.Copy size={12} />}
+                          </button>
+                        )}
+                        <span className="sr-only" aria-live="polite">{isCopied ? 'Hash copied' : ''}</span>
+                      </div>
+                    </Td>
+                  </Tr>
+                );
+              })}
+              {filteredAuditLogs.length === 0 && (
+                <tr>
+                  <Td colSpan={6} className="py-12 text-center text-sm text-ink-600">
+                    No audit entries match these filters.
+                  </Td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-hair">
-                {filteredAuditLogs.map((l, i) => {
-                  const hash = l.sha256_hash || '-';
-                  const isCopied = copiedHash === hash && hash !== '-';
-                  return (
-                    <tr key={l.id || i} className="hover:bg-canvas transition-colors">
-                      <td className="tabular whitespace-nowrap px-6 py-3 text-ink-600">
-                        {l.timestamp ? new Date(l.timestamp).toLocaleString() : '-'}
-                      </td>
-                      <td className="px-3 py-3">
-                        <span className="font-sans">
-                          <Pill tone={roleTone(l.actor_role)}>{l.actor_role}</Pill>
-                        </span>
-                        <span className="mt-0.5 block text-[10px] font-sans font-medium text-ink-600">
-                          {l.actor_name || 'System'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-3 font-semibold text-primary-700">{l.action}</td>
-                      <td className="px-3 py-3 text-audit font-semibold">{l.target_resource}</td>
-                      <td className="px-3 py-3 font-sans text-ink-600">{l.details || '-'}</td>
-                      <td className="px-6 py-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-ink-900 select-all">{hash}</span>
-                          {hash !== '-' && (
-                            <button
-                              onClick={() => copy(hash)}
-                              type="button"
-                              aria-label={`Copy integrity hash for ${l.action}`}
-                              className={`grid h-6 w-6 place-items-center rounded border transition-all ${
-                                isCopied
-                                  ? 'border-emerald-200 bg-emerald-50 text-success'
-                                  : 'border-hair text-ink-600 hover:bg-slate-100 hover:text-primary-600'
-                              }`}
-                              title={isCopied ? 'Copied!' : 'Copy hash'}
-                            >
-                              {isCopied ? (
-                                <Icon.Check size={12} className="text-success" />
-                              ) : (
-                                <Icon.Copy size={12} />
-                              )}
-                            </button>
-                          )}
-                          {isCopied && (
-                            <span className="font-sans text-[10px] font-bold text-success">Copied!</span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {filteredAuditLogs.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center font-sans text-sm text-ink-600">
-                      No audit entries match the current filters.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+              )}
+            </TBody>
+          </DataTable>
         </Card>
 
         {/* Destructive Action Confirmation Dialog */}

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Alert, Select, Textarea } from '../ui/forms.js';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api, { getApiErrorMessage } from '../services/api.js';
-import { Card, Icon, Pill, Badge, Button, VitalPill } from '../ui/primitives.js';
+import { Card, Icon, Pill, Badge, Button, VitalPill, Input } from '../ui/primitives.js';
 
 const COMMON_ICD10 = [
   { code: 'I10', title: 'Essential (Primary) Hypertension' },
@@ -280,13 +281,10 @@ export const NewConsultationPage: React.FC = () => {
         </div>
       </section>
 
-      <main className="mx-auto max-w-[1720px] space-y-6 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 2xl:px-12">
+      <main className="mx-auto max-w-[1720px] space-y-6 px-4 pt-6 pb-36 sm:px-6 sm:pt-8 sm:pb-28 lg:px-8 2xl:px-12">
         {/* Error Alert */}
         {error && (
-          <div className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-800">
-            <Icon.Alert size={16} className="shrink-0 text-rose-600" />
-            <span>{error}</span>
-          </div>
+          <Alert>{error}</Alert>
         )}
 
         {/* Patient Selection & Identification Card */}
@@ -336,18 +334,19 @@ export const NewConsultationPage: React.FC = () => {
               <label className="text-xs font-semibold text-slate-600">
                 Switch Patient:
               </label>
-              <select
+              <Select
                 aria-label="Select Patient"
                 value={selectedPatientId}
                 onChange={(e) => setSelectedPatientId(e.target.value)}
-                className="rounded-xl border border-hair bg-canvas px-3 py-2 text-xs font-semibold text-ink-900 outline-none focus:border-primary-600"
+                selectSize="sm"
+                className="w-auto"
               >
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.full_name} ({p.patient_uid})
                   </option>
                 ))}
-              </select>
+              </Select>
               <Link
                 to={`/patient/timeline/${selectedPatientId}`}
                 className="rounded-xl border border-hair bg-white px-3 py-2 text-xs font-semibold text-primary-700 transition-colors hover:border-hair-strong"
@@ -367,42 +366,41 @@ export const NewConsultationPage: React.FC = () => {
                 <h3 className="font-display text-xl font-bold tracking-tight text-ink-900">Clinical Observations &amp; Telemetry</h3>
                 <p className="mt-1 text-xs text-ink-600">Capture symptoms, examination findings, and vitals matrix</p>
               </div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-success border border-emerald-200/60">
-                <span className="h-1.5 w-1.5 rounded-full bg-success" /> Telemetry Active
-              </span>
             </div>
 
             {/* Chief Complaints */}
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-slate-700">
+                <label htmlFor="consult-complaint" className="block text-xs font-semibold text-slate-700">
                   Chief Complaints
                 </label>
                 <span className="text-xs font-medium text-ink-400">Primary patient symptoms</span>
               </div>
-              <textarea
+              <Textarea
                 rows={3}
                 value={chiefComplaint}
                 onChange={(e) => setChiefComplaint(e.target.value)}
                 placeholder="e.g. Mild exertional chest tightness and occipital headaches for 2 weeks..."
-                className="mt-1.5 w-full min-h-[80px] rounded-xl border border-hair bg-white p-3 text-sm leading-relaxed text-ink-900 outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50 resize-y"
+                id="consult-complaint"
+                className="mt-1.5"
               />
             </div>
 
             {/* Clinical Examination & Diagnosis Notes */}
             <div>
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-slate-700">
+                <label htmlFor="consult-notes" className="block text-xs font-semibold text-slate-700">
                   Clinical Examination &amp; Diagnosis Notes
                 </label>
                 <span className="text-xs font-medium text-ink-400">Physical examination findings</span>
               </div>
-              <textarea
+              <Textarea
                 rows={4}
                 value={clinicalNotes}
                 onChange={(e) => setClinicalNotes(e.target.value)}
                 placeholder="Examination findings, physical status, cardiovascular auscultation..."
-                className="mt-1.5 w-full min-h-[108px] rounded-xl border border-hair bg-white p-3 text-sm leading-relaxed text-ink-900 outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-50 resize-y"
+                id="consult-notes"
+                className="mt-1.5 min-h-[108px]"
               />
             </div>
 
@@ -528,7 +526,6 @@ export const NewConsultationPage: React.FC = () => {
                   <p className="text-xs text-ink-600">Valid BMDC digital medication regimen</p>
                 </div>
               </div>
-              <Pill tone="emerald">Verified Regimen</Pill>
             </div>
 
             {/* Dynamic Medication Table */}
@@ -553,40 +550,36 @@ export const NewConsultationPage: React.FC = () => {
                 ) : (
                   prescriptionItems.map((item) => (
                     <div key={item.id} className="grid grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] items-center gap-2 px-3 py-2 bg-white">
-                      <input
+                      <Input inputSize="sm"
                         aria-label="Medicine Name"
                         value={item.medicationName}
                         onChange={(e) => updatePrescriptionRow(item.id, 'medicationName', e.target.value)}
                         placeholder="e.g. Tab. Amlocard"
-                        className="min-h-[36px] rounded-lg border border-hair bg-white px-2.5 py-1.5 text-xs font-semibold text-ink-900 shadow-2xs outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100"
                       />
-                      <input
+                      <Input inputSize="sm"
                         aria-label="Dosage"
                         value={item.dosage}
                         onChange={(e) => updatePrescriptionRow(item.id, 'dosage', e.target.value)}
                         placeholder="5mg"
-                        className="min-h-[36px] rounded-lg border border-hair bg-white px-2.5 py-1.5 text-xs text-ink-900 shadow-2xs outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100"
                       />
-                      <input
+                      <Input inputSize="sm"
                         aria-label="Frequency"
                         value={item.frequency}
                         onChange={(e) => updatePrescriptionRow(item.id, 'frequency', e.target.value)}
                         placeholder="1+0+0"
-                        className="min-h-[36px] tabular font-mono text-xs rounded-lg border border-hair bg-white px-2.5 py-1.5 text-ink-900 shadow-2xs outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100"
+                        className="tabular font-mono"
                       />
-                      <input
+                      <Input inputSize="sm"
                         aria-label="Duration"
                         value={item.duration}
                         onChange={(e) => updatePrescriptionRow(item.id, 'duration', e.target.value)}
                         placeholder="30 Days"
-                        className="min-h-[36px] rounded-lg border border-hair bg-white px-2.5 py-1.5 text-xs text-ink-900 shadow-2xs outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100"
                       />
-                      <input
+                      <Input inputSize="sm"
                         aria-label="Instructions"
                         value={item.instructions}
                         onChange={(e) => updatePrescriptionRow(item.id, 'instructions', e.target.value)}
                         placeholder="After breakfast"
-                        className="min-h-[36px] rounded-lg border border-hair bg-white px-2.5 py-1.5 text-xs text-ink-900 shadow-2xs outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100"
                       />
                       <button
                         type="button"
@@ -644,24 +637,23 @@ export const NewConsultationPage: React.FC = () => {
               <label className="block text-xs font-semibold text-ink-900">
                 Lifestyle &amp; Dietary Advice
               </label>
-              <textarea
+              <Textarea
                 rows={3}
                 value={rxInstructions}
                 onChange={(e) => setRxInstructions(e.target.value)}
                 placeholder="e.g. Low sodium diet, brisk walking 30 minutes daily, monitor BP twice weekly."
-                className="mt-1.5 w-full min-h-[80px] rounded-xl border border-hair bg-white p-3 text-sm leading-relaxed text-ink-900 outline-none transition-all placeholder:text-ink-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100 resize-y"
+                className="mt-1.5"
               />
             </div>
 
             {/* Follow-up recommendation */}
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-hair bg-canvas p-3">
               <label htmlFor="follow-up-date" className="text-xs font-semibold text-ink-900">Scheduled Chamber Follow-up</label>
-              <input
+              <Input inputSize="sm"
                 id="follow-up-date"
                 type="date"
                 value={followUpDate}
                 onChange={(e) => setFollowUpDate(e.target.value)}
-                className="rounded-lg border border-hair bg-white px-2.5 py-1 text-xs font-medium text-ink-900 outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-100"
               />
             </div>
 
@@ -699,13 +691,19 @@ export const NewConsultationPage: React.FC = () => {
       {/* Figma Sticky Action Footer */}
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-hair bg-white/95 backdrop-blur shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
         <div className="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:px-8 2xl:px-12">
-          <p className="flex items-center gap-2 text-xs sm:text-sm text-ink-600">
-            <Icon.Check size={16} className="text-success" />
-            <span>All mandatory clinical fields verified</span>
-            <span className="text-ink-400">•</span>
-            <span className="inline-flex items-center gap-1 text-ink-400">
-              <Icon.Clock size={14} /> Autosaved 1m ago
-            </span>
+          {/* Real form state, not a fixed reassurance message */}
+          <p className="flex items-center gap-2 text-xs sm:text-sm text-ink-600" aria-live="polite">
+            {chiefComplaint.trim() ? (
+              <>
+                <Icon.Check size={16} className="text-success" />
+                <span>Ready to issue</span>
+              </>
+            ) : (
+              <>
+                <Icon.Alert size={16} className="text-warning" />
+                <span>Add the chief complaint to issue this prescription</span>
+              </>
+            )}
           </p>
 
           <div className="flex w-full gap-3 sm:w-auto">

@@ -209,3 +209,22 @@ A review of server and client found and fixed these issues:
   - The session ends at token expiry.
   - Restored sessions are confirmed with `/auth/me`.
 - axe WCAG 2.1 AA: zero violations on the landing, login, doctor, new consultation, patient, timeline, hospital search and admin pages.
+
+## 15. UI consistency pass
+
+- New shared components:
+  - `Select`, `Textarea` and `Switch` in `ui/forms.tsx`, styled with the same `fieldClasses` as `Input`.
+  - `Alert` in `ui/forms.tsx`.
+  - `DataTable`, `THead`, `TBody`, `Th`, `Td` and `Tr` in `ui/table.tsx`.
+  - `Modal` in `ui/modal.tsx`: labelled, closes on Escape, keeps keyboard focus inside and returns it to the button that opened it.
+- Moved onto them:
+  - 6 selects, 3 textareas and 9 inputs on the registration, consultation, dashboard, hospital and admin pages.
+  - 4 error boxes.
+  - 3 admin tables.
+  - Both modals. The notification preferences modal had six copies of its toggle and no Escape or focus handling.
+- On/off system settings are switches instead of free-text "true" fields.
+- Audit hashes show their first 12 characters, with the full hash on hover and copy, so the table fits.
+- Phones show metric cards two per row.
+- The consultation form shows real readiness ("Add the chief complaint...") instead of a fixed "All fields verified, autosaved" message, and its last fields are no longer hidden behind the action bar.
+- Production builds hide the "Try a demo account" buttons (`VITE_DEMO_MODE=false` in `netlify.toml`).
+- Checks: zero axe WCAG 2.1 AA violations on 12 pages and both modals. A consultation submitted end to end, and the 20 client tests pass.

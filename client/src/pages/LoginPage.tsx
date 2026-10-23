@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Alert } from '../ui/forms.js';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
@@ -168,10 +169,7 @@ export const LoginPage: React.FC = () => {
             </div>
 
             {error && (
-              <div role="alert" className="mb-5 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-xs font-medium text-rose-800">
-                <Icon.Alert size={16} className="shrink-0 text-rose-600" />
-                <span>{error}</span>
-              </div>
+              <Alert className="mb-5">{error}</Alert>
             )}
 
             {/* Demo builds only: one click fills a seeded account */}
