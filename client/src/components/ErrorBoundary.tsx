@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Icon } from '../ui/primitives.js';
+import { Button, Icon } from '../ui/primitives.js';
 
 interface Props {
   children: ReactNode;
@@ -52,60 +52,33 @@ export class ErrorBoundary extends Component<Props, State> {
           aria-live="assertive"
           className="min-h-[80vh] flex items-center justify-center p-4 sm:p-6"
         >
-          <div className="w-full max-w-lg rounded-2xl border border-rose-200 bg-white p-6 sm:p-8 shadow-xl">
-            <div className="flex items-center gap-3 text-critical">
-              <div className="grid h-12 w-12 place-items-center rounded-2xl bg-rose-50 border border-rose-200">
-                <Icon.Alert size={24} />
+          <div className="w-full max-w-lg rounded-xl border border-hair bg-white p-6 shadow-card sm:p-8">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-md border border-rose-200 bg-rose-50 text-critical">
+                <Icon.Alert size={20} />
               </div>
-              <div>
-                <h1 className="text-lg font-bold font-display text-ink-900">
-                  Clinical Portal Runtime Notice
-                </h1>
-                <p className="text-xs text-ink-600">
-                  Diagnostic event captured • Integrity safeguarded
-                </p>
-              </div>
+              <h1 className="font-display text-lg font-semibold text-ink-900">This screen could not be shown</h1>
             </div>
 
-            <p className="mt-4 text-xs sm:text-sm text-ink-600 leading-relaxed">
-              An unexpected runtime exception occurred while rendering this interface. Your data
-              and ledger session remain protected under secure transaction integrity protocols.
+            <p className="mt-3 text-sm leading-relaxed text-ink-600">
+              Something went wrong while loading this page. Nothing you saved has been lost. Try again, or reload the page.
             </p>
 
-            {this.state.error && (
-              <details className="mt-4 rounded-xl border border-hair bg-canvas p-3 text-xs">
-                <summary className="cursor-pointer font-semibold text-primary-700 hover:underline select-none">
-                  View Technical Diagnostics
-                </summary>
-                <div className="mt-2 font-mono text-[0.6875rem] text-critical whitespace-pre-wrap overflow-x-auto max-h-40 bg-white p-2.5 rounded border border-hair">
+            {/* Technical details only in development builds, never to patients or doctors in production */}
+            {import.meta.env.DEV && this.state.error && (
+              <details className="mt-4 rounded-md border border-hair bg-canvas p-3 text-xs">
+                <summary className="cursor-pointer select-none font-semibold text-primary-700">Technical details</summary>
+                <div className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap rounded border border-hair bg-white p-2.5 font-mono text-[0.6875rem] text-critical">
                   {this.state.error.toString()}
                   {this.state.errorInfo?.componentStack}
                 </div>
               </details>
             )}
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={this.handleReset}
-                className="flex-1 min-h-[38px] inline-flex items-center justify-center rounded-xl bg-primary-700 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-primary-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
-              >
-                Retry Component
-              </button>
-              <button
-                type="button"
-                onClick={this.handleReload}
-                className="min-h-[38px] inline-flex items-center justify-center rounded-xl border border-hair bg-white px-4 py-2 text-xs font-semibold text-ink-900 shadow-xs hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
-              >
-                Reload Session
-              </button>
-              <button
-                type="button"
-                onClick={this.handleGoHome}
-                className="min-h-[38px] inline-flex items-center justify-center rounded-xl border border-hair bg-white px-4 py-2 text-xs font-semibold text-ink-900 shadow-xs hover:bg-slate-50 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
-              >
-                Safe Return
-              </button>
+            <div className="mt-6 grid gap-2 sm:flex">
+              <Button onClick={this.handleReset}>Try again</Button>
+              <Button variant="secondary" onClick={this.handleReload}>Reload page</Button>
+              <Button variant="ghost" onClick={this.handleGoHome}>Go to home</Button>
             </div>
           </div>
         </div>

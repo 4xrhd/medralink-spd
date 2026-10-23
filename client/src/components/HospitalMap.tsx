@@ -18,7 +18,7 @@ function numberedIcon(n: number, selected: boolean): L.DivIcon {
   const bg = selected ? '#9f1239' : '#be123c';
   return L.divIcon({
     className: '',
-    html: `<div style="display:grid;place-items:center;width:28px;height:28px;border-radius:9999px;background:${bg};color:#fff;font:700 12px/1 Inter,sans-serif;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)">${n}</div>`,
+    html: `<div style="display:grid;place-items:center;width:28px;height:28px;border-radius:9999px;background:${bg};color:#fff;font:700 12px/1 'Public Sans',sans-serif;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)">${n}</div>`,
     iconSize: [28, 28],
     iconAnchor: [14, 14],
   });
@@ -93,8 +93,8 @@ export const HospitalMap: React.FC<HospitalMapProps> = ({ center, hospitals, sel
       id="hospital-map"
       role="region"
       aria-label={tr("Map of nearby hospitals")}
-      className="w-full rounded-2xl border border-hair shadow-sm overflow-hidden z-0"
-      style={{ height: '340px', background: '#f0f0f0' }}
+      className="z-0 h-[300px] w-full overflow-hidden sm:h-[360px] lg:h-[min(640px,calc(100vh-8rem))]"
+      style={{ background: '#f0f0f0' }}
     />
   );
 };

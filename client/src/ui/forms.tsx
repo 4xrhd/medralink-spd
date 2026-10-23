@@ -17,7 +17,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       aria-invalid={error || undefined}
       className={cn(
         fieldClasses(error, disabled),
-        selectSize === "sm" ? "h-9 rounded-lg px-2.5 text-xs" : "h-11 rounded-xl px-3 text-sm",
+        selectSize === "sm" ? "h-8 [@media(pointer:coarse)]:h-10 rounded-md px-2.5 text-[0.8125rem]" : "h-10 rounded-md px-3 text-sm",
         "cursor-pointer",
         className
       )}
@@ -39,7 +39,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       ref={ref}
       disabled={disabled}
       aria-invalid={error || undefined}
-      className={cn(fieldClasses(error, disabled), "min-h-[80px] resize-y rounded-xl p-3 text-sm leading-relaxed", className)}
+      className={cn(fieldClasses(error, disabled), "min-h-[80px] resize-y rounded-md p-3 text-sm leading-relaxed", className)}
       {...props}
     />
   )
@@ -69,7 +69,7 @@ export function Alert({ tone = "error", children, className, id }: AlertProps) {
     <div
       id={id}
       role={tone === "error" ? "alert" : "status"}
-      className={cn("flex items-start gap-2 rounded-xl border px-3.5 py-3 text-sm font-medium", style.box, className)}
+      className={cn("flex items-start gap-2 rounded-lg border px-3.5 py-3 text-sm font-medium", style.box, className)}
     >
       {style.icon}
       <div className="min-w-0">{children}</div>
@@ -89,7 +89,7 @@ export interface SwitchProps {
 
 export function Switch({ checked, onChange, label, description, disabled = false, id }: SwitchProps) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-hair bg-canvas p-3.5">
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-hair bg-canvas p-3.5">
       <div className="min-w-0">
         <span id={`${id}-label`} className="block text-sm font-semibold text-ink-900">
           {label}

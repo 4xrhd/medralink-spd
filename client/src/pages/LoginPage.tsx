@@ -69,11 +69,9 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 bg-canvas">
-      <div className="w-full max-w-5xl rounded-3xl border border-hair bg-surface shadow-card overflow-hidden grid lg:grid-cols-12">
+      <div className="w-full max-w-5xl rounded-xl border border-hair bg-surface shadow-card overflow-hidden grid lg:grid-cols-12">
         {/* Left Panel - Healthcare Hero and Reassurance */}
-        <div className="relative hidden lg:flex lg:col-span-5 flex-col justify-between p-10 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 text-white overflow-hidden">
-          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-primary-600/20 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-primary-400/10 blur-3xl pointer-events-none" />
+        <div className="relative hidden lg:flex lg:col-span-5 flex-col justify-between p-10 bg-primary-900 text-white overflow-hidden">
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">

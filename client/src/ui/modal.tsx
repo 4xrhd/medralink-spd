@@ -107,7 +107,7 @@ export function Modal({
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-ink-600 transition-colors hover:bg-slate-100 hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+              className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-ink-600 transition-colors hover:bg-slate-100 hover:text-ink-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
             >
               <Icon.X size={16} />
             </button>

@@ -6,6 +6,7 @@ import React, {
   type InputHTMLAttributes,
   forwardRef,
 } from "react";
+import { Link, type LinkProps } from "react-router-dom";
 import { cn } from "../utils/cn.js";
 
 /* ==========================================================================
@@ -299,79 +300,116 @@ export const Icon = {
 /* ==========================================================================
    2. Buttons
    ========================================================================== */
+type ButtonVariant =
+  | "primary" | "clinical" | "secondary" | "outline" | "destructive" | "ghost" | "soft" | "danger-soft" | "success-soft";
+type ButtonSize = "sm" | "md" | "lg";
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   /** "clinical" is an older name for "primary" and renders the same. */
-  variant?: "primary" | "clinical" | "secondary" | "outline" | "destructive" | "ghost" | "soft";
-  size?: "sm" | "md" | "lg";
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   isLoading?: boolean;
   icon?: ReactNode;
   iconPosition?: "left" | "right";
+  /** Full width (used for stacked actions on phones). */
+  block?: boolean;
 }
+
+const BUTTON_VARIANTS: Record<Exclude<ButtonVariant, "clinical">, string> = {
+  primary: "bg-primary-700 hover:bg-primary-800 text-white border border-primary-800/40 shadow-[inset_0_1px_0_rgb(255_255_255/0.10),0_1px_1px_rgb(11_93_70/0.20)]",
+  secondary: "bg-white hover:bg-canvas text-ink-900 border border-hair-strong hover:border-ink-400 shadow-[0_1px_1px_rgb(20_33_28/0.05)]",
+  outline: "bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-200 hover:border-primary-300",
+  destructive: "bg-critical hover:bg-rose-700 text-white border border-transparent shadow-[0_1px_1px_rgb(176_38_33/0.20)]",
+  ghost: "bg-transparent hover:bg-primary-50 text-ink-600 hover:text-ink-900 border border-transparent",
+  soft: "bg-primary-50 hover:bg-primary-100 text-primary-800 border border-primary-100",
+  "danger-soft": "bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200",
+  "success-soft": "bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200",
+};
+
+// Desktop sizes 32 / 38 / 44px; on touch screens small buttons grow to 40px so they stay easy to tap
+const BUTTON_SIZES: Record<ButtonSize, string> = {
+  sm: "h-8 [@media(pointer:coarse)]:h-10 px-3 text-[0.8125rem] gap-1.5",
+  md: "h-[2.375rem] px-4 text-sm gap-2",
+  lg: "h-11 px-5 text-[0.9375rem] gap-2",
+};
+
+/** Class string shared by Button and ButtonLink, so link-styled actions match real buttons. */
+export function buttonClasses({
+  variant = "primary",
+  size = "md",
+  block = false,
+  className,
+}: { variant?: ButtonVariant; size?: ButtonSize; block?: boolean; className?: string } = {}): string {
+  return cn(
+    // Calm clinical feel: colour eases, a click presses in slightly, nothing jumps on hover
+    "group/btn inline-flex items-center justify-center whitespace-nowrap rounded-md font-semibold select-none cursor-pointer",
+    "transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] motion-reduce:transform-none",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2",
+    "disabled:opacity-50 disabled:pointer-events-none aria-disabled:opacity-50 aria-disabled:pointer-events-none",
+    BUTTON_VARIANTS[variant === "clinical" ? "primary" : variant],
+    BUTTON_SIZES[size],
+    block && "w-full",
+    className
+  );
+}
+
+const ButtonContent = ({ icon, iconPosition, isLoading, size, children }: {
+  icon?: ReactNode; iconPosition: "left" | "right"; isLoading?: boolean; size: ButtonSize; children: ReactNode;
+}) => (
+  <>
+    {isLoading ? (
+      <Icon.Loader size={size === "sm" ? 14 : 16} className="text-current" />
+    ) : (
+      icon && iconPosition === "left" && <span className="shrink-0">{icon}</span>
+    )}
+    <span className="min-w-0">{children}</span>
+    {!isLoading && icon && iconPosition === "right" && (
+      <span className="shrink-0 transition-transform duration-150 ease-out group-hover/btn:translate-x-0.5 motion-reduce:transform-none">{icon}</span>
+    )}
+  </>
+);
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    {
-      children,
-      className,
-      variant = "primary",
-      size = "md",
-      isLoading = false,
-      disabled = false,
-      icon,
-      iconPosition = "left",
-      type = "button",
-      ...props
-    },
+    { children, className, variant = "primary", size = "md", isLoading = false, disabled = false, icon, iconPosition = "left", block = false, type = "button", ...props },
     ref
-  ) => {
-    const baseStyles =
-      // App-like feel: eased colour and shadow, a 1px lift on hover, a quick press on click
-      "group/btn inline-flex items-center justify-center whitespace-nowrap font-semibold select-none cursor-pointer transition-[background-color,border-color,color,box-shadow,transform] duration-200 ease-out hover:-translate-y-px active:translate-y-0 active:scale-[0.97] active:duration-75 motion-reduce:transform-none motion-reduce:transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none";
-
-    const variants: Record<Exclude<NonNullable<ButtonProps["variant"]>, "clinical">, string> = {
-      primary:
-        "bg-primary-700 hover:bg-primary-800 text-white border border-transparent shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(11_93_70/0.25)] hover:shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_6px_14px_-4px_rgb(11_93_70/0.45)] focus-visible:ring-primary-600",
-      secondary:
-        "bg-white hover:bg-primary-50 text-ink-900 border border-hair-strong hover:border-primary-300 shadow-[0_1px_2px_rgb(20_33_28/0.06)] hover:shadow-[0_4px_12px_-4px_rgb(20_33_28/0.18)] focus-visible:ring-primary-600",
-      outline:
-        "bg-transparent hover:bg-primary-50 text-primary-700 border border-primary-200 focus-visible:ring-primary-600",
-      destructive:
-        "bg-critical hover:bg-rose-700 text-white border border-transparent shadow-[0_1px_2px_rgb(176_38_33/0.25)] hover:shadow-[0_6px_14px_-4px_rgb(176_38_33/0.45)] focus-visible:ring-critical",
-      ghost:
-        "bg-transparent hover:bg-primary-50 text-ink-600 hover:text-ink-900 border border-transparent hover:translate-y-0 focus-visible:ring-primary-600",
-      soft:
-        "bg-primary-50 hover:bg-primary-100 text-primary-700 border border-primary-100 focus-visible:ring-primary-600",
-    };
-
-    const sizes: Record<string, string> = {
-      sm: "min-h-[36px] h-9 px-3.5 text-[0.8125rem] gap-1.5 rounded-lg font-semibold",
-      md: "min-h-[40px] h-10 px-4 text-sm gap-2 rounded-xl font-semibold",
-      lg: "min-h-[48px] h-12 px-5 text-base gap-2.5 rounded-xl font-semibold",
-    };
-
-    return (
-      <button
-        ref={ref}
-        type={type}
-        disabled={disabled || isLoading}
-        aria-busy={isLoading}
-        className={cn(baseStyles, variants[variant === "clinical" ? "primary" : variant], sizes[size], className)}
-        {...props}
-      >
-        {isLoading ? (
-          <Icon.Loader size={size === "sm" ? 14 : 16} className="text-current" />
-        ) : (
-          icon && iconPosition === "left" && <span className="shrink-0">{icon}</span>
-        )}
-        <span>{children}</span>
-        {!isLoading && icon && iconPosition === "right" && (
-          <span className="shrink-0 transition-transform duration-200 ease-out group-hover/btn:translate-x-0.5 motion-reduce:transform-none">{icon}</span>
-        )}
-      </button>
-    );
-  }
+  ) => (
+    <button
+      ref={ref}
+      type={type}
+      disabled={disabled || isLoading}
+      aria-busy={isLoading}
+      className={buttonClasses({ variant, size, block, className })}
+      {...props}
+    >
+      <ButtonContent icon={icon} iconPosition={iconPosition} isLoading={isLoading} size={size}>
+        {children}
+      </ButtonContent>
+    </button>
+  )
 );
 Button.displayName = "Button";
+
+export interface ButtonLinkProps extends Omit<LinkProps, "className"> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  icon?: ReactNode;
+  iconPosition?: "left" | "right";
+  block?: boolean;
+  className?: string;
+}
+
+/** A router link that looks exactly like a Button. */
+export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
+  ({ children, variant = "primary", size = "md", icon, iconPosition = "left", block = false, className, ...props }, ref) => (
+    <Link ref={ref} className={buttonClasses({ variant, size, block, className })} {...props}>
+      <ButtonContent icon={icon} iconPosition={iconPosition} size={size}>
+        {children}
+      </ButtonContent>
+    </Link>
+  )
+);
+ButtonLink.displayName = "ButtonLink";
 
 /* ==========================================================================
    3. Badges / Status Chips
@@ -450,6 +488,9 @@ export interface CardProps {
   hover?: boolean;
   variant?: "default" | "flat" | "elevated" | "subtle";
   padding?: "none" | "sm" | "md" | "lg";
+  /** Panel title bar: renders a SectionHeader above the body. */
+  header?: SectionHeaderProps;
+  "aria-labelledby"?: string;
 }
 
 export function Card({
@@ -461,6 +502,8 @@ export function Card({
   hover = false,
   variant = "default",
   padding = "none",
+  header,
+  ...rest
 }: CardProps) {
   const variants = {
     default: "border border-hair bg-surface shadow-card",
@@ -480,16 +523,24 @@ export function Card({
     <div
       id={id}
       role={role}
+      aria-labelledby={rest["aria-labelledby"]}
       className={cn(
-        "rounded-2xl transition-all duration-200",
+        "rounded-xl transition-[border-color,box-shadow] duration-150",
         variants[variant],
-        paddings[padding],
-        hover && "hover:-translate-y-0.5 hover:border-primary-200 hover:shadow-card-hover",
+        !header && paddings[padding],
+        hover && "hover:border-primary-200 hover:shadow-card-hover",
         className
       )}
       style={style}
     >
-      {children}
+      {header ? (
+        <>
+          <SectionHeader {...header} />
+          <div className={paddings[padding]}>{children}</div>
+        </>
+      ) : (
+        children
+      )}
     </div>
   );
 }
@@ -529,8 +580,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     ref
   ) => {
     const sizeClasses = {
-      sm: "h-9 text-xs px-3 rounded-lg",
-      md: "h-11 text-sm px-3.5 rounded-xl",
+      sm: "h-8 [@media(pointer:coarse)]:h-10 text-[0.8125rem] px-3 rounded-md",
+      md: "h-10 text-sm px-3 rounded-md",
     };
 
     return (
@@ -641,16 +692,16 @@ export function MetricCard({
 
   // A count reads first; the icon is a quiet marker, and status pills only appear when they carry real state
   return (
-    <Card hover={hover} className={cn("p-4 sm:p-5", className)}>
+    <Card hover={hover} className={cn("p-4", className)}>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-ink-600">{title}</p>
+        <p className="text-[0.8125rem] font-medium text-ink-600">{title}</p>
         {icon && (
-          <div className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-lg border", iconTones[iconTone])} aria-hidden="true">
+          <div className={cn("grid h-8 w-8 shrink-0 place-items-center rounded-md border", iconTones[iconTone])} aria-hidden="true">
             {icon}
           </div>
         )}
       </div>
-      <p className={cn("mt-2 tabular font-display font-semibold text-ink-900", typeof value === "number" || String(value).length <= 6 ? "text-3xl" : "text-xl")}>{value}</p>
+      <p className={cn("mt-1.5 tabular font-display font-semibold text-ink-900", typeof value === "number" || String(value).length <= 6 ? "text-2xl sm:text-3xl" : "text-lg sm:text-xl")}>{value}</p>
       {subtext && <p className="mt-1 text-xs text-ink-600">{subtext}</p>}
       {status && status.tone === "amber" && (
         <Badge tone="amber" size="sm" dot className="mt-2">
@@ -665,39 +716,77 @@ export function MetricCard({
    7. Typographic Section Header
    ========================================================================== */
 export interface SectionHeaderProps {
-  title: string;
-  description?: string;
+  title: ReactNode;
+  description?: ReactNode;
+  icon?: ReactNode;
   badge?: ReactNode;
   action?: ReactNode;
   className?: string;
+  /** Heading level; panels inside a page use h2 by default. */
+  as?: "h2" | "h3";
+  id?: string;
 }
 
-export function SectionHeader({
-  title,
-  description,
-  badge,
-  action,
-  className = "",
-}: SectionHeaderProps) {
+/** Panel title bar: icon, title, optional description and actions, with a hairline under it. */
+export function SectionHeader({ title, description, icon, badge, action, className = "", as: Tag = "h2", id }: SectionHeaderProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hair pb-4 mb-6",
-        className
-      )}
-    >
-      <div>
-        <div className="flex items-center gap-2.5">
-          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">{title}</h2>
-          {badge}
-        </div>
-        {description && (
-          <p className="mt-1 text-sm text-ink-600 leading-relaxed">{description}</p>
+    <div className={cn("flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-hair px-4 py-3 sm:px-5 min-h-[3.25rem]", className)}>
+      <div className="flex min-w-0 items-center gap-2.5">
+        {icon && (
+          <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md bg-primary-50 text-primary-700" aria-hidden="true">
+            {icon}
+          </span>
         )}
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <Tag id={id} className="font-display text-base font-semibold tracking-tight text-ink-900">{title}</Tag>
+            {badge}
+          </div>
+          {description && <p className="text-xs text-ink-600 leading-relaxed">{description}</p>}
+        </div>
       </div>
-      {action && <div className="flex items-center gap-2.5 shrink-0">{action}</div>}
+      {action && <div className="flex flex-wrap items-center gap-2">{action}</div>}
     </div>
   );
+}
+
+export interface PageHeaderProps {
+  title: ReactNode;
+  /** Small line above the title, e.g. a greeting or date. */
+  overline?: ReactNode;
+  /** Context under the title, e.g. BMDC number and hospital, or Health ID. */
+  meta?: ReactNode;
+  icon?: ReactNode;
+  actions?: ReactNode;
+  className?: string;
+}
+
+/** Top-of-page header strip: flat surface, hairline under it, actions wrap below the title on phones. */
+export function PageHeader({ title, overline, meta, icon, actions, className = "" }: PageHeaderProps) {
+  return (
+    <div className={cn("border-b border-hair bg-surface", className)}>
+      <div className="mx-auto flex max-w-[1720px] flex-col gap-4 px-4 py-5 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8 2xl:px-12">
+        <div className="flex min-w-0 items-start gap-3">
+          {icon && (
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary-700 text-white" aria-hidden="true">
+              {icon}
+            </span>
+          )}
+          <div className="min-w-0">
+            {overline && <div className="text-xs font-medium text-ink-600">{overline}</div>}
+            <h1 className="font-display text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl">{title}</h1>
+            {meta && <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-600">{meta}</div>}
+          </div>
+        </div>
+        {actions && <div className="flex flex-wrap items-center gap-2 [&>*]:flex-1 sm:[&>*]:flex-none">{actions}</div>}
+      </div>
+    </div>
+  );
+}
+
+/** Loading placeholder bar; keeps the layout steady while data arrives. */
+export function Skeleton({ className = "" }: { className?: string }) {
+  return <div aria-hidden="true" className={cn("animate-pulse rounded-md bg-slate-100 motion-reduce:animate-none", className)} />;
 }
 
 /* ==========================================================================
@@ -721,14 +810,14 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-dashed border-hair-strong bg-slate-50/50 p-8 sm:p-12 text-center",
+        "rounded-xl border border-dashed border-hair-strong bg-canvas/60 p-6 sm:p-10 text-center",
         className
       )}
     >
-      <div className="mx-auto mb-3.5 grid h-12 w-12 place-items-center rounded-2xl bg-white text-ink-600 shadow-subtle border border-hair">
+      <div className="mx-auto mb-3.5 grid h-11 w-11 place-items-center rounded-lg bg-white text-ink-600 shadow-subtle border border-hair">
         {icon || <Icon.Search size={22} />}
       </div>
-      <h3 className="font-display text-base font-bold text-ink-900">{title}</h3>
+      <h3 className="font-display text-base font-semibold text-ink-900">{title}</h3>
       {description && (
         <p className="mt-1.5 max-w-sm mx-auto text-sm text-ink-600 leading-relaxed">
           {description}

@@ -125,10 +125,10 @@ body {
   .print-sheet { box-shadow: none !important; width: 595px !important; min-height: 842px !important; }
 }
 
-/* Ensure inline SVGs in badges, buttons, and flex containers never break into block layout */
-.inline-flex svg,
-.flex svg,
-svg.shrink-0 {
+/* Ensure inline SVGs in badges, buttons, and flex containers never break into block layout.
+   :where() keeps this at element specificity so utilities like `hidden lg:block` still win. */
+:where(.inline-flex, .flex) svg,
+:where(svg.shrink-0) {
   display: inline-block;
   vertical-align: middle;
 }
@@ -156,3 +156,13 @@ html[lang="bn"] .font-display {
 html[lang="bn"] body { font-size: 1.0625rem; line-height: 1.7; }
 html[lang="bn"] h1, html[lang="bn"] h2, html[lang="bn"] h3 { line-height: 1.3; }
 .font-bangla { font-family: 'Kalpurush', 'Noto Sans Bengali', sans-serif; }
+
+/* Horizontal scroll cue: soft shadows appear on whichever side has more content */
+.scroll-shadow-x {
+  background:
+    linear-gradient(to right, rgb(var(--c-surface)) 30%, transparent) left center / 24px 100% no-repeat local,
+    linear-gradient(to left, rgb(var(--c-surface)) 30%, transparent) right center / 24px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgb(20 33 28 / 0.14), transparent) left center / 10px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgb(20 33 28 / 0.14), transparent) right center / 10px 100% no-repeat scroll;
+}
+.scroll-shadow-x:focus-visible { outline: 2px solid rgb(var(--c-primary-600)); outline-offset: 2px; }

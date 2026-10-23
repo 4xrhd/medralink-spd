@@ -1,24 +1,19 @@
 import { useLanguage } from '../context/LanguageContext.js';
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
-import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api, { getApiErrorMessage } from '../services/api.js';
-import { Card, Icon, Pill, VitalPill } from '../ui/primitives.js';
+import { Badge, Button, ButtonLink, buttonClasses, Card, EmptyState, Icon, Skeleton, VitalPill } from '../ui/primitives.js';
 
 function TimelineMarker({ active }: { active?: boolean }) {
-  const { t: tr } = useLanguage();
   return (
-    <div className="relative flex flex-col items-center">
-      <div
-        className={`z-10 grid h-6 w-6 place-items-center rounded-full border-4 border-white ${
-          active ? "bg-primary-600 shadow-[0_0_0_4px_rgba(13,148,136,0.25)]" : "bg-ink-400"
-        }`}
-      >
-        <span className="h-1.5 w-1.5 rounded-full bg-white" />
-      </div>
-    </div>
+    <span
+      aria-hidden="true"
+      className={`z-10 block h-3.5 w-3.5 rounded-full border-[3px] border-white ring-1 ${
+        active ? 'bg-primary-700 ring-primary-700' : 'bg-ink-400 ring-hair-strong'
+      }`}
+    />
   );
 }
 
@@ -27,7 +22,6 @@ export const PatientTimelinePage: React.FC = () => {
   useDocumentTitle(tr('Longitudinal Patient Timeline'));
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const toast = useToast();
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -53,33 +47,36 @@ export const PatientTimelinePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent"></div>
+      <div className="mx-auto max-w-[1720px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 2xl:px-12" role="status" aria-label={tr('Loading clinical portal module...')}>
+        <Skeleton className="h-40 rounded-xl" />
+        <Skeleton className="h-8 w-64" />
+        {[0, 1].map((i) => <Skeleton key={i} className="h-44 rounded-xl" />)}
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-16 text-center">
-        <Card className="p-8">
-          <Icon.Alert size={36} className="mx-auto text-rose-500 mb-3" />
-          <p className="text-sm font-semibold text-rose-700">{error || tr('Patient timeline data unavailable.')}</p>
-          <Link
-            to="/"
-            className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:underline"
-          >
-            <Icon.Arrow size={14} className="rotate-180" /> {tr("Return to Dashboard")}
-          </Link>
-        </Card>
+      <div className="mx-auto max-w-xl px-4 py-16">
+        <EmptyState
+          icon={<Icon.Alert size={22} className="text-critical" />}
+          title={error || tr('Patient timeline data unavailable.')}
+          action={
+            <ButtonLink to="/" variant="secondary" icon={<Icon.Arrow size={14} className="rotate-180" />}>
+              {tr("Return to Dashboard")}
+            </ButtonLink>
+          }
+        />
       </div>
     );
   }
 
   const { patient, allergies, conditions, timeline } = data;
-  const fullName = patient?.full_name || 'Patient Record';
+  const fullName = patient?.full_name || tr('Patient Record');
   const patientUid = patient?.patient_uid || '-';
   const initials = fullName.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase();
+  const prescriptionCount = timeline.filter((t: any) => t.prescription).length;
+  const labReports = timeline.flatMap((t: any) => (t.labReports || []).map((lab: any) => ({ ...lab, visit_date: t.visit_date })));
 
   const toggleReport = (reportId: string) => {
     setExpandedReports((prev) => ({ ...prev, [reportId]: !prev[reportId] }));
@@ -90,520 +87,334 @@ export const PatientTimelinePage: React.FC = () => {
   };
 
   const token = localStorage.getItem('medralink_token');
+  const summaryPdf = `/api/v1/patients/${patient?.id || id}/summary/pdf?token=${token}`;
+  const sectionLabel = 'mb-2 text-xs font-semibold text-ink-600';
 
   return (
     <div className="min-h-screen bg-canvas pb-20">
-      <main className="mx-auto max-w-[1200px] 2xl:max-w-[1720px] space-y-6 px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
-        {/* Back Link & Title */}
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              if (user?.role === 'DOCTOR') navigate('/doctor');
-              else if (user?.role === 'ADMIN') navigate('/admin');
-              else navigate('/patient');
-            }}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 -ml-2 text-xs font-semibold text-ink-600 transition-colors hover:bg-slate-100 hover:text-ink-900 focus-visible:ring-2 focus-visible:ring-primary-600"
+      <main className="mx-auto max-w-[1720px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 2xl:px-12">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-2 self-start"
+            icon={<Icon.Arrow size={14} className="rotate-180" />}
+            onClick={() => navigate(user?.role === 'DOCTOR' ? '/doctor' : user?.role === 'ADMIN' ? '/admin' : '/patient')}
           >
-            <Icon.Arrow size={14} className="rotate-180" />
-            <span>
-              {tr(user?.role === 'DOCTOR' ? 'Back to Doctor Workstation' : user?.role === 'ADMIN' ? 'Back to Governance Console' : 'Back to Patient Health Portal')}
-            </span>
-          </button>
-          <div className="flex items-center gap-2.5">
-            <a
-              href={`/api/v1/patients/${patient?.id || id}/summary/pdf?token=${token}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-xl border border-hair bg-white px-3.5 py-1.5 text-xs font-semibold text-primary-700 shadow-xs transition-colors hover:bg-slate-50 hover:text-primary-800 focus-visible:ring-2 focus-visible:ring-primary-600"
-              title={tr("Download official longitudinal patient health dossier as PDF")}
-            >
-              <Icon.Download size={14} className="text-primary-700" />
-              <span>{tr("Export Health Summary (PDF)")}</span>
-            </a>
-            <Pill tone="emerald">
-              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-success" /> {tr("Verified RBAC Medical Timeline")}
-            </Pill>
-          </div>
+            {tr(user?.role === 'DOCTOR' ? 'Back to Doctor Workstation' : user?.role === 'ADMIN' ? 'Back to Governance Console' : 'Back to Patient Health Portal')}
+          </Button>
+          <a
+            href={summaryPdf}
+            target="_blank"
+            rel="noreferrer"
+            title={tr("Download official longitudinal patient health dossier as PDF")}
+            className={buttonClasses({ variant: 'secondary', size: 'sm', className: 'w-full sm:w-auto' })}
+          >
+            <Icon.Download size={14} />
+            <span>{tr("Export Health Summary (PDF)")}</span>
+          </a>
         </div>
 
-        {/* Summary Banner */}
-        <Card className="overflow-hidden p-0">
-          <div className="bg-gradient-to-r from-primary-700 to-primary-600 p-6 text-white">
-            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="grid h-16 w-16 place-items-center rounded-2xl bg-white/15 font-display text-xl font-bold">
-                  {initials}
-                </div>
-                <div>
-                  <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-white">{fullName}</h1>
-                  <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                    <span className="rounded-md bg-white/20 px-2.5 py-0.5 font-mono text-xs font-semibold text-white">
-                      {patientUid}
-                    </span>
-                    <span className="text-sm font-medium text-primary-100">
-                      {patient?.gender || '-'} •{' '}
-                      {patient?.date_of_birth
-                        ? `${new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()} Yrs`
-                        : '-'}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-critical px-3 py-0.5 text-xs font-bold text-white shadow-xs">
-                      {patient?.blood_group ? `${patient.blood_group} Blood Group` : tr('Blood Group N/A')}
-                    </span>
-                  </div>
-                </div>
+        {/* Patient identity and safety strip */}
+        <Card className="overflow-hidden">
+          <div className="grid gap-5 p-4 sm:p-5 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-primary-700 font-display text-lg font-semibold text-white" aria-hidden="true">
+                {initials}
               </div>
-
-              {/* 2xl Demographic Cluster */}
-              <div className="hidden 2xl:flex items-center gap-6 border-l border-white/20 pl-6 text-xs text-primary-100">
-                <div>
-                  <span className="text-primary-200 font-medium block text-xs">{tr("National ID (NID)")}</span>
-                  <span className="font-mono font-bold text-white text-sm">{patient?.nid_or_bid || '-'}</span>
-                </div>
-                <div>
-                  <span className="text-primary-200 font-medium block text-xs">{tr("Attending Physician")}</span>
-                  <span className="font-semibold text-white text-sm">
-                    {timeline?.[0]?.doctor_name ? `${timeline[0].doctor_name}` : tr('Consulting Clinician')}
+              <div className="min-w-0">
+                <h1 className="font-display text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl">{fullName}</h1>
+                <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-ink-600">
+                  <span className="rounded-md border border-hair bg-canvas px-2 py-0.5 font-mono text-xs font-semibold text-primary-700">{patientUid}</span>
+                  <span>
+                    {patient?.gender || '-'} ·{' '}
+                    {patient?.date_of_birth ? tr('{n} yrs', { n: new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear() }) : '-'}
                   </span>
+                  <Badge tone="crimson" size="sm">
+                    {patient?.blood_group ? tr('Blood group {group}', { group: patient.blood_group }) : tr('Blood Group N/A')}
+                  </Badge>
                 </div>
-                <div>
-                  <span className="text-primary-200 font-medium block text-xs">{tr("Primary Facility")}</span>
-                  <span className="font-semibold text-white text-sm">
-                    {timeline?.[0]?.hospital_affiliation || tr('MedraLink Network Clinic')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Emergency Contact */}
-              <div className="rounded-xl border border-white/20 bg-white/10 p-4 text-left backdrop-blur-xs">
-                <p className="text-xs font-medium text-primary-200">
-                  {tr("Emergency Contact")}
-                </p>
-                <p className="mt-1 font-semibold text-white flex items-center gap-1.5">
-                  <Icon.User size={14} className="text-primary-200 shrink-0" />
-                  <span>{patient?.emergency_contact_name || tr('Not provided')}</span>{' '}
-                  {patient?.emergency_contact_relation && (
-                    <span className="font-normal text-primary-200 text-xs">
-                      ({patient.emergency_contact_relation})
-                    </span>
-                  )}
-                </p>
-                <p className="font-mono text-sm text-primary-100 mt-1 flex items-center gap-1.5">
-                  <span className="text-xs text-primary-300">📞</span>
-                  <span>{patient?.emergency_contact_phone || '-'}</span>
-                </p>
               </div>
             </div>
+
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-t border-hair pt-4 text-sm sm:grid-cols-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+              <div className="min-w-0">
+                <dt className="text-xs text-ink-600">{tr("National ID (NID)")}</dt>
+                <dd className="truncate font-mono font-semibold text-ink-900">{patient?.nid_or_bid || '-'}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-xs text-ink-600">{tr("Attending Physician")}</dt>
+                <dd className="truncate font-semibold text-ink-900">{timeline?.[0]?.doctor_name || '-'}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-xs text-ink-600">{tr("Primary Facility")}</dt>
+                <dd className="truncate font-semibold text-ink-900">{timeline?.[0]?.doctor_hospital || timeline?.[0]?.hospital_affiliation || '-'}</dd>
+              </div>
+              <div className="min-w-0">
+                <dt className="text-xs text-ink-600">{tr("Emergency Contact")}</dt>
+                <dd className="truncate font-semibold text-ink-900">
+                  {patient?.emergency_contact_name || tr('Not provided')}
+                  {patient?.emergency_contact_relation && <span className="font-normal text-ink-600"> ({patient.emergency_contact_relation})</span>}
+                </dd>
+                {patient?.emergency_contact_phone && <dd className="font-mono text-xs text-ink-600">{patient.emergency_contact_phone}</dd>}
+              </div>
+            </dl>
           </div>
 
-          {/* Safety Alert Strip with high-contrast medical badges */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 border-t border-rose-200 bg-rose-50/70 px-6 py-3.5">
-            <div className="flex items-center gap-2 shrink-0">
-              <Icon.Alert size={18} className="text-critical shrink-0" />
+          <div className="flex flex-col gap-2 border-t border-rose-200 bg-rose-50/70 px-4 py-3 sm:flex-row sm:items-start sm:gap-4 sm:px-5">
+            <div className="flex shrink-0 items-center gap-2">
+              <Icon.Alert size={16} className="shrink-0 text-critical" />
               <span className="text-xs font-semibold text-rose-900">{tr('Clinical Safety')}:</span>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="font-medium text-rose-950">{tr('Allergies')}:</span>
               {allergies && allergies.length > 0 ? (
                 allergies.map((a: any, idx: number) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-rose-100 px-2 py-0.5 font-semibold text-rose-800 border border-rose-300"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-critical" />
-                    {a.allergen} ({a.severity})
-                  </span>
+                  <Badge key={idx} tone="crimson" size="sm" dot>{a.allergen} ({a.severity})</Badge>
                 ))
               ) : (
-                <span className="text-rose-800 font-medium">{tr("No known drug allergies (NKDA)")}</span>
+                <span className="font-medium text-rose-800">{tr("No known drug allergies (NKDA)")}</span>
               )}
-              <span className="hidden sm:inline text-rose-300">•</span>
+              <span className="hidden text-rose-300 sm:inline" aria-hidden="true">|</span>
               <span className="font-medium text-ink-900">{tr('Chronic Conditions')}:</span>
               {conditions && conditions.length > 0 ? (
                 conditions.map((c: any, idx: number) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1 rounded-md bg-white/70 px-2 py-0.5 font-semibold text-ink-900 border border-hair-strong"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-primary-600" />
-                    {c.condition_name} ({c.status || tr('Managed')})
-                  </span>
+                  <Badge key={idx} tone="slate" size="sm" dot>{c.condition_name} ({tr(c.status || 'Managed')})</Badge>
                 ))
               ) : (
-                <span className="text-slate-600 font-medium">{tr("No chronic conditions recorded")}</span>
+                <span className="font-medium text-ink-600">{tr("No chronic conditions recorded")}</span>
               )}
             </div>
           </div>
         </Card>
 
-        {/* Section Heading */}
-        <div className="pt-2">
-          <h2 className="font-display text-2xl font-bold tracking-tight text-ink-900">{tr("Longitudinal Health Timeline")}</h2>
-          <p className="mt-1 text-sm text-ink-600">
-            {tr("A single continuous record of every consultation, accessible under strict RBAC.")}
-          </p>
+        <div>
+          <h2 className="font-display text-lg font-semibold tracking-tight text-ink-900 sm:text-xl">{tr("Longitudinal Health Timeline")}</h2>
+          <p className="mt-0.5 text-sm text-ink-600">{tr("A single continuous record of every consultation, accessible under strict RBAC.")}</p>
         </div>
 
-        {/* 2xl Two-Column Grid: Timeline on Left, Analytical Index Sidebar on Right */}
-        <div className="grid 2xl:grid-cols-[1fr_360px] gap-8 items-start">
-          {/* The Timeline Tree */}
-          <div className="relative mt-2 pl-9">
-            {/* Vertical continuous blue gradient line */}
-            <div className="absolute bottom-6 left-[11px] top-3 w-0.5 bg-gradient-to-b from-primary-600 to-hair-strong" />
+        <div className="grid items-start gap-6 xl:grid-cols-[1fr_340px]">
+          {/* Visit timeline: dot and rail on the left, one panel per visit */}
+          <div className="relative pl-6 sm:pl-8">
+            <div className="absolute bottom-6 left-[6px] top-3 w-px bg-hair-strong sm:left-[10px]" aria-hidden="true" />
+            <ol className="space-y-5">
+              {timeline.length === 0 ? (
+                <li>
+                  <EmptyState icon={<Icon.Clock size={20} />} title={tr("No consultation history recorded yet for this patient.")} />
+                </li>
+              ) : (
+                timeline.map((record: any, index: number) => {
+                  const isLatest = index === 0;
+                  const isOpen = isLatest || expandedCards[record.id];
+                  const visitDateStr = new Date(record.visit_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                  const v = record.vitals;
 
-          <div className="space-y-8">
-            {timeline.length === 0 ? (
-              <Card className="p-8 text-center text-sm text-ink-400">
-                {tr("No consultation history recorded yet for this patient.")}
-              </Card>
-            ) : (
-              timeline.map((record: any, index: number) => {
-                const isLatest = index === 0;
-                const isAccordionOpen = isLatest || expandedCards[record.id];
-                const visitDateStr = new Date(record.visit_date).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric'
-                });
+                  return (
+                    <li key={record.id} className="relative">
+                      <span className="absolute -left-6 top-5 sm:-left-8 sm:translate-x-[3px]">
+                        <TimelineMarker active={isLatest} />
+                      </span>
 
-                return (
-                  <div key={record.id} className="relative">
-                    {/* Glowing Marker */}
-                    <div className="absolute -left-9 top-1">
-                      <TimelineMarker active={isLatest} />
-                    </div>
-
-                    <Card className="p-6 transition-all hover:shadow-md">
-                      {/* Card Header */}
-                      <div
-                        // Mouse shortcut only; keyboard and screen-reader users use the chevron button below,
-                        // so the header is not itself a nested interactive control.
-                        onClick={() => toggleCard(record.id)}
-                        className="flex flex-wrap items-start justify-between gap-3 cursor-pointer select-none rounded-xl -m-2 p-2 hover:bg-slate-50/70 focus-visible:ring-2 focus-visible:ring-primary-600 transition-colors"
-                      >
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-display text-lg font-bold text-ink-900">
-                              {visitDateStr}
-                            </h3>
-                            <Pill tone="blue">
-                              {record.reason || tr('General Clinical Review')}
-                            </Pill>
-                          </div>
-                          <p className="mt-1.5 text-sm text-ink-600">
-                            {record.doctor_name}{' '}
-                            <span className="text-ink-600">
-                              ({record.doctor_qualifications || record.doctor_specialization || 'MBBS, FCPS Cardiology | NICVD'})
-                            </span>
-                          </p>
-                          <p className="text-sm text-ink-600">
-                            {record.doctor_hospital || tr('Square Hospital, Dhaka')}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={`/api/v1/consultations/${record.id}/pdf?token=${token}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border border-hair bg-white px-2.5 py-1 text-xs font-semibold text-primary-700 shadow-xs transition-colors hover:bg-slate-50 hover:text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
-                            title={tr("Download Clinical Encounter Summary PDF")}
-                          >
-                            <Icon.Download size={12} className="text-primary-700" />
-                            <span className="hidden sm:inline">{tr("Encounter PDF")}</span>
-                          </a>
-                          {isLatest && (
-                            <Pill tone="emerald">
-                              <span className="h-1.5 w-1.5 rounded-full bg-success" /> {tr("Most Recent")}
-                            </Pill>
-                          )}
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleCard(record.id);
-                            }}
-                            aria-expanded={isAccordionOpen}
-                            aria-label={tr('Expand consultation from {date}', { date: visitDateStr })}
-                            className="rounded-lg border border-hair p-1.5 text-ink-600 hover:text-ink-900 hover:bg-white transition-colors"
-                          >
-                            <Icon.Chevron
-                              size={18}
-                              className={`transition-transform duration-200 ${isAccordionOpen ? 'rotate-180' : ''}`}
-                            />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Expandable / Visible Details */}
-                      {isAccordionOpen && (
-                        <div className="mt-5 space-y-5 border-t border-hair pt-5">
-                          {/* Chief Complaints */}
-                          <div className="rounded-xl border border-hair bg-canvas p-4">
-                            <p className="text-xs font-semibold text-slate-700">
-                              {tr("Chief Complaints")}
-                            </p>
-                            <p className="mt-1 text-sm text-ink-900">
-                              {record.chief_complaint || tr('No complaints recorded.')}
-                            </p>
-                            {record.clinical_notes && (
-                              <p className="mt-2 text-xs text-ink-600 border-t border-hair pt-2">
-                                <span className="font-semibold text-ink-900">{tr('Clinical Notes')}:</span> {record.clinical_notes}
+                      <Card>
+                        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h3 className="font-display text-base font-semibold text-ink-900 sm:text-lg">{visitDateStr}</h3>
+                              <Badge tone="blue" size="sm">{record.reason || tr('General Clinical Review')}</Badge>
+                              {isLatest && <Badge tone="emerald" size="sm" dot>{tr("Most Recent")}</Badge>}
+                            </div>
+                            {record.doctor_name && (
+                              <p className="mt-1 text-sm text-ink-600">
+                                <span className="font-medium text-ink-900">{record.doctor_name}</span>
+                                {(record.doctor_qualifications || record.doctor_specialization) && <> ({record.doctor_qualifications || record.doctor_specialization})</>}
                               </p>
                             )}
+                            {record.doctor_hospital && <p className="text-sm text-ink-600">{record.doctor_hospital}</p>}
                           </div>
 
-                          {/* Clinical Vitals Ribbon */}
-                          {record.vitals && (
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={`/api/v1/consultations/${record.id}/pdf?token=${token}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              title={tr("Download Clinical Encounter Summary PDF")}
+                              className={buttonClasses({ variant: 'secondary', size: 'sm', className: 'flex-1 sm:flex-none' })}
+                            >
+                              <Icon.Download size={14} />
+                              <span>{tr("Encounter PDF")}</span>
+                            </a>
+                            {!isLatest && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleCard(record.id)}
+                                aria-expanded={isOpen}
+                                aria-label={tr('Expand consultation from {date}', { date: visitDateStr })}
+                                icon={<Icon.Chevron size={16} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />}
+                              >
+                                <span className="sr-only">{tr('Expand consultation from {date}', { date: visitDateStr })}</span>
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+
+                        {isOpen && (
+                          <div className="space-y-5 border-t border-hair p-4 sm:p-5">
                             <div>
-                              <p className="text-xs font-semibold text-slate-700 mb-2">
-                                {tr("Clinical Vitals Telemetry")}
-                              </p>
-                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-                                <VitalPill
-                                  label={tr("Blood Pressure")}
-                                  value={record.vitals.systolic_bp ? `${record.vitals.systolic_bp}/${record.vitals.diastolic_bp}` : '145/92'}
-                                  tone="amber"
-                                />
-                                <VitalPill
-                                  label={tr("Pulse")}
-                                  value={record.vitals.heart_rate ? `${record.vitals.heart_rate} bpm` : '78 bpm'}
-                                  tone="slate"
-                                />
-                                <VitalPill
-                                  label={tr("Temp")}
-                                  value={record.vitals.temperature ? `${record.vitals.temperature}°C` : '36.8°C'}
-                                  tone="slate"
-                                />
-                                <VitalPill
-                                  label={tr("SpO₂")}
-                                  value={record.vitals.spo2 ? `${record.vitals.spo2}%` : '98%'}
-                                  tone="emerald"
-                                />
-                                <VitalPill
-                                  label={tr("BMI")}
-                                  value={record.vitals.bmi ? `${record.vitals.bmi}` : '25.9'}
-                                  tone="slate"
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Codified Diagnoses */}
-                          {record.diagnoses && record.diagnoses.length > 0 && (
-                            <div>
-                              <p className="text-xs font-semibold text-slate-700 mb-2">
-                                {tr("Codified Diagnosis (ICD-10)")}
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {record.diagnoses.map((d: any) => (
-                                  <Pill key={d.id} tone="navy" className="!bg-ink-600 !border-ink-600">
-                                    [{d.icd10_code}] {d.diagnosis_title}
-                                  </Pill>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Digital Prescription Block */}
-                          {record.prescription && (
-                            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                              <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div className="flex items-center gap-2 text-sm font-semibold text-success">
-                                  <Icon.Pill size={16} /> Digital Prescription ({record.prescription.prescription_uid})
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Link
-                                    to={`/prescription/${record.prescription.id}`}
-                                    className="rounded-lg border border-emerald-200 bg-white px-3 py-1.5 text-xs font-semibold text-success hover:bg-emerald-50"
-                                  >
-                                    {tr("View ℞ Sheet")}
-                                  </Link>
-                                  <a
-                                    href={`/api/v1/prescriptions/${record.prescription.id}/pdf?token=${token}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-flex items-center gap-1.5 rounded-lg bg-success px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-success"
-                                  >
-                                    <Icon.Download size={14} /> {tr("Download Official PDF (℞)")}
-                                  </a>
-                                </div>
-                              </div>
-
-                              {record.prescription.items && record.prescription.items.length > 0 && (
-                                <div className="mt-3 divide-y divide-emerald-200/60">
-                                  {record.prescription.items.map((item: any) => (
-                                    <div key={item.id} className="flex items-center justify-between py-2 tabular text-xs sm:text-sm">
-                                      <span className="font-semibold text-emerald-800">
-                                        {item.medication_name} {item.dosage && `(${item.dosage})`}
-                                        {item.instructions && <span className="block text-xs font-normal text-success">{item.instructions}</span>}
-                                      </span>
-                                      <span className="font-mono font-medium text-success">
-                                        {item.frequency} • {item.duration}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
+                              <p className={sectionLabel}>{tr("Chief Complaints")}</p>
+                              <p className="text-sm text-ink-900">{record.chief_complaint || tr('No complaints recorded.')}</p>
+                              {record.clinical_notes && (
+                                <p className="mt-2 text-sm text-ink-600">
+                                  <span className="font-semibold text-ink-900">{tr('Clinical Notes')}:</span> {record.clinical_notes}
+                                </p>
                               )}
                             </div>
-                          )}
 
-                          {/* Diagnostic Lab Reports */}
-                          {record.labReports && record.labReports.length > 0 && (
-                            <div className="space-y-2">
-                              {record.labReports.map((lab: any) => {
-                                const isOpen = expandedReports[lab.id];
-                                return (
-                                  <div key={lab.id} className="rounded-xl border border-hair p-4 bg-white">
-                                    <div className="flex items-center justify-between">
-                                      <div className="flex items-center gap-3">
-                                        <div className="grid h-9 w-9 place-items-center rounded-lg bg-violet-50 text-audit">
-                                          <Icon.Flask size={16} />
-                                        </div>
-                                        <div>
-                                          <p className="text-sm font-semibold text-ink-900">{lab.test_name}</p>
-                                          <p className="text-xs text-success font-medium">{lab.status || tr('Completed')}</p>
-                                        </div>
-                                      </div>
-                                      <button
-                                        type="button"
-                                        aria-expanded={isOpen}
-                                        onClick={() => toggleReport(lab.id)}
-                                        className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-700 hover:text-primary-700"
-                                      >
-                                        {isOpen ? 'Hide details' : tr('View scan / results')}
-                                        <Icon.Arrow size={13} className={isOpen ? 'rotate-90' : ''} />
-                                      </button>
-                                    </div>
-                                    {isOpen && (
-                                      <div className="mt-3 rounded-lg bg-canvas px-4 py-3 text-xs text-ink-600 border border-hair">
-                                        <p className="font-semibold text-ink-900">{tr('Diagnostic Laboratory Finding')}:</p>
-                                        <p className="mt-1">{lab.results_summary || tr('Normal physiological thresholds observed. Fasting blood sugar and lipid metrics authenticated.')}</p>
-                                      </div>
-                                    )}
+                            {v && (
+                              <div>
+                                <p className={sectionLabel}>{tr("Clinical Vitals Telemetry")}</p>
+                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                                  <VitalPill label={tr("Blood Pressure")} value={v.systolic_bp ? `${v.systolic_bp}/${v.diastolic_bp}` : '-'} tone={v.systolic_bp ? 'amber' : 'slate'} />
+                                  <VitalPill label={tr("Pulse")} value={v.heart_rate ? `${v.heart_rate} bpm` : '-'} tone="slate" />
+                                  <VitalPill label={tr("Temp")} value={v.temperature ? `${v.temperature}°C` : '-'} tone="slate" />
+                                  <VitalPill label={tr("SpO₂")} value={v.spo2 ? `${v.spo2}%` : '-'} tone={v.spo2 ? 'emerald' : 'slate'} />
+                                  <VitalPill label={tr("BMI")} value={v.bmi ? `${v.bmi}` : '-'} tone="slate" />
+                                </div>
+                              </div>
+                            )}
+
+                            {record.diagnoses && record.diagnoses.length > 0 && (
+                              <div>
+                                <p className={sectionLabel}>{tr("Codified Diagnosis (ICD-10)")}</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {record.diagnoses.map((d: any) => (
+                                    <Badge key={d.id} tone="slate" size="sm">
+                                      <span className="font-mono">{d.icd10_code}</span> {d.diagnosis_title}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {record.prescription && (
+                              <div className="rounded-lg border border-hair">
+                                <div className="flex flex-col gap-3 border-b border-hair bg-canvas/60 px-3.5 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+                                  <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+                                    <Icon.Pill size={15} className="text-primary-700" />
+                                    {tr('Prescription')}
+                                    <span className="font-mono text-xs font-medium text-ink-600">{record.prescription.prescription_uid}</span>
+                                  </p>
+                                  <div className="grid grid-cols-2 gap-2 sm:flex">
+                                    <ButtonLink size="sm" variant="secondary" to={`/prescription/${record.prescription.id}`}>
+                                      {tr("View ℞ Sheet")}
+                                    </ButtonLink>
+                                    <a
+                                      href={`/api/v1/prescriptions/${record.prescription.id}/pdf?token=${token}`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className={buttonClasses({ size: 'sm', variant: 'success-soft' })}
+                                    >
+                                      <Icon.Download size={14} />
+                                      <span>{tr("Download Official PDF (℞)")}</span>
+                                    </a>
                                   </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </Card>
-                  </div>
-                );
-              })
-            )}
-            </div>
+                                </div>
+                                {record.prescription.items && record.prescription.items.length > 0 && (
+                                  <ul className="divide-y divide-hair">
+                                    {record.prescription.items.map((item: any) => (
+                                      <li key={item.id} className="flex flex-col gap-1 px-3.5 py-2.5 text-sm tabular sm:flex-row sm:items-center sm:justify-between">
+                                        <span className="font-medium text-ink-900">
+                                          {item.medication_name} {item.dosage && <span className="text-ink-600">({item.dosage})</span>}
+                                          {item.instructions && <span className="block text-xs font-normal text-ink-600">{item.instructions}</span>}
+                                        </span>
+                                        <span className="font-mono text-xs text-ink-600 sm:text-sm">{item.frequency} · {item.duration}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            )}
+
+                            {record.labReports && record.labReports.length > 0 && (
+                              <div className="space-y-2">
+                                {record.labReports.map((lab: any) => {
+                                  const labOpen = expandedReports[lab.id];
+                                  return (
+                                    <div key={lab.id} className="rounded-lg border border-hair p-3.5">
+                                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                        <div className="flex items-center gap-3">
+                                          <span className="grid h-8 w-8 place-items-center rounded-md bg-canvas text-primary-700" aria-hidden="true">
+                                            <Icon.Flask size={15} />
+                                          </span>
+                                          <div>
+                                            <p className="text-sm font-semibold text-ink-900">{lab.test_name}</p>
+                                            <p className="text-xs text-ink-600">{tr(lab.status || 'Completed')}</p>
+                                          </div>
+                                        </div>
+                                        <Button variant="ghost" size="sm" aria-expanded={labOpen} onClick={() => toggleReport(lab.id)} className="self-start sm:self-auto">
+                                          {labOpen ? tr('Hide details') : tr('View scan / results')}
+                                        </Button>
+                                      </div>
+                                      {labOpen && (
+                                        <div className="mt-3 rounded-md border border-hair bg-canvas px-3.5 py-3 text-sm text-ink-600">
+                                          <p className="font-semibold text-ink-900">{tr('Diagnostic Laboratory Finding')}:</p>
+                                          <p className="mt-1">{lab.results_summary || tr('No result summary recorded.')}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </Card>
+                    </li>
+                  );
+                })
+              )}
+            </ol>
           </div>
 
-          {/* Longitudinal Medical Index & Quick Navigator Sidebar on 2xl */}
-          <div className="hidden 2xl:block space-y-6 sticky top-24">
-            {/* Timeline Summary Card */}
-            <Card className="p-5 space-y-4">
-              <div className="flex items-center justify-between border-b border-hair pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
-                    <Icon.Clock size={16} />
+          {/* Record summary: below the timeline on smaller screens, beside it on wide ones */}
+          <aside className="space-y-6 xl:sticky xl:top-24">
+            <Card padding="sm" header={{ title: tr("Timeline Analytics"), icon: <Icon.Clock size={15} />, as: 'h3' }}>
+              <dl className="grid grid-cols-2 gap-2 text-sm xl:grid-cols-1">
+                {[
+                  [tr("Active Chronic Conditions"), conditions?.length || 0, 'text-ink-900'],
+                  [tr("Documented Drug Allergies"), allergies?.length || 0, allergies?.length ? 'text-critical' : 'text-ink-900'],
+                  [tr("Cumulative Prescriptions"), prescriptionCount, 'text-ink-900'],
+                  [tr("Diagnostic Lab Streams"), labReports.length, 'text-ink-900'],
+                ].map(([label, value, tone]) => (
+                  <div key={label as string} className="flex items-center justify-between gap-2 rounded-md border border-hair bg-canvas/60 px-3 py-2">
+                    <dt className="text-xs text-ink-600">{label}</dt>
+                    <dd className={`tabular font-semibold ${tone}`}>{value}</dd>
                   </div>
-                  <h3 className="font-display text-sm font-bold text-ink-900">{tr("Timeline Analytics")}</h3>
-                </div>
-                <Pill tone="blue">{timeline.length} Records</Pill>
-              </div>
-
-              <div className="space-y-2.5 text-xs">
-                <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
-                  <span className="text-ink-600">{tr("Active Chronic Conditions")}</span>
-                  <span className="font-bold text-ink-900">{conditions?.length || 1} Conditions</span>
-                </div>
-                <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
-                  <span className="text-ink-600">{tr("Documented Drug Allergies")}</span>
-                  <span className="font-bold text-critical">{allergies?.length || 1} High-Alert</span>
-                </div>
-                <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
-                  <span className="text-ink-600">{tr("Cumulative Prescriptions")}</span>
-                  <span className="font-bold text-success">{timeline.filter((t: any) => t.prescription).length || 2} E-Prescriptions</span>
-                </div>
-                <div className="flex justify-between items-center rounded-lg bg-canvas p-2.5 border border-hair">
-                  <span className="text-ink-600">{tr("Diagnostic Lab Streams")}</span>
-                  <span className="font-bold text-audit">{timeline.reduce((acc: number, t: any) => acc + (t.labReports?.length || 0), 0) || 2} Reports</span>
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-hair">
-                <a
-                  href={`/api/v1/patients/${patient?.id || id}/summary/pdf?token=${token}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex min-h-[40px] items-center justify-center gap-2 w-full rounded-xl bg-primary-700 px-4 py-2.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-primary-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
-                >
-                  <Icon.Download size={14} />
-                  <span>{tr("Download Full Dossier (PDF)")}</span>
-                </a>
-              </div>
+                ))}
+              </dl>
+              <a href={summaryPdf} target="_blank" rel="noreferrer" className={buttonClasses({ block: true, className: 'mt-3' })}>
+                <Icon.Download size={14} />
+                <span>{tr("Download Full Dossier (PDF)")}</span>
+              </a>
             </Card>
 
-            {/* Diagnostic Quick Filter Card */}
-            <Card className="p-5 space-y-3">
-              <div className="flex items-center justify-between border-b border-hair pb-3">
-                <div className="flex items-center gap-2">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success">
-                    <Icon.Flask size={16} />
-                  </div>
-                  <h3 className="font-display text-sm font-bold text-ink-900">{tr("Diagnostic Laboratory Archive")}</h3>
-                </div>
-              </div>
-
-              <div className="space-y-2.5 text-xs">
-                <div className="rounded-lg border border-hair bg-canvas p-3">
-                  <p className="font-semibold text-ink-900">{tr("Fast Blood Glucose & HbA1c")}</p>
-                  <p className="text-xs text-success font-medium mt-0.5">5.8% (Optimal Glycemic Control)</p>
-                  <p className="text-xs text-ink-500 font-mono mt-1">Square Diagnostics • 10 Aug 2026</p>
-                </div>
-                <div className="rounded-lg border border-hair bg-canvas p-3">
-                  <p className="font-semibold text-ink-900">12-Lead Resting Electrocardiogram (ECG)</p>
-                  <p className="text-xs text-success font-medium mt-0.5">{tr("Normal Sinus Rhythm • 74 bpm")}</p>
-                  <p className="text-xs text-ink-500 font-mono mt-1">NICVD Lab 3 • 10 Aug 2026</p>
-                </div>
-              </div>
+            <Card padding="sm" header={{ title: tr("Diagnostic Laboratory Archive"), icon: <Icon.Flask size={15} />, as: 'h3' }}>
+              {labReports.length > 0 ? (
+                <ul className="space-y-2">
+                  {labReports.map((lab: any) => (
+                    <li key={lab.id} className="rounded-md border border-hair bg-canvas/60 px-3 py-2.5 text-sm">
+                      <p className="font-semibold text-ink-900">{lab.test_name}</p>
+                      <p className="text-xs text-ink-600">
+                        {tr(lab.status || 'Completed')} · {new Date(lab.visit_date).toLocaleDateString()}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-ink-600">{tr('No lab reports on record yet.')}</p>
+              )}
             </Card>
-
-            {/* Cryptographic Proof Card */}
-            <Card className="p-5 text-xs bg-slate-900 text-white border-slate-800 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                  <Icon.Shield size={16} />
-                  <span className="text-xs">{tr("Cryptographic RBAC Seal")}</span>
-                </div>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/20">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> {tr("Verified")}
-                </span>
-              </div>
-              <p className="text-slate-300 leading-relaxed text-xs">
-                {tr("This longitudinal medical timeline is cryptographically verified against the MedraLink distributed ledger.")}
-              </p>
-              <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-semibold text-slate-400">SHA-256 Digest:</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard?.writeText('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
-                      toast.success(tr('Copied SHA-256 integrity hash!'));
-                    }}
-                    title={tr("Copy hash to clipboard")}
-                    className="inline-flex items-center gap-1 text-xs font-medium text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  >
-                    <Icon.Copy size={12} />
-                    <span>{tr("Copy")}</span>
-                  </button>
-                </div>
-                <p className="font-mono text-xs text-slate-300 break-all select-all leading-normal">
-                  e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-                </p>
-              </div>
-            </Card>
-          </div>
+          </aside>
         </div>
       </main>
     </div>

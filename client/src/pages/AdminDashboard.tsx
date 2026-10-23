@@ -6,7 +6,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
 import { useDebounce } from '../hooks/useDebounce.js';
 import { AdminUsersPanel, AdminSettingsPanel } from '../components/AdminPanels.js';
-import { Card, Icon, Pill, Badge, Button, MetricCard, Input } from '../ui/primitives.js';
+import { Badge, Button, Card, Icon, Input, MetricCard, PageHeader, Skeleton } from '../ui/primitives.js';
 import { DataTable, TBody, THead, Td, Th, Tr } from '../ui/table.js';
 
 export const AdminDashboard: React.FC = () => {
@@ -120,101 +120,51 @@ export const AdminDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-audit border-t-transparent"></div>
+      <div className="mx-auto max-w-[1720px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 2xl:px-12" role="status" aria-label={tr('Loading clinical portal module...')}>
+        <Skeleton className="h-16 w-72" />
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[6.5rem] rounded-xl" />)}
+        </div>
+        <Skeleton className="h-72 rounded-xl" />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-canvas pb-16">
-      {/* Enterprise Governance Telemetry Banner */}
-      <section aria-label={tr("Governance Telemetry Banner")} className="border-b border-hair bg-white">
-        <div className="mx-auto flex max-w-[1200px] 2xl:max-w-[1720px] flex-wrap items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12 py-5">
-          <div>
-            <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
-              {tr("Administration")}
-            </h1>
-            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-ink-600">
-              <span className="inline-flex items-center gap-1.5 font-medium text-success">
-                <span className="h-2 w-2 rounded-full bg-success" /> {tr("Platform Health: Operational")}
-              </span>
-              <span className="text-ink-400" aria-hidden="true">|</span>
-              <span className="tabular font-medium">{stats?.totalAuditLogs ?? 0} audit events recorded</span>
-            </p>
-          </div>
+      <PageHeader
+        icon={<Icon.Shield size={20} />}
+        title={tr("Administration")}
+        meta={
+          <>
+            <span className="tabular">{tr('{n} audit events recorded', { n: stats?.totalAuditLogs ?? 0 })}</span>
+            <span className="hidden text-ink-400 sm:inline" aria-hidden="true">|</span>
+            <span>{tr('Each entry chained by SHA-256')}</span>
+          </>
+        }
+      />
 
-          <div className="flex items-center gap-3 rounded-xl border border-hair bg-slate-50 px-3.5 py-2 shadow-xs">
-            <img
-              src="/assets/verified_seal.png"
-              alt={tr("Cryptographically verified ledger seal")}
-              className="h-8 w-8 object-contain"
-              loading="lazy"
-            />
-            <div className="text-right">
-              <p className="text-xs font-semibold text-primary-700">{tr("Append-only audit ledger")}</p>
-              <p className="text-xs text-ink-600">Each entry chained by SHA-256</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <main className="mx-auto max-w-[1200px] 2xl:max-w-[1720px] space-y-6 px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
-        {/* 4 Standardized Metric KPI Cards */}
+      <main className="mx-auto max-w-[1720px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 2xl:px-12">
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          <MetricCard
-            title={tr("Registered Patient Records")}
-            value={stats?.totalPatients ?? 0}
-            subtext={tr("National health registry index")}
-            icon={<Icon.User size={20} />}
-            iconTone="blue"
-            status={{ label: tr("Live"), tone: "emerald" }}
-          />
-
-          <MetricCard
-            title={tr("Accredited Physicians")}
-            value={stats?.totalDoctors ?? 0}
-            subtext={tr("BMDC Form-C certified")}
-            icon={<Icon.Stethoscope size={20} />}
-            iconTone="emerald"
-            status={{ label: tr("Live"), tone: "emerald" }}
-          />
-
-          <MetricCard
-            title={tr("Consultations Processed")}
-            value={stats?.totalRecords ?? 0}
-            subtext={tr("Unified clinical records")}
-            icon={<Icon.File size={20} />}
-            iconTone="navy"
-            status={{ label: tr("Live"), tone: "emerald" }}
-          />
-
-          <MetricCard
-            title={tr("Cryptographic Audit Entries")}
-            value={stats?.totalAuditLogs ?? 0}
-            subtext={tr("SHA-256 validated ledger")}
-            icon={<Icon.Shield size={20} />}
-            iconTone="purple"
-            status={{ label: tr("Live"), tone: "emerald" }}
-          />
+          <MetricCard title={tr("Registered Patient Records")} value={stats?.totalPatients ?? 0} subtext={tr("National health registry index")} icon={<Icon.User size={16} />} iconTone="blue" />
+          <MetricCard title={tr("Accredited Physicians")} value={stats?.totalDoctors ?? 0} subtext={tr("BMDC Form-C certified")} icon={<Icon.Stethoscope size={16} />} iconTone="emerald" />
+          <MetricCard title={tr("Consultations Processed")} value={stats?.totalRecords ?? 0} subtext={tr("Unified clinical records")} icon={<Icon.File size={16} />} iconTone="navy" />
+          <MetricCard title={tr("Cryptographic Audit Entries")} value={stats?.totalAuditLogs ?? 0} subtext={tr("SHA-256 validated ledger")} icon={<Icon.Lock size={16} />} iconTone="navy" />
         </div>
 
-        {/* Section 1: Physician Credential Verification & Onboarding Table */}
-        <Card className="overflow-hidden p-0">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hair px-4 py-4 sm:px-6">
-            <div>
-              <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">
-                {tr("Physician Credential Verification & Onboarding")}
-              </h2>
-              <p className="mt-0.5 text-sm text-ink-600">
-                {tr("Approve or revoke BMDC accreditation with instant cryptographic validation status.")}
-              </p>
-            </div>
-            <Pill tone={pendingDoctorsCount ? 'amber' : 'emerald'}>
-              {pendingDoctorsCount ? tr('{n} Pending Review', { n: pendingDoctorsCount }) : tr('Review Queue Clear')}
-            </Pill>
-          </div>
-
+        <Card
+          className="overflow-hidden"
+          header={{
+            title: tr("Physician Credential Verification & Onboarding"),
+            description: tr("Approve or revoke BMDC accreditation with instant cryptographic validation status."),
+            icon: <Icon.Stethoscope size={15} />,
+            action: (
+              <Badge tone={pendingDoctorsCount ? 'amber' : 'emerald'} dot>
+                {pendingDoctorsCount ? tr('{n} Pending Review', { n: pendingDoctorsCount }) : tr('Review Queue Clear')}
+              </Badge>
+            ),
+          }}
+        >
           <DataTable minWidth="min-w-[900px]" caption={tr("Physician credentials")}>
               <THead>
                 <tr>
@@ -240,7 +190,7 @@ export const AdminDashboard: React.FC = () => {
                       <Td className="text-ink-600">{doc.hospital_affiliation}</Td>
                       <Td>
                         <Badge tone={isAccredited ? 'emerald' : 'amber'} dot>
-                          {isAccredited ? 'Accredited' : tr('Pending')}
+                          {isAccredited ? tr('Accredited') : tr('Pending')}
                         </Badge>
                       </Td>
                       <Td className="text-right">
@@ -256,8 +206,7 @@ export const AdminDashboard: React.FC = () => {
                           ) : (
                             <Button
                               size="sm"
-                              variant="outline"
-                              className="border-rose-200 text-critical hover:bg-rose-50 hover:text-rose-700"
+                              variant="danger-soft"
                               onClick={() => setRevokeTarget({ id: doc.id, name: doc.full_name })}
                             >
                               {tr("Revoke")}
@@ -275,95 +224,74 @@ export const AdminDashboard: React.FC = () => {
         <AdminUsersPanel />
         <AdminSettingsPanel />
 
-        {/* Section 2: Cryptographic Audit Trail Inspector (Append-Only) */}
-        <Card className="overflow-hidden p-0">
-          <div className="border-b border-hair px-4 py-4 sm:px-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <Icon.Shield size={18} className="text-audit" />
-              <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">
-                {tr("Cryptographic Audit Trail Inspector")}
-              </h2>
-              <Pill tone="purple">{tr('Append-Only SHA-256')}</Pill>
+        <Card
+          className="overflow-hidden"
+          header={{
+            title: tr("Cryptographic Audit Trail Inspector"),
+            icon: <Icon.Lock size={15} />,
+            badge: <Badge tone="slate" size="sm">{tr('Append-Only SHA-256')}</Badge>,
+          }}
+        >
+          {/* Filters: stacked on phones, one row on wide screens */}
+          <div className="grid gap-2 border-b border-hair px-4 py-3 sm:px-5 md:grid-cols-2 xl:flex xl:flex-wrap xl:items-center">
+            <div className="xl:w-72">
+              <Input
+                inputSize="sm"
+                aria-label={tr("Search audit entries")}
+                value={auditSearch}
+                onChange={(event) => setAuditSearch(event.target.value)}
+                placeholder={tr("Search action, resource, or actor…")}
+                leftIcon={<Icon.Search size={14} />}
+                rightElement={
+                  auditSearch ? (
+                    <button type="button" onClick={() => setAuditSearch('')} aria-label={tr("Clear search")} className="grid h-6 w-6 place-items-center rounded text-ink-600 hover:bg-slate-100 hover:text-ink-900">
+                      <Icon.X size={12} />
+                    </button>
+                  ) : undefined
+                }
+              />
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-hair bg-white px-3 py-2 sm:flex-none focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-50 transition-all">
-                <Icon.Search size={15} className="text-ink-600 shrink-0" />
-                <input
-                  aria-label={tr("Search audit entries")}
-                  value={auditSearch}
-                  onChange={(event) => setAuditSearch(event.target.value)}
-                  placeholder={tr("Search action, resource, or actor…")}
-                  className="min-w-0 w-full bg-transparent text-xs text-ink-900 outline-none placeholder:text-ink-400 sm:w-64"
-                />
-                {auditSearch && (
-                  <button
-                    type="button"
-                    onClick={() => setAuditSearch('')}
-                    className="text-ink-600 hover:text-ink-900 text-xs px-1"
-                    aria-label={tr("Clear search")}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              <div className="flex max-w-full overflow-x-auto rounded-lg border border-hair bg-white shadow-xs">
-                {(['All', 'DOCTOR', 'PATIENT', 'ADMIN'] as const).map((r) => (
-                  <button
-                    key={r}
-                    type="button"
-                    aria-pressed={auditFilterRole === r}
-                    onClick={() => setAuditFilterRole(r)}
-                    className={`shrink-0 px-3 py-2 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary-600 ${
-                      auditFilterRole === r
-                        ? 'bg-primary-700 text-white'
-                        : 'bg-white text-ink-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    {r === 'All' ? 'All Roles' : r}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                type="button"
-                aria-pressed={last24Hours}
-                onClick={() => setLast24Hours((current) => !current)}
-                className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-primary-600 shadow-xs ${
-                  last24Hours
-                    ? 'border-primary-600 bg-primary-50 text-primary-700'
-                    : 'border-hair bg-white text-ink-600 hover:border-hair-strong'
-                }`}
-              >
-                <Icon.Clock size={14} /> {tr("Last 24 hours")}
-              </button>
-
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
-                {tr("From")}
-                <Input
-                  type="date"
-                  value={auditFrom}
-                  disabled={last24Hours}
-                  onChange={(e) => setAuditFrom(e.target.value)}
-                  inputSize="sm"
-                  className="w-auto"
-                />
-              </label>
-              <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
-                {tr("To")}
-                <Input
-                  type="date"
-                  value={auditTo}
-                  onChange={(e) => setAuditTo(e.target.value)}
-                  inputSize="sm"
-                  className="w-auto"
-                />
-              </label>
-              <span className="text-xs text-ink-600" aria-live="polite">
-                {auditTotal} matching {auditTotal === 1 ? 'entry' : 'entries'}
-              </span>
+            <div role="group" aria-label={tr('Role')} className="flex h-8 overflow-hidden rounded-md border border-hair-strong bg-white [@media(pointer:coarse)]:h-10">
+              {(['All', 'DOCTOR', 'PATIENT', 'ADMIN'] as const).map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  aria-pressed={auditFilterRole === r}
+                  onClick={() => setAuditFilterRole(r)}
+                  className={`flex-1 border-r border-hair px-3 text-xs font-semibold transition-colors last:border-r-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-600 ${
+                    auditFilterRole === r ? 'bg-primary-700 text-white' : 'text-ink-600 hover:bg-canvas hover:text-ink-900'
+                  }`}
+                >
+                  {r === 'All' ? tr('All Roles') : tr(r === 'DOCTOR' ? 'Doctor' : r === 'PATIENT' ? 'Patient' : 'Admin')}
+                </button>
+              ))}
             </div>
+
+            <Button
+              size="sm"
+              variant={last24Hours ? 'soft' : 'secondary'}
+              aria-pressed={last24Hours}
+              onClick={() => setLast24Hours((current) => !current)}
+              icon={<Icon.Clock size={14} />}
+            >
+              {tr("Last 24 hours")}
+            </Button>
+
+            <div className="grid grid-cols-2 gap-2 xl:flex">
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
+                <span className="shrink-0">{tr("From")}</span>
+                <Input type="date" value={auditFrom} disabled={last24Hours} onChange={(e) => setAuditFrom(e.target.value)} inputSize="sm" />
+              </label>
+              <label className="flex items-center gap-1.5 text-xs font-semibold text-ink-600">
+                <span className="shrink-0">{tr("To")}</span>
+                <Input type="date" value={auditTo} onChange={(e) => setAuditTo(e.target.value)} inputSize="sm" />
+              </label>
+            </div>
+
+            <span className="text-xs text-ink-600 xl:ml-auto" aria-live="polite">
+              {tr(auditTotal === 1 ? '{n} matching entry' : '{n} matching entries', { n: auditTotal })}
+            </span>
           </div>
 
           <DataTable minWidth="min-w-[960px]" caption={tr("Audit entries")}>
@@ -387,11 +315,11 @@ export const AdminDashboard: React.FC = () => {
                       {l.timestamp ? new Date(l.timestamp).toLocaleString() : '-'}
                     </Td>
                     <Td>
-                      <Pill tone={roleTone(l.actor_role)} size="sm">{l.actor_role}</Pill>
+                      <Badge tone={roleTone(l.actor_role)} size="sm">{tr(l.actor_role === 'DOCTOR' ? 'Doctor' : l.actor_role === 'PATIENT' ? 'Patient' : l.actor_role === 'ADMIN' ? 'Admin' : l.actor_role)}</Badge>
                       <span className="mt-1 block text-xs text-ink-600">{l.actor_name || tr('System')}</span>
                     </Td>
                     <Td className="whitespace-nowrap font-mono text-xs font-semibold text-primary-700">{l.action}</Td>
-                    <Td className="font-mono text-xs text-audit">{l.target_resource}</Td>
+                    <Td className="font-mono text-xs text-ink-600">{l.target_resource}</Td>
                     <Td className="max-w-xs text-xs text-ink-600">{l.details || '-'}</Td>
                     <Td>
                       <div className="flex items-center gap-2">
@@ -404,7 +332,7 @@ export const AdminDashboard: React.FC = () => {
                             onClick={() => copy(hash)}
                             type="button"
                             aria-label={tr('Copy integrity hash for {action}', { action: l.action })}
-                            title={isCopied ? 'Copied' : tr('Copy full hash')}
+                            title={isCopied ? tr('Copied') : tr('Copy full hash')}
                             className={`grid h-7 w-7 place-items-center rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
                               isCopied ? 'border-emerald-200 bg-emerald-50 text-success' : 'border-hair text-ink-600 hover:bg-slate-100 hover:text-primary-700'
                             }`}
@@ -412,7 +340,7 @@ export const AdminDashboard: React.FC = () => {
                             {isCopied ? <Icon.Check size={12} /> : <Icon.Copy size={12} />}
                           </button>
                         )}
-                        <span className="sr-only" aria-live="polite">{isCopied ? 'Hash copied' : ''}</span>
+                        <span className="sr-only" aria-live="polite">{isCopied ? tr('Hash copied') : ''}</span>
                       </div>
                     </Td>
                   </Tr>
@@ -438,7 +366,7 @@ export const AdminDashboard: React.FC = () => {
               <p>
                 {tr('Revoke the accreditation of {name}?', { name: revokeTarget?.name ?? '' })}
               </p>
-              <p className="text-xs text-critical font-medium bg-rose-50 p-2.5 rounded-xl border border-rose-200">
+              <p className="rounded-md border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-critical">
                 {tr("Revoking will immediately suspend this physician's authority to issue or cryptographically sign new clinical prescriptions across MedraLink.")}
               </p>
             </div>

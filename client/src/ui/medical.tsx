@@ -175,7 +175,7 @@ export function FeatureCard({
   return (
     <div
       className={cn(
-        'group h-full rounded-2xl border border-hair bg-surface p-6 shadow-card transition-all duration-200 hover:-translate-y-1 hover:border-primary-200 hover:shadow-card-hover',
+        'group h-full rounded-xl border border-hair bg-surface p-6 shadow-card transition-colors duration-150 hover:border-primary-200',
         className
       )}
     >
@@ -201,7 +201,7 @@ export function StepCard({
   description: string;
 }) {
   return (
-    <div className="relative h-full rounded-2xl border border-hair bg-surface p-6 shadow-card">
+    <div className="relative h-full rounded-xl border border-hair bg-surface p-6 shadow-card">
       <div className="flex items-center gap-3">
         <span className="grid h-8 w-8 place-items-center rounded-full bg-primary-700 font-display text-sm font-bold text-white">
           {step}

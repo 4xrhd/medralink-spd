@@ -1,12 +1,12 @@
 import { useLanguage } from '../context/LanguageContext.js';
 import React, { useState, useEffect, useMemo } from 'react';
 import { Alert, Select, Textarea } from '../ui/forms.js';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api, { getApiErrorMessage } from '../services/api.js';
-import { Card, Icon, Pill, Badge, Button, VitalPill, Input } from '../ui/primitives.js';
+import { Badge, Button, ButtonLink, Card, Icon, Input, PageHeader } from '../ui/primitives.js';
 
 const COMMON_ICD10 = [
   { code: 'I10', title: 'Essential (Primary) Hypertension' },
@@ -260,88 +260,75 @@ export const NewConsultationPage: React.FC = () => {
     }
   };
 
-  const doctorName = user?.fullName || 'Dr. Ahmed Tariq, MBBS, FCPS';
-  const doctorLicense = user?.doctorProfile?.bmdcLicenseNumber || 'A-54921';
-  const hospitalAffiliation = user?.doctorProfile?.hospitalAffiliation || 'Square Hospital / NICVD';
+  const doctorName = user?.fullName || tr('Doctor');
+  const doctorLicense = user?.doctorProfile?.bmdcLicenseNumber || '-';
+  const hospitalAffiliation = user?.doctorProfile?.hospitalAffiliation || '';
+  const patientAllergies: any[] = selectedPatient?.allergies || [];
+  const fieldLabel = 'block text-xs font-semibold text-ink-900';
+  const fieldHint = 'text-xs text-ink-400';
+  const mobileLabel = 'mb-1 block text-xs font-medium text-ink-600 md:hidden';
 
   return (
-    <div className="min-h-screen bg-canvas pb-36 sm:pb-28">
-      {/* Attending Physician Letterhead Banner */}
-      <section aria-label={tr("Attending Physician Letterhead")} className="border-b border-hair bg-white">
-        <div className="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8 2xl:px-12">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary-700 text-white shadow-sm">
-              <Icon.Stethoscope size={18} />
-            </div>
-            <div>
-              <p className="font-display text-lg font-bold tracking-tight text-ink-900">{doctorName}</p>
-              <p className="text-xs text-ink-600">
-                {tr('BMDC License')}: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span> • {hospitalAffiliation}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+    <div className="min-h-screen bg-canvas pb-40 sm:pb-28">
+      <PageHeader
+        icon={<Icon.Stethoscope size={20} />}
+        title={doctorName}
+        meta={
+          <>
+            <span>
+              {tr('BMDC License')}: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span>
+            </span>
+            {hospitalAffiliation && (
+              <>
+                <span className="hidden text-ink-400 sm:inline" aria-hidden="true">|</span>
+                <span>{hospitalAffiliation}</span>
+              </>
+            )}
+          </>
+        }
+      />
 
-      <main className="mx-auto max-w-[1720px] space-y-6 px-4 pt-6 pb-36 sm:px-6 sm:pt-8 sm:pb-28 lg:px-8 2xl:px-12">
-        {/* Error Alert */}
-        {error && (
-          <Alert>{error}</Alert>
-        )}
+      <main className="mx-auto max-w-[1720px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 2xl:px-12">
+        {error && <Alert>{error}</Alert>}
 
-        {/* Patient Selection & Identification Card */}
-        <Card className="p-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-3.5">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary-700 font-bold text-white">
-                {selectedPatient?.full_name ? selectedPatient.full_name.slice(0, 2).toUpperCase() : tr('RA')}
+        {/* Patient in this consultation */}
+        <Card className="overflow-hidden">
+          <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-700 text-sm font-semibold text-white" aria-hidden="true">
+                {selectedPatient?.full_name ? selectedPatient.full_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() : '-'}
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-display text-lg font-bold tracking-tight text-ink-900">
-                    {selectedPatient?.full_name || tr('Rahim Ahmed')}
-                  </span>
-                  <span className="font-mono text-xs text-ink-400">
-                    {selectedPatient?.patient_uid || tr('P-1001')}
-                  </span>
-                </div>
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
-                  <Pill tone="crimson">{selectedPatient?.blood_group || tr('O+')}</Pill>
-                  <span className="text-ink-600">
-                    {selectedPatient?.gender || tr('Male')} •{' '}
-                    {selectedPatient?.date_of_birth ? `${new Date().getFullYear() - new Date(selectedPatient.date_of_birth).getFullYear()} Yrs` : '45 Yrs'}
-                  </span>
-                  <span className="text-ink-400">| 📱 {selectedPatient?.phone || '+8801712345678'}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Center Clinical Safety & Emergency Telemetry (Fills empty space on 1920px) */}
-            <div className="hidden 2xl:flex items-center gap-4">
-              <div className="flex items-center gap-2 rounded-xl bg-amber-50/90 border border-amber-200/80 px-3 py-1.5 text-xs">
-                <span className="font-bold text-amber-800">{tr('Allergy Alert')}:</span>
-                <span className="font-semibold text-warning">{tr("Penicillin (Severe)")}</span>
-                <span className="text-amber-400">•</span>
-                <span className="font-semibold text-warning">{tr("Sulfa Drugs")}</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-ink-600 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl">
-                <span className="text-ink-400">{tr('Emergency')}:</span>
-                <span className="font-semibold text-ink-900">{selectedPatient?.emergency_contact_name || tr('Nasreen Ahmed')}</span>
-                <span className="text-ink-600">({selectedPatient?.emergency_contact_relation || tr('Spouse')})</span>
-                <span className="font-mono text-primary-700">{selectedPatient?.emergency_contact_phone || '+8801712345678'}</span>
+              <div className="min-w-0">
+                <p className="flex flex-wrap items-center gap-2">
+                  <span className="font-display text-lg font-semibold tracking-tight text-ink-900">{selectedPatient?.full_name || tr('Select Patient')}</span>
+                  {selectedPatient?.patient_uid && <span className="font-mono text-xs text-ink-600">{selectedPatient.patient_uid}</span>}
+                </p>
+                {selectedPatient && (
+                  <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-600">
+                    {selectedPatient.blood_group && <Badge tone="crimson" size="sm">{selectedPatient.blood_group}</Badge>}
+                    <span>
+                      {selectedPatient.gender || '-'}
+                      {selectedPatient.date_of_birth && <> · {tr('{n} yrs', { n: new Date().getFullYear() - new Date(selectedPatient.date_of_birth).getFullYear() })}</>}
+                    </span>
+                    {selectedPatient.phone && <span className="font-mono">{selectedPatient.phone}</span>}
+                    {selectedPatient.emergency_contact_name && (
+                      <span>
+                        {tr('Emergency')}: <span className="font-medium text-ink-900">{selectedPatient.emergency_contact_name}</span>
+                        {selectedPatient.emergency_contact_relation && <> ({selectedPatient.emergency_contact_relation})</>}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <label className="text-xs font-semibold text-slate-600">
-                {tr('Switch Patient')}:
-              </label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <Select
                 aria-label={tr("Select Patient")}
                 value={selectedPatientId}
                 onChange={(e) => setSelectedPatientId(e.target.value)}
                 selectSize="sm"
-                className="w-auto"
+                className="sm:w-64"
               >
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -349,382 +336,325 @@ export const NewConsultationPage: React.FC = () => {
                   </option>
                 ))}
               </Select>
-              <Link
-                to={`/patient/timeline/${selectedPatientId}`}
-                className="rounded-xl border border-hair bg-white px-3 py-2 text-xs font-semibold text-primary-700 transition-colors hover:border-hair-strong"
-              >
-                {tr("View Full Timeline")}
-              </Link>
+              {selectedPatientId && (
+                <ButtonLink size="sm" variant="secondary" to={`/patient/timeline/${selectedPatientId}`}>
+                  {tr("View Full Timeline")}
+                </ButtonLink>
+              )}
             </div>
           </div>
+
+          {/* The patient's real allergies, always in view while prescribing */}
+          {selectedPatient && (
+            <div className="flex flex-wrap items-center gap-2 border-t border-hair bg-canvas/60 px-4 py-2.5 text-xs sm:px-5">
+              <Icon.Alert size={14} className={patientAllergies.length ? 'text-critical' : 'text-ink-400'} />
+              <span className="font-semibold text-ink-900">{tr('Allergy Alert')}:</span>
+              {patientAllergies.length > 0 ? (
+                patientAllergies.map((a, i) => (
+                  <Badge key={i} tone="crimson" size="sm" dot>
+                    {a.allergen}{a.severity ? ` (${a.severity})` : ''}
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-ink-600">{tr("No known drug allergies (NKDA)")}</span>
+              )}
+            </div>
+          )}
         </Card>
 
-        {/* Figma Two-Column Clinical Layout */}
-        <div className="grid gap-6 xl:grid-cols-[1fr_1fr] 2xl:grid-cols-[560px_1fr]">
-          {/* Left Column: Clinical Observations & Telemetry */}
-          <Card className="space-y-6 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hair pb-3">
+        <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-[minmax(0,560px)_1fr]">
+          {/* Left: observations, vitals, diagnosis */}
+          <Card
+            padding="md"
+            header={{
+              title: tr("Clinical Observations & Telemetry"),
+              description: tr("Capture symptoms, examination findings, and vitals matrix"),
+              icon: <Icon.Activity size={15} />,
+            }}
+          >
+            <div className="space-y-6">
               <div>
-                <h3 className="font-display text-xl font-bold tracking-tight text-ink-900">{tr("Clinical Observations & Telemetry")}</h3>
-                <p className="mt-1 text-xs text-ink-600">{tr("Capture symptoms, examination findings, and vitals matrix")}</p>
-              </div>
-            </div>
-
-            {/* Chief Complaints */}
-            <div>
-              <div className="flex items-center justify-between">
-                <label htmlFor="consult-complaint" className="block text-xs font-semibold text-slate-700">
-                  {tr("Chief Complaints")}
-                </label>
-                <span className="text-xs font-medium text-ink-400">{tr("Primary patient symptoms")}</span>
-              </div>
-              <Textarea
-                rows={3}
-                value={chiefComplaint}
-                onChange={(e) => setChiefComplaint(e.target.value)}
-                placeholder={tr("e.g. Mild exertional chest tightness and occipital headaches for 2 weeks...")}
-                id="consult-complaint"
-                className="mt-1.5"
-              />
-            </div>
-
-            {/* Clinical Examination & Diagnosis Notes */}
-            <div>
-              <div className="flex items-center justify-between">
-                <label htmlFor="consult-notes" className="block text-xs font-semibold text-slate-700">
-                  {tr("Clinical Examination & Diagnosis Notes")}
-                </label>
-                <span className="text-xs font-medium text-ink-400">{tr("Physical examination findings")}</span>
-              </div>
-              <Textarea
-                rows={4}
-                value={clinicalNotes}
-                onChange={(e) => setClinicalNotes(e.target.value)}
-                placeholder={tr("Examination findings, physical status, cardiovascular auscultation...")}
-                id="consult-notes"
-                className="mt-1.5 min-h-[108px]"
-              />
-            </div>
-
-            {/* Vitals Capture Matrix (4x2 grid with Real-Time BMI indicator) */}
-            <div>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <label className="block text-xs font-semibold text-slate-800">
-                  {tr("Vitals Capture Matrix")}
-                </label>
-                <span className="inline-flex items-center gap-1 rounded-md bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700 border border-primary-100">
-                  <Icon.Activity size={13} /> {tr("Auto-Computed BMI")}
-                </span>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                  <label htmlFor="consult-complaint" className={fieldLabel}>
+                    {tr("Chief Complaints")} <span className="text-critical" aria-hidden="true">*</span>
+                  </label>
+                  <span className={fieldHint}>{tr("Primary patient symptoms")}</span>
+                </div>
+                <Textarea
+                  rows={3}
+                  value={chiefComplaint}
+                  onChange={(e) => setChiefComplaint(e.target.value)}
+                  placeholder={tr("e.g. Mild exertional chest tightness and occipital headaches for 2 weeks...")}
+                  id="consult-complaint"
+                  required
+                  className="mt-1.5"
+                />
               </div>
 
-              <div className="mt-2.5 grid grid-cols-2 gap-3">
-                {[
-                  { label: tr('Systolic BP'), unit: 'mmHg', val: systolicBp, set: setSystolicBp, ph: '120' },
-                  { label: tr('Diastolic BP'), unit: 'mmHg', val: diastolicBp, set: setDiastolicBp, ph: '80' },
-                  { label: tr('Heart Rate'), unit: 'bpm', val: heartRate, set: setHeartRate, ph: '72' },
-                  { label: tr('Temperature'), unit: '°C', val: temperature, set: setTemperature, ph: '36.6' },
-                  { label: tr('Resp Rate'), unit: '/min', val: respiratoryRate, set: setRespiratoryRate, ph: '16' },
-                  { label: tr('SpO₂'), unit: '%', val: spo2, set: setSpo2, ph: '98' },
-                  { label: tr('Weight'), unit: 'kg', val: weightKg, set: setWeightKg, ph: '70' },
-                  { label: tr('Height'), unit: 'cm', val: heightCm, set: setHeightCm, ph: '170' },
-                ].map((v) => (
-                  <div
-                    key={v.label}
-                    className="flex flex-col justify-between rounded-xl border border-hair bg-canvas p-3 transition-all hover:border-hair-strong focus-within:border-primary-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-50 focus-within:shadow-xs min-h-[76px]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-slate-700">
-                        {tr(v.label)}
+              <div>
+                <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                  <label htmlFor="consult-notes" className={fieldLabel}>{tr("Clinical Examination & Diagnosis Notes")}</label>
+                  <span className={fieldHint}>{tr("Physical examination findings")}</span>
+                </div>
+                <Textarea
+                  rows={4}
+                  value={clinicalNotes}
+                  onChange={(e) => setClinicalNotes(e.target.value)}
+                  placeholder={tr("Examination findings, physical status, cardiovascular auscultation...")}
+                  id="consult-notes"
+                  className="mt-1.5"
+                />
+              </div>
+
+              <fieldset>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <legend className={fieldLabel}>{tr("Vitals Capture Matrix")}</legend>
+                  <Badge tone="blue" size="sm">{tr("Auto-Computed BMI")}</Badge>
+                </div>
+                <div className="mt-2.5 grid grid-cols-2 gap-2.5 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                  {[
+                    { label: tr('Systolic BP'), unit: 'mmHg', val: systolicBp, set: setSystolicBp, ph: '120' },
+                    { label: tr('Diastolic BP'), unit: 'mmHg', val: diastolicBp, set: setDiastolicBp, ph: '80' },
+                    { label: tr('Heart Rate'), unit: 'bpm', val: heartRate, set: setHeartRate, ph: '72' },
+                    { label: tr('Temperature'), unit: '°C', val: temperature, set: setTemperature, ph: '36.6' },
+                    { label: tr('Resp Rate'), unit: '/min', val: respiratoryRate, set: setRespiratoryRate, ph: '16' },
+                    { label: tr('SpO₂'), unit: '%', val: spo2, set: setSpo2, ph: '98' },
+                    { label: tr('Weight'), unit: 'kg', val: weightKg, set: setWeightKg, ph: '70' },
+                    { label: tr('Height'), unit: 'cm', val: heightCm, set: setHeightCm, ph: '170' },
+                  ].map((v) => (
+                    <label
+                      key={v.label}
+                      className="block cursor-text rounded-lg border border-hair bg-canvas/60 px-3 py-2.5 transition-colors hover:border-hair-strong focus-within:border-primary-600 focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-100"
+                    >
+                      <span className="flex items-center justify-between gap-1">
+                        <span className="truncate text-xs font-medium text-ink-600">{v.label}</span>
+                        <span className="font-mono text-[0.6875rem] text-ink-400">{v.unit}</span>
                       </span>
-                      <span className="rounded bg-slate-200/80 px-2 py-0.5 font-mono text-xs font-semibold text-ink-700">
-                        {tr(v.unit)}
-                      </span>
-                    </div>
-                    <div className="mt-1.5">
                       <input
-                        aria-label={`${v.label} in ${v.unit}`}
+                        aria-label={`${v.label} (${v.unit})`}
                         value={v.val}
                         onChange={(e) => v.set(e.target.value)}
                         inputMode="decimal"
                         placeholder={v.ph}
-                        className="w-full tabular bg-transparent font-display text-xl sm:text-2xl font-bold text-ink-900 outline-none placeholder:text-hair-strong"
+                        className="mt-1 w-full bg-transparent font-display text-xl font-semibold text-ink-900 tabular outline-none placeholder:text-hair-strong"
                       />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Real-time BMI Display Badge */}
-              <div className={`mt-3 flex items-center justify-between rounded-xl px-4 py-2.5 ${toneCls[bmiTone]} shadow-2xs`}>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold">{tr('Computed BMI')}:</span>
-                  {bmiCategory && (
-                    <span className="rounded-md bg-white/80 px-2 py-0.5 text-xs font-extrabold shadow-xs">
-                      {tr(bmiCategory)}
-                    </span>
-                  )}
+                    </label>
+                  ))}
                 </div>
-                <span className="tabular font-display text-base font-extrabold">{bmi} kg/m²</span>
-              </div>
-            </div>
 
-            {/* ICD-10 Diagnosis Codification */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700">
-                {tr("ICD-10 Diagnosis Codification")}
-              </label>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {COMMON_ICD10.map((item) => {
-                  const on = diagnoses.some((d) => d.icd10Code === item.code);
-                  return (
-                    <button
-                      key={item.code}
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => toggleDiagnosis(item.code, item.title)}
-                      className={`min-h-9 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                        on
-                          ? 'border-primary-600 bg-primary-50 text-primary-700'
-                          : 'border-hair bg-white text-ink-600 hover:border-hair-strong'
-                      }`}
-                    >
-                      {on && <Icon.Check size={12} className="mr-1 inline" />}
-                      [{item.code}] {tr(item.title)}
-                    </button>
-                  );
-                })}
-              </div>
+                <div className={`mt-3 flex items-center justify-between gap-3 rounded-lg px-3.5 py-2.5 ${toneCls[bmiTone]}`} aria-live="polite">
+                  <span className="flex items-center gap-2 text-xs font-semibold">
+                    {tr('Computed BMI')}
+                    {bmiCategory && <span className="rounded-md bg-white/80 px-2 py-0.5 text-xs font-semibold">{tr(bmiCategory)}</span>}
+                  </span>
+                  <span className="font-display text-base font-semibold tabular">{bmi} kg/m²</span>
+                </div>
+              </fieldset>
 
-              <div className="mt-3 flex items-center gap-2 rounded-xl border border-dashed border-hair-strong px-3 py-2 bg-white">
-                <Icon.Search size={16} className="text-ink-400" />
-                <input
-                  aria-label={tr("Search or add custom ICD-10 diagnosis")}
-                  value={customIcd}
-                  onChange={(e) => setCustomIcd(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomDiagnosis())}
-                  placeholder="+ Type custom diagnosis & press Enter..."
-                  className="w-full bg-transparent text-xs outline-none placeholder:text-ink-400"
-                />
-                {customIcd && (
-                  <button
-                    type="button"
-                    onClick={addCustomDiagnosis}
-                    className="text-xs font-semibold text-primary-700 hover:underline"
-                  >
+              <fieldset>
+                <legend className={fieldLabel}>{tr("ICD-10 Diagnosis Codification")}</legend>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {COMMON_ICD10.map((item) => {
+                    const on = diagnoses.some((d) => d.icd10Code === item.code);
+                    return (
+                      <button
+                        key={item.code}
+                        type="button"
+                        aria-pressed={on}
+                        onClick={() => toggleDiagnosis(item.code, item.title)}
+                        className={`inline-flex min-h-8 items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 [@media(pointer:coarse)]:min-h-10 ${
+                          on ? 'border-primary-600 bg-primary-50 text-primary-800' : 'border-hair bg-white text-ink-600 hover:border-hair-strong hover:text-ink-900'
+                        }`}
+                      >
+                        {on && <Icon.Check size={12} />}
+                        <span className="font-mono">{item.code}</span> {tr(item.title)}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-3 flex gap-2">
+                  <Input
+                    inputSize="sm"
+                    aria-label={tr("Search or add custom ICD-10 diagnosis")}
+                    value={customIcd}
+                    onChange={(e) => setCustomIcd(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomDiagnosis())}
+                    placeholder={tr("Search or add custom ICD-10 diagnosis")}
+                    leftIcon={<Icon.Search size={14} />}
+                  />
+                  <Button size="sm" variant="secondary" onClick={addCustomDiagnosis} disabled={!customIcd.trim()}>
                     {tr("Add")}
-                  </button>
-                )}
-              </div>
+                  </Button>
+                </div>
+              </fieldset>
             </div>
           </Card>
 
-          {/* Right Column: Structured E-Prescription Builder */}
-          <Card className="space-y-6 p-6">
-            <div className="flex items-center justify-between border-b border-hair pb-3">
-              <div className="flex items-center gap-2">
-                <span className="font-serif text-3xl font-bold text-primary-700">℞</span>
-                <div>
-                  <h3 className="font-display text-lg font-bold text-ink-900">{tr("Electronic Prescription Formulation")}</h3>
-                  <p className="text-xs text-ink-600">{tr("Valid BMDC digital medication regimen")}</p>
+          {/* Right: prescription builder */}
+          <Card
+            padding="md"
+            header={{
+              title: tr("Electronic Prescription Formulation"),
+              description: tr("Valid BMDC digital medication regimen"),
+              icon: <span className="font-serif text-base font-bold">℞</span>,
+            }}
+          >
+            <div className="space-y-6">
+              <div className="rounded-lg border border-hair" role="group" aria-label={tr("Prescription medicine table")}>
+                <div className="hidden grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_2rem] gap-2 border-b border-hair bg-canvas px-3 py-2 text-xs font-semibold text-ink-600 md:grid" aria-hidden="true">
+                  <span>{tr("Medicine Name")}</span>
+                  <span>{tr("Dosage")}</span>
+                  <span>{tr("Frequency")}</span>
+                  <span>{tr("Duration")}</span>
+                  <span>{tr("Instructions")}</span>
+                  <span />
                 </div>
-              </div>
-            </div>
 
-            {/* Dynamic Medication Table */}
-            <div className="overflow-x-auto rounded-xl border border-hair" aria-label={tr("Prescription medicine table")}>
-              <div className="grid min-w-[620px] grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] gap-2 bg-canvas px-3.5 py-2.5 text-xs font-semibold text-ink-600">
-                <span>{tr("Medicine Name")}</span>
-                <span>{tr("Dosage")}</span>
-                <span>{tr("Frequency")}</span>
-                <span>{tr("Duration")}</span>
-                <span>{tr("Instructions")}</span>
-                <span />
-              </div>
-
-              <div className="min-w-[620px] divide-y divide-hair">
                 {prescriptionItems.length === 0 ? (
-                  <div className="py-8 text-center bg-white px-4">
-                    <p className="text-xs font-semibold text-ink-900">{tr("No medications added to this prescription yet")}</p>
-                    <p className="mt-1 text-xs text-ink-600">
-                      {tr("Click \"+ Add Medicine Row\" below to prescribe medicines for this consultation.")}
-                    </p>
+                  <div className="px-4 py-8 text-center">
+                    <p className="text-sm font-semibold text-ink-900">{tr("No medications added to this prescription yet")}</p>
+                    <p className="mt-1 text-xs text-ink-600">{tr("Click \"+ Add Medicine Row\" below to prescribe medicines for this consultation.")}</p>
                   </div>
                 ) : (
-                  prescriptionItems.map((item) => (
-                    <div key={item.id} className="grid grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_auto] items-center gap-2 px-3 py-2 bg-white">
-                      <Input inputSize="sm"
-                        aria-label={tr("Medicine Name")}
-                        value={item.medicationName}
-                        onChange={(e) => updatePrescriptionRow(item.id, 'medicationName', e.target.value)}
-                        placeholder={tr("e.g. Tab. Amlocard")}
-                      />
-                      <Input inputSize="sm"
-                        aria-label={tr("Dosage")}
-                        value={item.dosage}
-                        onChange={(e) => updatePrescriptionRow(item.id, 'dosage', e.target.value)}
-                        placeholder="5mg"
-                      />
-                      <Input inputSize="sm"
-                        aria-label={tr("Frequency")}
-                        value={item.frequency}
-                        onChange={(e) => updatePrescriptionRow(item.id, 'frequency', e.target.value)}
-                        placeholder="1+0+0"
-                        className="tabular font-mono"
-                      />
-                      <Input inputSize="sm"
-                        aria-label={tr("Duration")}
-                        value={item.duration}
-                        onChange={(e) => updatePrescriptionRow(item.id, 'duration', e.target.value)}
-                        placeholder="30 Days"
-                      />
-                      <Input inputSize="sm"
-                        aria-label={tr("Instructions")}
-                        value={item.instructions}
-                        onChange={(e) => updatePrescriptionRow(item.id, 'instructions', e.target.value)}
-                        placeholder={tr("After breakfast")}
-                      />
-                      <button
-                        type="button"
-                        aria-label={tr("Delete medicine row")}
-                        onClick={() => removePrescriptionRow(item.id)}
-                        className="grid h-8 w-8 place-items-center rounded-lg transition-colors text-ink-400 hover:bg-rose-50 hover:text-critical focus:outline-none focus-visible:ring-2 focus-visible:ring-critical"
-                        title={tr("Remove medicine row")}
-                      >
-                        <Icon.Trash size={14} />
-                      </button>
-                    </div>
-                  ))
+                  <ol className="divide-y divide-hair">
+                    {prescriptionItems.map((item, idx) => (
+                      // Phones: each medicine is a small labelled card. md and up: one table row.
+                      <li key={item.id} className="grid grid-cols-2 gap-2 p-3 md:grid-cols-[1.5fr_0.7fr_0.8fr_0.8fr_1.3fr_2rem] md:items-center md:py-2">
+                        <div className="col-span-2 flex items-center justify-between md:hidden">
+                          <span className="text-xs font-semibold text-ink-900">#{idx + 1}</span>
+                          <Button size="sm" variant="ghost" aria-label={tr("Delete medicine row")} onClick={() => removePrescriptionRow(item.id)} icon={<Icon.Trash size={14} />}>
+                            <span className="sr-only">{tr("Delete medicine row")}</span>
+                          </Button>
+                        </div>
+                        <div className="col-span-2 md:col-span-1">
+                          <span className={mobileLabel} aria-hidden="true">{tr("Medicine Name")}</span>
+                          <Input inputSize="sm" aria-label={tr("Medicine Name")} value={item.medicationName} onChange={(e) => updatePrescriptionRow(item.id, 'medicationName', e.target.value)} placeholder={tr("e.g. Tab. Amlocard")} />
+                        </div>
+                        <div>
+                          <span className={mobileLabel} aria-hidden="true">{tr("Dosage")}</span>
+                          <Input inputSize="sm" aria-label={tr("Dosage")} value={item.dosage} onChange={(e) => updatePrescriptionRow(item.id, 'dosage', e.target.value)} placeholder="5mg" />
+                        </div>
+                        <div>
+                          <span className={mobileLabel} aria-hidden="true">{tr("Frequency")}</span>
+                          <Input inputSize="sm" aria-label={tr("Frequency")} value={item.frequency} onChange={(e) => updatePrescriptionRow(item.id, 'frequency', e.target.value)} placeholder="1+0+0" className="font-mono tabular" />
+                        </div>
+                        <div>
+                          <span className={mobileLabel} aria-hidden="true">{tr("Duration")}</span>
+                          <Input inputSize="sm" aria-label={tr("Duration")} value={item.duration} onChange={(e) => updatePrescriptionRow(item.id, 'duration', e.target.value)} placeholder="30 Days" />
+                        </div>
+                        <div>
+                          <span className={mobileLabel} aria-hidden="true">{tr("Instructions")}</span>
+                          <Input inputSize="sm" aria-label={tr("Instructions")} value={item.instructions} onChange={(e) => updatePrescriptionRow(item.id, 'instructions', e.target.value)} placeholder={tr("After breakfast")} />
+                        </div>
+                        <button
+                          type="button"
+                          aria-label={tr("Delete medicine row")}
+                          title={tr("Remove medicine row")}
+                          onClick={() => removePrescriptionRow(item.id)}
+                          className="hidden h-8 w-8 place-items-center rounded-md text-ink-400 transition-colors hover:bg-rose-50 hover:text-critical focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-critical md:grid"
+                        >
+                          <Icon.Trash size={14} />
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
                 )}
               </div>
-            </div>
 
-            {/* Quick Frequency Helper Bar */}
-            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-              <span className="text-[0.6875rem] font-semibold text-ink-600">{tr('Quick Dosage Frequency')}:</span>
-              {[
-                ['1+0+0', 'Morning'],
-                ['1+0+1', 'Morning & Night'],
-                ['1+1+1', 'Three times daily'],
-                ['0+0+1', 'Night (HS)'],
-                ['1 PRN', 'As needed'],
-              ].map(([freq, tip]) => (
-                <button
-                  key={freq}
-                  type="button"
-                  onClick={() => {
-                    if (prescriptionItems.length > 0) {
-                      const lastId = prescriptionItems[prescriptionItems.length - 1].id;
-                      updatePrescriptionRow(lastId, 'frequency', freq);
-                    }
-                  }}
-                  className="rounded-lg border border-hair bg-white px-2 py-0.5 font-mono text-[0.6875rem] font-semibold text-primary-700 hover:bg-slate-50 hover:border-primary-600 transition-colors"
-                  title={tr('Apply {freq} ({tip}) to row', { freq, tip: tr(tip) })}
-                >
-                  {freq}
-                </button>
-              ))}
-            </div>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-semibold text-ink-600">{tr('Quick Dosage Frequency')}:</span>
+                {[
+                  ['1+0+0', 'Morning'],
+                  ['1+0+1', 'Morning & Night'],
+                  ['1+1+1', 'Three times daily'],
+                  ['0+0+1', 'Night (HS)'],
+                  ['1 PRN', 'As needed'],
+                ].map(([freq, tip]) => (
+                  <button
+                    key={freq}
+                    type="button"
+                    disabled={prescriptionItems.length === 0}
+                    onClick={() => updatePrescriptionRow(prescriptionItems[prescriptionItems.length - 1].id, 'frequency', freq)}
+                    className="h-7 rounded-md border border-hair bg-white px-2 font-mono text-xs font-semibold text-primary-700 transition-colors hover:border-primary-600 hover:bg-primary-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 disabled:opacity-50 [@media(pointer:coarse)]:h-9"
+                    title={tr('Apply {freq} ({tip}) to row', { freq, tip: tr(tip) })}
+                  >
+                    {freq}
+                  </button>
+                ))}
+              </div>
 
-            {/* Add Medicine Row Button */}
-            <button
-              type="button"
-              onClick={addPrescriptionRow}
-              className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-hair-strong py-2.5 text-xs font-semibold text-primary-700 transition-colors hover:border-primary-600 hover:bg-primary-50"
-            >
-              <Icon.Plus size={15} /> {tr("Add Medicine Row")}
-            </button>
+              <Button variant="outline" block onClick={addPrescriptionRow} icon={<Icon.Plus size={15} />} className="border-dashed">
+                {tr("Add Medicine Row")}
+              </Button>
 
-            {/* Lifestyle & Dietary Advice */}
-            <div>
-              <label className="block text-xs font-semibold text-ink-900">
-                {tr("Lifestyle & Dietary Advice")}
-              </label>
-              <Textarea
-                rows={3}
-                value={rxInstructions}
-                onChange={(e) => setRxInstructions(e.target.value)}
-                placeholder={tr("e.g. Low sodium diet, brisk walking 30 minutes daily, monitor BP twice weekly.")}
-                className="mt-1.5"
-              />
-            </div>
+              <div>
+                <label htmlFor="consult-advice" className={fieldLabel}>{tr("Lifestyle & Dietary Advice")}</label>
+                <Textarea
+                  id="consult-advice"
+                  rows={3}
+                  value={rxInstructions}
+                  onChange={(e) => setRxInstructions(e.target.value)}
+                  placeholder={tr("e.g. Low sodium diet, brisk walking 30 minutes daily, monitor BP twice weekly.")}
+                  className="mt-1.5"
+                />
+              </div>
 
-            {/* Follow-up recommendation */}
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-hair bg-canvas p-3">
-              <label htmlFor="follow-up-date" className="text-xs font-semibold text-ink-900">{tr("Scheduled Chamber Follow-up")}</label>
-              <Input inputSize="sm"
-                id="follow-up-date"
-                type="date"
-                value={followUpDate}
-                onChange={(e) => setFollowUpDate(e.target.value)}
-              />
-            </div>
-
-            {/* Diagnostic Laboratory Requisition */}
-            <div className="rounded-xl border border-hair bg-canvas p-4">
-              <p className="text-xs font-semibold text-ink-900">
-                {tr("Diagnostic Laboratory Requisition")}
-              </p>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {PRESET_LABS.map((lab) => {
-                  const on = selectedLabs.includes(lab);
-                  return (
-                    <button
-                      key={lab}
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => toggleLab(lab)}
-                      className={`min-h-8 rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${
-                        on
-                          ? 'border-audit bg-violet-50 text-audit'
-                          : 'border-hair bg-white text-ink-600 hover:border-hair-strong'
-                      }`}
-                    >
-                      {on && <Icon.Check size={12} className="mr-1 inline" />}
-                      {lab}
-                    </button>
-                  );
-                })}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="follow-up-date" className={fieldLabel}>{tr("Scheduled Chamber Follow-up")}</label>
+                  <Input id="follow-up-date" type="date" inputSize="sm" value={followUpDate} onChange={(e) => setFollowUpDate(e.target.value)} className="mt-1.5" />
+                </div>
+                <fieldset>
+                  <legend className={fieldLabel}>{tr("Diagnostic Laboratory Requisition")}</legend>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {PRESET_LABS.map((lab) => {
+                      const on = selectedLabs.includes(lab);
+                      return (
+                        <button
+                          key={lab}
+                          type="button"
+                          aria-pressed={on}
+                          onClick={() => toggleLab(lab)}
+                          className={`inline-flex h-8 items-center gap-1 rounded-md border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 [@media(pointer:coarse)]:h-10 ${
+                            on ? 'border-primary-600 bg-primary-50 text-primary-800' : 'border-hair bg-white text-ink-600 hover:border-hair-strong hover:text-ink-900'
+                          }`}
+                        >
+                          {on && <Icon.Check size={12} />}
+                          {lab}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
               </div>
             </div>
           </Card>
         </div>
       </main>
 
-      {/* Figma Sticky Action Footer */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-hair bg-white/95 backdrop-blur shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
-        <div className="mx-auto flex max-w-[1720px] flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:px-8 2xl:px-12">
-          {/* Real form state, not a fixed reassurance message */}
-          <p className="flex items-center gap-2 text-xs sm:text-sm text-ink-600" aria-live="polite">
+      {/* Sticky action bar: real readiness state on the left, actions on the right */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hair bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
+        <div className="mx-auto flex max-w-[1720px] flex-col gap-2.5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8 2xl:px-12">
+          <p className="flex items-center gap-2 text-sm text-ink-600" aria-live="polite">
             {chiefComplaint.trim() ? (
               <>
-                <Icon.Check size={16} className="text-success" />
+                <Icon.Check size={16} className="shrink-0 text-success" />
                 <span>{tr("Ready to issue")}</span>
               </>
             ) : (
               <>
-                <Icon.Alert size={16} className="text-warning" />
+                <Icon.Alert size={16} className="shrink-0 text-warning" />
                 <span>{tr("Add the chief complaint to issue this prescription")}</span>
               </>
             )}
           </p>
-
-          <div className="flex w-full gap-3 sm:w-auto">
-            <Button
-              variant="secondary"
-              onClick={() => navigate('/doctor')}
-              className="flex-1 sm:flex-none"
-            >
+          <div className="grid grid-cols-[auto_1fr] gap-2 sm:flex">
+            <Button variant="secondary" onClick={() => navigate('/doctor')}>
               {tr("Cancel")}
             </Button>
-            <Button
-              variant="primary"
-              disabled={isSubmitting}
-              isLoading={isSubmitting}
-              onClick={() => handleSubmit()}
-              icon={<Icon.Lock size={16} />}
-              className="flex-1 sm:flex-none"
-            >
-              {isSubmitting ? 'Digitally Signing & Issuing...' : tr('Finalize, Digitally Sign & Issue Prescription')}
+            <Button disabled={isSubmitting} isLoading={isSubmitting} onClick={() => handleSubmit()} icon={<Icon.Lock size={15} />} className="h-auto min-h-[2.375rem] min-w-0 whitespace-normal py-2 text-left leading-snug">
+              {isSubmitting ? tr('Digitally Signing & Issuing...') : tr('Finalize, Digitally Sign & Issue Prescription')}
             </Button>
           </div>
         </div>

@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Select } from '../ui/forms.js';
 import { useSearchParams } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import { Icon } from '../ui/primitives.js';
+import { Badge, Button, buttonClasses, Card, Icon, Input, PageHeader, Skeleton } from '../ui/primitives.js';
 import { cn } from '../utils/cn.js';
 import { HospitalMap } from '../components/HospitalMap.js';
 import { SPECIALTIES, type SpecialtyValue } from '../constants/specialties.js';
@@ -131,305 +131,215 @@ export const HospitalSearchPage: React.FC = () => {
   }, []);
 
   /* ---- Render ------------------------------------------------------------ */
+  const emptyBox = 'rounded-xl border border-dashed border-hair-strong bg-surface px-6 py-12 text-center';
+
   return (
     <div className="min-h-screen bg-canvas pb-20">
+      <PageHeader
+        icon={<Icon.Hospital size={20} />}
+        title={tr("Emergency Hospital Finder")}
+        meta={<span>{tr("Locate the nearest hospital to your current position")}</span>}
+        actions={
+          <a href="tel:16263" className={buttonClasses({ variant: 'destructive' })} aria-label={`${tr("National Emergency Hotline")} 16263`}>
+            <Icon.Phone size={15} />
+            <span>{tr("National Emergency Hotline")}: <span className="font-mono">16263</span></span>
+          </a>
+        }
+      />
 
-      {/* Emergency Banner Header */}
-      <div className="bg-gradient-to-r from-rose-700 to-rose-600 px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-3">
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/15">
-                <Icon.Hospital size={24} className="text-white" />
-              </div>
-              <div>
-                <h1 className="font-display text-xl font-bold text-white sm:text-2xl">
-                  {tr("Emergency Hospital Finder")}
-                </h1>
-                <p className="mt-0.5 text-sm text-rose-100">
-                  {tr("Locate the nearest hospital to your current position")}
-                </p>
-              </div>
-            </div>
-            <div className="rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-left backdrop-blur-sm">
-              <p className="text-xs font-medium text-rose-200">{tr("National Emergency Hotline")}</p>
-              <a
-                href="tel:16263"
-                className="mt-0.5 font-mono text-lg font-bold text-white hover:underline"
-              >
-                16263
-              </a>
-              <p className="text-[0.6875rem] text-rose-200">{tr("Toll-free 24/7 medical triage")}</p>
-            </div>
-          </div>
-
-          {/* Location: GPS status plus a typed address that always works */}
-          <div className="mt-4 space-y-2">
-            <p className="flex items-center gap-2 text-sm text-white" role="status">
-              {gpsLoading ? (
-                <>
-                  <Icon.Loader size={16} className="text-white" />
-                  {tr("Detecting your location via GPS...")}
-                </>
-              ) : userLocation ? (
-                <>
-                  <Icon.MapPin size={16} className="shrink-0 text-rose-100" />
-                  {tr("Searching around your chosen location")}
-                </>
-              ) : (
-                <>
-                  <Icon.MapPin size={16} className="shrink-0 text-rose-100" />
-                  {locationError ? 'Location access is off. Type your area below.' : tr('Type your area below.')}
-                </>
-              )}
-              <button
-                type="button"
-                onClick={detectLocation}
-                className="ml-1 rounded-lg bg-white/15 px-2 py-0.5 text-xs font-semibold hover:bg-white/25 transition-colors cursor-pointer"
-              >
-                {tr("Use my location")}
-              </button>
-            </p>
+      <div className="mx-auto max-w-[1720px] space-y-5 px-4 pt-6 sm:px-6 lg:px-8 2xl:px-12">
+        {/* Where to search: typed address always works, GPS is optional */}
+        <Card padding="sm">
+          <div className="grid gap-3 lg:grid-cols-[1fr_auto_18rem] lg:items-end">
             <form
-              className="flex gap-2"
+              className="min-w-0"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleManualSearch();
               }}
             >
-              <label htmlFor="hospital-manual-location" className="sr-only">
+              <label htmlFor="hospital-manual-location" className="mb-1.5 block text-xs font-semibold text-ink-900">
                 {tr("City, area or address")}
               </label>
-              <div className="relative flex-1">
-                <Icon.MapPin
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-rose-100 pointer-events-none"
-                />
-                <input
+              <div className="flex gap-2">
+                <Input
                   id="hospital-manual-location"
-                  type="text"
                   value={manualAddress}
                   onChange={(e) => setManualAddress(e.target.value)}
                   placeholder={tr("City, area or address (e.g. Dhanmondi, Dhaka)")}
-                  aria-describedby={addressError ? 'hospital-address-error' : undefined}
-                  className="w-full rounded-xl border border-white/30 bg-white/10 py-2.5 pl-9 pr-4 text-sm text-white placeholder-rose-100 outline-none focus:ring-2 focus:ring-white/60"
+                  aria-describedby={addressError ? 'hospital-address-error' : 'hospital-location-status'}
+                  error={Boolean(addressError)}
+                  leftIcon={<Icon.MapPin size={15} />}
                 />
+                <Button type="submit" id="hospital-manual-search-btn" disabled={!manualAddress.trim()} className="h-10 shrink-0">
+                  {tr("Search")}
+                </Button>
               </div>
-              <button
-                type="submit"
-                id="hospital-manual-search-btn"
-                disabled={!manualAddress.trim()}
-                className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-rose-800 shadow-sm transition-colors hover:bg-rose-50 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {tr("Search")}
-              </button>
             </form>
-            {addressError && (
-              <p id="hospital-address-error" role="alert" className="text-xs font-semibold text-white">
-                {addressError}
-              </p>
-            )}
+            <Button variant="secondary" onClick={detectLocation} icon={<Icon.Navigation size={15} />} className="h-10">
+              {tr("Use my location")}
+            </Button>
+            <div>
+              <label htmlFor="hospital-specialty" className="mb-1.5 block text-xs font-semibold text-ink-900">
+                {tr("Specialization")}
+              </label>
+              <Select id="hospital-specialty" value={specialty} onChange={(e) => setSpecialty(e.target.value as SpecialtyValue)}>
+                {SPECIALTIES.map((s) => (
+                  <option key={s.value} value={s.value}>{tr(s.label)}</option>
+                ))}
+              </Select>
+            </div>
           </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-6 space-y-5">
-
-        {/* Specialization filter */}
-        <div className="flex flex-col gap-2 rounded-2xl border border-hair bg-white p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
-          <label htmlFor="hospital-specialty" className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-            <Icon.Stethoscope size={16} className="text-primary-700" />
-            {tr("Specialization")}
-          </label>
-          <Select
-            id="hospital-specialty"
-            value={specialty}
-            onChange={(e) => setSpecialty(e.target.value as SpecialtyValue)}
-            className="sm:w-72"
-          >
-            {SPECIALTIES.map((s) => (
-              <option key={s.value} value={s.value}>{tr(s.label)}</option>
-            ))}
-          </Select>
-        </div>
-
-        {/* Free OpenStreetMap map (no API key) */}
-        <HospitalMap center={userLocation} hospitals={hospitals} selectedId={selectedId} onSelect={selectHospital} />
-
-        {searchError && (
-          <Alert>{searchError}</Alert>
-        )}
-
-        {/* Results Header */}
-        {searched && (
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-ink-600">
-              {hospitals.length > 0
-                ? specialty
-                  ? tr('Showing {n} {type} hospitals near you, sorted by distance', { n: hospitals.length, type: tr(specialtyLabel) })
-                  : tr('Showing {n} hospitals near you, sorted by distance', { n: hospitals.length })
-                : specialty
-                  ? tr('No {type} hospitals found in this area', { type: tr(specialtyLabel) })
-                  : tr('No hospitals found in this area')}
+          <p id="hospital-location-status" className="mt-2.5 flex items-center gap-2 text-xs text-ink-600" role="status">
+            {gpsLoading ? (
+              <>
+                <Icon.Loader size={14} /> {tr("Detecting your location via GPS...")}
+              </>
+            ) : (
+              <>
+                <Icon.MapPin size={14} className="shrink-0 text-ink-400" />
+                {userLocation
+                  ? tr("Searching around your chosen location")
+                  : locationError
+                    ? tr('Location access is off. Type your area below.')
+                    : tr('Type your area below.')}
+              </>
+            )}
+          </p>
+          {addressError && (
+            <p id="hospital-address-error" role="alert" className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-critical">
+              <Icon.Alert size={13} /> {addressError}
             </p>
-          </div>
-        )}
+          )}
+        </Card>
 
-        {/* Searching spinner */}
-        {searching && !searched && (
-          <div className="flex items-center justify-center gap-3 py-12 text-ink-500">
-            <Icon.Loader size={24} />
-            <span className="text-sm font-medium">{tr("Finding nearby hospitals...")}</span>
-          </div>
-        )}
+        {searchError && <Alert>{searchError}</Alert>}
 
-        {/* Hospital Result Cards */}
-        {hospitals.length > 0 && (
-          <div className="space-y-3" role="list" aria-label={tr("Nearby hospital results")}>
-            {hospitals.map((h, idx) => (
-              <div
-                key={h.placeId}
-                id={`hospital-card-${h.placeId}`}
-                role="listitem"
-                onClick={() => setSelectedId(h.placeId)}
-                className={cn(
-                  'flex gap-4 rounded-2xl border bg-white p-4 shadow-sm transition-all cursor-pointer',
-                  selectedId === h.placeId
-                    ? 'border-rose-400 ring-2 ring-rose-200'
-                    : 'border-hair hover:border-rose-200 hover:shadow-md'
-                )}
-              >
-                {/* Rank Badge + Photo */}
-                <div className="flex shrink-0 flex-col items-center gap-2">
-                  <div className="grid h-7 w-7 place-items-center rounded-full bg-rose-600 text-xs font-bold text-white shadow-sm">
-                    {idx + 1}
-                  </div>
-                  <div className="flex h-[56px] w-[56px] items-center justify-center rounded-xl bg-rose-50 border border-rose-100">
-                    <Icon.Hospital size={24} className="text-rose-700" />
-                  </div>
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-start gap-2">
-                    <h2 className="font-display text-sm font-bold text-ink-900 leading-tight">
-                      {h.name}
-                    </h2>
-                    {h.emergency && (
-                      <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-rose-800 shrink-0">
-                        24/7 Emergency
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-600">
-                    <span className="flex items-center gap-1">
-                      <Icon.MapPin size={12} className="text-rose-500 shrink-0" />
-                      <span className="truncate max-w-[200px]">{h.address}</span>
-                    </span>
-                    {(
-                      <span className="flex items-center gap-1 font-semibold text-rose-700">
-                        <Icon.Navigation size={12} className="shrink-0" />
-                        {tr('{distance} away', { distance: fmtDist(h.distanceKm) })}
-                      </span>
-                    )}
-                    {h.specialities.length > 0 && (
-                      <span className="capitalize">{h.specialities.slice(0, 3).join(', ').replace(/_/g, ' ')}</span>
-                    )}
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {h.phone ? (
-                      <a
-                        href={`tel:${h.phone}`}
-                        id={`hospital-call-${h.placeId}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100"
-                      >
-                        <Icon.Phone size={13} />
-                        {tr("Call")}
-                      </a>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 rounded-xl border border-hair bg-slate-50 px-3 py-1.5 text-xs font-medium text-ink-400 cursor-default">
-                        <Icon.Phone size={13} />
-                        {tr("Call (N/A)")}
-                      </span>
-                    )}
-                    <a
-                      href={googleMapsDirectionsUrl(h.lat, h.lng)}
-                      id={`hospital-directions-${h.placeId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1.5 rounded-xl border border-primary-300 bg-primary-50 px-3 py-1.5 text-xs font-semibold text-primary-700 transition-colors hover:bg-blue-100"
-                    >
-                      <Icon.Navigation size={13} />
-                      {tr("Get Directions")}
-                    </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty State */}
-        {searched && hospitals.length === 0 && !searching && (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-hair bg-white py-16 text-center">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-rose-50 text-rose-400">
-              <Icon.Hospital size={28} />
-            </div>
-            <div>
-              <p className="font-display text-base font-bold text-ink-900">
-                {tr("No hospitals found nearby")}
+        {/* Results list, with the map beside it on wide screens and under it on smaller ones */}
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <section aria-label={tr("Nearby hospital results")} className="space-y-3">
+            {searched && (
+              <p className="text-sm font-medium text-ink-600" aria-live="polite">
+                {hospitals.length > 0
+                  ? specialty
+                    ? tr('Showing {n} {type} hospitals near you, sorted by distance', { n: hospitals.length, type: tr(specialtyLabel) })
+                    : tr('Showing {n} hospitals near you, sorted by distance', { n: hospitals.length })
+                  : specialty
+                    ? tr('No {type} hospitals found in this area', { type: tr(specialtyLabel) })
+                    : tr('No hospitals found in this area')}
               </p>
-              <p className="mt-1 text-sm text-ink-600">
-                {specialty
-                  ? tr('No {type} hospitals were found near this location.', { type: tr(specialtyLabel) })
-                  : tr('Try a different location using the address input above.')}
-              </p>
-            </div>
-            {specialty && (
-              <button
-                type="button"
-                onClick={() => setSpecialty('')}
-                className="rounded-xl border border-hair bg-white px-4 py-2 text-sm font-semibold text-primary-700 hover:bg-slate-50"
-              >
-                {tr("Show all hospitals")}
-              </button>
             )}
-          </div>
-        )}
 
-        {/* Waiting for location */}
-        {!searched && !searching && !userLocation && !gpsLoading && (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-dashed border-hair bg-white py-16 text-center">
-            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-blue-50 text-primary-700">
-              <Icon.MapPin size={28} />
-            </div>
-            <div>
-              <p className="font-display text-base font-bold text-ink-900">
-                {tr("Enter your location to begin")}
-              </p>
-              <p className="mt-1 text-sm text-ink-600">
-                {tr("Allow location access above, or type your area to find nearby hospitals.")}
-              </p>
-            </div>
-          </div>
-        )}
+            {searching && !searched && (
+              <div className="space-y-3" role="status" aria-label={tr("Finding nearby hospitals...")}>
+                {[0, 1, 2].map((i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+              </div>
+            )}
 
-        {/* Safety footer */}
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
-          <div className="flex items-start gap-3">
-            <Icon.Alert size={18} className="mt-0.5 shrink-0 text-amber-600" />
-            <div className="text-xs text-amber-900">
-              <p className="font-bold">{tr("In a life-threatening emergency, call 999 or 16263 immediately.")}</p>
-              <p className="mt-0.5 font-normal">
-                {tr("Hospital data comes from OpenStreetMap, a free community map, and may be incomplete or out of date. It does not show real-time emergency room capacity. Always call ahead for critical care.")}
-              </p>
-            </div>
+            {hospitals.length > 0 && (
+              <ol className="space-y-3">
+                {hospitals.map((h, idx) => (
+                  <li
+                    key={h.placeId}
+                    id={`hospital-card-${h.placeId}`}
+                    onClick={() => setSelectedId(h.placeId)}
+                    className={cn(
+                      'flex cursor-pointer gap-3 rounded-xl border bg-surface p-4 shadow-card transition-colors sm:gap-4',
+                      selectedId === h.placeId ? 'border-primary-600 ring-2 ring-primary-100' : 'border-hair hover:border-hair-strong'
+                    )}
+                  >
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-ink-900 text-xs font-semibold text-white tabular" aria-hidden="true">
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="font-display text-sm font-semibold leading-snug text-ink-900 sm:text-base">{h.name}</h2>
+                        {h.emergency && <Badge tone="crimson" size="sm">{tr('24/7 Emergency')}</Badge>}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-600">
+                        <span className="flex min-w-0 items-center gap-1">
+                          <Icon.MapPin size={12} className="shrink-0 text-ink-400" />
+                          <span className="truncate">{h.address}</span>
+                        </span>
+                        <span className="flex items-center gap-1 font-semibold text-ink-900">
+                          <Icon.Navigation size={12} className="shrink-0" />
+                          {tr('{distance} away', { distance: fmtDist(h.distanceKm) })}
+                        </span>
+                        {h.specialities.length > 0 && (
+                          <span className="capitalize">{h.specialities.slice(0, 3).join(', ').replace(/_/g, ' ')}</span>
+                        )}
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex">
+                        {h.phone ? (
+                          <a
+                            href={`tel:${h.phone}`}
+                            id={`hospital-call-${h.placeId}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className={buttonClasses({ size: 'sm', variant: 'danger-soft' })}
+                          >
+                            <Icon.Phone size={13} />
+                            <span>{tr("Call")}</span>
+                          </a>
+                        ) : (
+                          <span className={buttonClasses({ size: 'sm', variant: 'secondary', className: 'pointer-events-none opacity-60' })} aria-disabled="true">
+                            <Icon.Phone size={13} />
+                            <span>{tr("Call (N/A)")}</span>
+                          </span>
+                        )}
+                        <a
+                          href={googleMapsDirectionsUrl(h.lat, h.lng)}
+                          id={`hospital-directions-${h.placeId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className={buttonClasses({ size: 'sm', variant: 'secondary' })}
+                        >
+                          <Icon.Navigation size={13} />
+                          <span>{tr("Get Directions")}</span>
+                        </a>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            )}
+
+            {searched && hospitals.length === 0 && !searching && (
+              <div className={emptyBox}>
+                <Icon.Hospital size={26} className="mx-auto text-ink-400" />
+                <p className="mt-3 font-display text-base font-semibold text-ink-900">{tr("No hospitals found nearby")}</p>
+                <p className="mt-1 text-sm text-ink-600">
+                  {specialty
+                    ? tr('No {type} hospitals were found near this location.', { type: tr(specialtyLabel) })
+                    : tr('Try a different location using the address input above.')}
+                </p>
+                {specialty && (
+                  <Button variant="secondary" className="mt-4" onClick={() => setSpecialty('')}>
+                    {tr("Show all hospitals")}
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {!searched && !searching && !userLocation && !gpsLoading && (
+              <div className={emptyBox}>
+                <Icon.MapPin size={26} className="mx-auto text-primary-700" />
+                <p className="mt-3 font-display text-base font-semibold text-ink-900">{tr("Enter your location to begin")}</p>
+                <p className="mt-1 text-sm text-ink-600">{tr("Allow location access above, or type your area to find nearby hospitals.")}</p>
+              </div>
+            )}
+          </section>
+
+          <div className="overflow-hidden rounded-xl border border-hair shadow-card lg:sticky lg:top-24">
+            <HospitalMap center={userLocation} hospitals={hospitals} selectedId={selectedId} onSelect={selectHospital} />
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-xs text-amber-900 sm:px-5">
+          <Icon.Alert size={16} className="mt-0.5 shrink-0 text-warning" />
+          <div>
+            <p className="font-semibold">{tr("In a life-threatening emergency, call 999 or 16263 immediately.")}</p>
+            <p className="mt-0.5">{tr("Hospital data comes from OpenStreetMap, a free community map, and may be incomplete or out of date. It does not show real-time emergency room capacity. Always call ahead for critical care.")}</p>
           </div>
         </div>
       </div>

@@ -6,7 +6,7 @@ import { useToast } from '../context/ToastContext.js';
 import { useDebounce } from '../hooks/useDebounce.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
-import { Card, Icon, Pill, Badge, MetricCard, EmptyState } from '../ui/primitives.js';
+import { Button, ButtonLink, Card, Icon, Pill, MetricCard, EmptyState, PageHeader, Skeleton } from '../ui/primitives.js';
 
 export const DoctorDashboard: React.FC = () => {
   const { t: tr } = useLanguage();
@@ -114,40 +114,38 @@ export const DoctorDashboard: React.FC = () => {
     day: 'numeric',
   });
 
+  const listRow = 'flex flex-col gap-3 rounded-lg border border-hair bg-canvas/60 p-3.5 transition-colors hover:border-hair-strong hover:bg-white sm:flex-row sm:items-center sm:justify-between';
+
   return (
     <div className="min-h-screen bg-canvas pb-16">
-      {/* Clinician Header */}
-      <div className="border-b border-hair bg-white">
-        <div className="mx-auto flex max-w-[1200px] 2xl:max-w-[1720px] flex-wrap items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12 py-5">
-          <div className="flex items-center gap-3.5">
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary-700 text-white shadow-sm">
-              <Icon.Stethoscope size={22} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-primary-700">{tr(greeting)}</span>
-                <span className="text-xs text-ink-400">•</span>
-                <span className="text-xs text-ink-600 font-medium">{currentDateStr}</span>
-              </div>
-              <h1 className="mt-1 font-display text-2xl font-bold tracking-tight text-ink-900">{doctorName}</h1>
-              <p className="mt-0.5 text-sm text-ink-600">
-                {tr('BMDC License')}: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span> • {hospitalName}
-              </p>
-            </div>
-          </div>
+      <PageHeader
+        icon={<Icon.Stethoscope size={20} />}
+        overline={<>{tr(greeting)} · {currentDateStr}</>}
+        title={doctorName}
+        meta={
+          <>
+            <span>
+              {tr('BMDC License')}: <span className="font-mono font-semibold text-ink-900">{doctorLicense}</span>
+            </span>
+            <span className="hidden text-ink-400 sm:inline" aria-hidden="true">|</span>
+            <span>{hospitalName}</span>
+          </>
+        }
+        actions={
+          <ButtonLink to="/doctor/new-consultation" icon={<Icon.Plus size={16} />}>
+            {tr('New consultation')}
+          </ButtonLink>
+        }
+      />
 
-
-        </div>
-      </div>
-
-      <main className="mx-auto max-w-[1200px] 2xl:max-w-[1720px] space-y-8 px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
-        {/* Figma Search Bar with Dropdown Card */}
+      <main className="mx-auto max-w-[1720px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 2xl:px-12">
+        {/* Patient search with live results */}
         <div className="relative" ref={searchContainerRef}>
-          <div className="flex items-center gap-3 rounded-2xl border border-hair bg-white px-4 py-3.5 shadow-[0_1px_3px_rgba(0,0,0,0.05)] transition-all focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-50 focus-within:shadow-md">
+          <div className="flex h-12 items-center gap-3 rounded-lg border border-hair-strong bg-white px-4 shadow-card transition-colors focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-100">
             {isSearching ? (
-              <Icon.Loader size={20} className="text-primary-700" />
+              <Icon.Loader size={18} className="shrink-0 text-primary-700" />
             ) : (
-              <Icon.Search size={20} className="text-ink-400" />
+              <Icon.Search size={18} className="shrink-0 text-ink-400" />
             )}
             <input
               aria-label={tr("Search patients")}
@@ -155,81 +153,71 @@ export const DoctorDashboard: React.FC = () => {
               onChange={(e) => handleSearchInput(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               placeholder={tr("Search patients by name, ID or phone")}
-              className="w-full bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-400"
+              className="h-full w-full min-w-0 bg-transparent text-sm text-ink-900 outline-none placeholder:text-ink-400"
             />
             {searchQuery && (
-              <button
-                type="button"
+              <Button
+                size="sm"
+                variant="ghost"
                 onClick={() => {
                   setSearchQuery('');
                   setSearchResults([]);
                 }}
-                className="rounded-lg px-2 py-1 text-xs font-semibold text-ink-400 hover:bg-slate-100 hover:text-ink-600 transition-colors"
               >
                 {tr("Clear")}
-              </button>
+              </Button>
             )}
           </div>
 
-          {/* Quick Match / Live Search Results Card */}
           {(searchResults.length > 0 || (searchFocused && searchQuery.length > 1)) && (
-            <Card className="absolute left-0 right-0 z-20 mt-2 overflow-hidden p-0 shadow-xl border-primary-100">
-              <div className="flex items-center justify-between border-b border-hair bg-canvas px-5 py-3">
+            <Card variant="elevated" className="absolute left-0 right-0 z-20 mt-2 overflow-hidden">
+              <div className="flex items-center justify-between border-b border-hair bg-canvas px-4 py-2.5">
                 <p className="text-xs font-semibold text-ink-900">
                   {isSearching
                     ? tr('Searching database...')
                     : searchResults.length > 0
-                    ? `${searchResults.length} Matching Patient Records`
+                    ? tr('{n} matching patients', { n: searchResults.length })
                     : tr('Search Results')}
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setSearchFocused(false)}
-                  className="rounded-lg px-2 py-0.5 text-xs font-semibold text-ink-600 hover:bg-slate-200 transition-colors"
-                >
+                <Button size="sm" variant="ghost" onClick={() => setSearchFocused(false)}>
                   {tr('Close [Esc]')}
-                </button>
+                </Button>
               </div>
 
               {searchResults.length > 0 ? (
-                <div className="divide-y divide-hair max-h-80 overflow-y-auto">
+                <div className="max-h-80 divide-y divide-hair overflow-y-auto">
                   {searchResults.map((pt) => {
                     const initials = pt.full_name
                       ? pt.full_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase()
                       : tr('PT');
                     return (
-                      <div key={pt.id} className="flex flex-wrap items-center justify-between gap-4 p-5 hover:bg-canvas transition-colors">
-                        <div className="flex items-center gap-3.5">
-                          <div className="grid h-11 w-11 place-items-center rounded-xl bg-primary-700 font-bold text-white shadow-xs">
+                      <div key={pt.id} className="flex flex-col gap-3 p-4 transition-colors hover:bg-canvas sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary-700 text-sm font-semibold text-white" aria-hidden="true">
                             {initials}
                           </div>
-                          <div>
-                            <p className="text-sm font-bold text-ink-900">
-                              {pt.full_name} <span className="ml-1 font-mono text-xs font-semibold text-primary-700 bg-primary-50 px-2 py-0.5 rounded-md">{pt.patient_uid}</span>
+                          <div className="min-w-0">
+                            <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink-900">
+                              {pt.full_name}
+                              <span className="rounded-md bg-primary-50 px-1.5 py-0.5 font-mono text-xs font-semibold text-primary-700">{pt.patient_uid}</span>
                             </p>
-                            <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-600">
                               <Pill tone="crimson">{pt.blood_group || tr('Blood N/A')}</Pill>
-                              <span className="text-xs text-ink-600">
-                                {pt.gender} • {pt.date_of_birth ? `${new Date().getFullYear() - new Date(pt.date_of_birth).getFullYear()} Yrs` : tr('Adult')}
+                              <span>
+                                {pt.gender} · {pt.date_of_birth ? tr('{n} yrs', { n: new Date().getFullYear() - new Date(pt.date_of_birth).getFullYear() }) : tr('Adult')}
                               </span>
-                              <span className="text-xs font-mono text-ink-600">📱 {pt.phone}</span>
+                              {pt.phone && <span className="font-mono">{pt.phone}</span>}
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <Link
-                            to={`/patient/timeline/${pt.id}`}
-                            className="min-h-[36px] inline-flex items-center justify-center rounded-xl border border-hair bg-white px-3.5 py-1.5 text-xs font-semibold text-primary-700 transition-all hover:border-hair-strong hover:bg-slate-50"
-                          >
+                        <div className="grid grid-cols-2 gap-2 sm:flex">
+                          <ButtonLink size="sm" variant="secondary" to={`/patient/timeline/${pt.id}`}>
                             {tr("Review Timeline")}
-                          </Link>
-                          <Link
-                            to={`/doctor/new-consultation?patientId=${pt.id}`}
-                            className="min-h-[36px] inline-flex items-center justify-center rounded-xl bg-primary-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-primary-800"
-                          >
+                          </ButtonLink>
+                          <ButtonLink size="sm" to={`/doctor/new-consultation?patientId=${pt.id}`}>
                             {tr("Open Consultation")}
-                          </Link>
+                          </ButtonLink>
                         </div>
                       </div>
                     );
@@ -248,203 +236,137 @@ export const DoctorDashboard: React.FC = () => {
           )}
         </div>
 
-        {/* 4 Standardized Metric KPI Cards */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 [&>*:first-child]:col-span-2 lg:[&>*:first-child]:col-span-1">
-          <MetricCard
-            title={tr("Today's Appointment Queue")}
-            value={data?.stats?.todayAppointmentsCount || 0}
-            subtext={tr("Patients waiting")}
-            icon={<Icon.Clock size={22} />}
-            iconTone="blue"
-            status={{ label: tr("Live Queue"), tone: "blue" }}
-          />
+        {/* Key figures */}
+        {loading ? (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className={`h-[6.5rem] rounded-xl ${i === 0 ? 'col-span-2 lg:col-span-1' : ''}`} />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 [&>*:first-child]:col-span-2 lg:[&>*:first-child]:col-span-1">
+            <MetricCard
+              title={tr("Today's Appointment Queue")}
+              value={data?.stats?.todayAppointmentsCount || 0}
+              subtext={tr("Patients waiting")}
+              icon={<Icon.Clock size={16} />}
+              iconTone="blue"
+            />
+            <MetricCard
+              title={tr("Total Consultations")}
+              value={data?.stats?.totalConsultations || 0}
+              subtext={tr("Visits logged to date")}
+              icon={<Icon.CheckCircle size={16} />}
+              iconTone="emerald"
+            />
+            <MetricCard
+              title={tr("E-Prescriptions Issued")}
+              value={data?.stats?.totalPrescriptionsIssued || 0}
+              subtext={tr("Cryptographically signed")}
+              icon={<Icon.File size={16} />}
+              iconTone="navy"
+            />
+          </div>
+        )}
 
-          <MetricCard
-            title={tr("Total Consultations")}
-            value={data?.stats?.totalConsultations || 0}
-            subtext={tr("Visits logged to date")}
-            icon={<Icon.CheckCircle size={22} />}
-            iconTone="emerald"
-            status={{ label: tr("Active"), tone: "emerald" }}
-          />
-
-          <MetricCard
-            title={tr("E-Prescriptions Issued")}
-            value={data?.stats?.totalPrescriptionsIssued || 0}
-            subtext={tr("Cryptographically signed")}
-            icon={<Icon.File size={22} />}
-            iconTone="purple"
-          />
-
-        </div>
-
-        {/* Main Workstation: 3 Columns on 2xl */}
-        <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-[1.1fr_1.1fr_360px]">
-          {/* Today's Scheduled Queue */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between border-b border-hair pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
-                  <Icon.Clock size={16} />
-                </div>
-                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">{tr("Today's Scheduled Consultations")}</h2>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
+        <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-[1fr_1fr_360px]">
+          <Card padding="sm" header={{ title: tr("Today's Scheduled Consultations"), icon: <Icon.Clock size={15} /> }}>
+            <div className="space-y-2.5">
               {data?.todayAppointments && data.todayAppointments.length > 0 ? (
                 data.todayAppointments.map((apt: any) => (
-                  <div
-                    key={apt.id}
-                    className="flex items-center justify-between rounded-xl border border-hair bg-canvas p-4 transition-colors hover:bg-white"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-primary-700">{apt.time_slot}</span>
-                        <span className="text-sm font-bold text-ink-900">{apt.patient_name}</span>
-                        <span className="font-mono text-xs text-ink-400">({apt.patient_uid})</span>
+                  <div key={apt.id} className={listRow}>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-semibold text-primary-700">{apt.time_slot}</span>
+                        <span className="text-sm font-semibold text-ink-900">{apt.patient_name}</span>
+                        <span className="font-mono text-xs text-ink-400">{apt.patient_uid}</span>
                       </div>
                       <p className="mt-1 text-xs text-ink-600">{apt.reason || tr('General Follow-up Consultation')}</p>
                     </div>
-
-                    <Link
-                      to={`/doctor/new-consultation?patientId=${apt.patient_id}&appointmentId=${apt.id}`}
-                      className="rounded-lg bg-primary-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-800"
-                    >
+                    <ButtonLink size="sm" className="sm:shrink-0" to={`/doctor/new-consultation?patientId=${apt.patient_id}&appointmentId=${apt.id}`}>
                       {tr("Consult Now")}
-                    </Link>
+                    </ButtonLink>
                   </div>
                 ))
               ) : (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-hair-strong bg-canvas px-6 py-8 text-center">
-                  <img
-                    src="/assets/queue_empty.png"
-                    alt={tr("All clinical appointments completed")}
-                    className="mb-3 h-24 w-auto object-contain transition-transform duration-200 hover:scale-105"
-                    loading="lazy"
-                  />
-                  <p className="text-sm font-bold text-ink-900">{tr("No appointments pending in queue")}</p>
-                  <p className="mt-1 max-w-xs text-xs text-ink-600">
-                    {tr("All patient consultations for this clinical shift are completed or ready for check-in.")}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={<img src="/assets/queue_empty.png" alt="" className="h-8 w-8 object-contain" />}
+                  title={tr("No appointments pending in queue")}
+                  description={tr("All patient consultations for this clinical shift are completed or ready for check-in.")}
+                />
               )}
             </div>
           </Card>
 
-          {/* Recent Clinical Records Logged */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between border-b border-hair pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-50 text-success">
-                  <Icon.Stethoscope size={16} />
-                </div>
-                <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">{tr("Recent Clinical Records Logged")}</h2>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-3">
+          <Card padding="sm" header={{ title: tr("Recent Clinical Records Logged"), icon: <Icon.Stethoscope size={15} /> }}>
+            <div className="space-y-2.5">
               {data?.recentConsultations && data.recentConsultations.length > 0 ? (
                 data.recentConsultations.map((c: any) => (
-                  <div
-                    key={c.id}
-                    className="flex items-center justify-between rounded-xl border border-hair bg-canvas p-4 transition-colors hover:bg-white"
-                  >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-ink-900">{c.patient_name}</span>
-                        <span className="font-mono text-xs text-ink-400">({c.record_uid})</span>
+                  <div key={c.id} className={listRow}>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-sm font-semibold text-ink-900">{c.patient_name}</span>
+                        <span className="font-mono text-xs text-ink-400">{c.record_uid}</span>
                       </div>
-                      <p className="mt-1 text-xs text-ink-600 line-clamp-1">{c.chief_complaint}</p>
-                      <p className="mt-0.5 font-mono text-xs text-ink-400">
-                        {new Date(c.visit_date).toLocaleDateString()}
-                      </p>
+                      <p className="mt-1 line-clamp-1 text-xs text-ink-600">{c.chief_complaint}</p>
+                      <p className="mt-0.5 font-mono text-xs text-ink-400">{new Date(c.visit_date).toLocaleDateString()}</p>
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <Link
-                        to={`/patient/timeline/${c.patient_id}`}
-                        className="rounded-lg border border-hair px-3 py-1.5 text-xs font-semibold text-primary-700 hover:border-hair-strong"
-                      >
+                    <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
+                      <ButtonLink size="sm" variant="secondary" to={`/patient/timeline/${c.patient_id}`}>
                         {tr("Timeline")}
-                      </Link>
+                      </ButtonLink>
                       {c.prescription_id && (
-                        <Link
-                          to={`/prescription/${c.prescription_id}`}
-                          className="rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 text-xs font-semibold text-success hover:bg-emerald-100"
-                        >
-                          Rx ℞
-                        </Link>
+                        <ButtonLink size="sm" variant="success-soft" to={`/prescription/${c.prescription_id}`} icon={<Icon.File size={14} />}>
+                          {tr('View ℞')}
+                        </ButtonLink>
                       )}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="rounded-2xl border border-dashed border-hair-strong bg-canvas py-10 px-4 text-center">
-                  <div className="mx-auto mb-2 grid h-10 w-10 place-items-center rounded-xl bg-emerald-50 text-success">
-                    <Icon.Stethoscope size={20} />
-                  </div>
-                  <p className="text-sm font-bold text-ink-900">{tr("No consultations logged yet")}</p>
-                  <p className="mt-1 text-xs text-ink-600">
-                    {tr("New consultations completed in this session will appear here in real-time.")}
-                  </p>
-                </div>
+                <EmptyState
+                  icon={<Icon.Stethoscope size={20} />}
+                  title={tr("No consultations logged yet")}
+                  description={tr("New consultations completed in this session will appear here in real-time.")}
+                />
               )}
             </div>
           </Card>
 
-          {/* 3rd Column: Clinical Quick Actions & Chamber Telemetry (Visible on 2xl or tablet/mobile stacked) */}
-          <div className="space-y-6 lg:col-span-2 2xl:col-span-1">
-            {/* Quick Actions Card */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between border-b border-hair pb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="grid h-8 w-8 place-items-center rounded-lg bg-primary-50 text-primary-700">
-                    <Icon.Activity size={16} />
-                  </div>
-                  <h2 className="font-display text-lg font-bold tracking-tight text-ink-900">{tr("Clinical Quick Actions")}</h2>
-                </div>
-              </div>
-
-              <div className="mt-4 space-y-2.5">
+          <div className="lg:col-span-2 2xl:col-span-1">
+            <Card padding="sm" header={{ title: tr("Clinical Quick Actions"), icon: <Icon.Activity size={15} /> }}>
+              <div className="space-y-2">
                 <Link
                   to="/doctor/new-consultation"
-                  className="flex items-center justify-between rounded-xl bg-primary-700 p-3.5 text-white transition-all hover:bg-primary-800 shadow-xs"
+                  className="group/qa flex items-center justify-between gap-3 rounded-lg border border-primary-800/40 bg-primary-700 p-3 text-white transition-colors hover:bg-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-white/15 text-white">
+                  <span className="flex items-center gap-3">
+                    <span className="grid h-8 w-8 place-items-center rounded-md bg-white/15" aria-hidden="true">
                       <Icon.Plus size={16} />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-sm font-bold">{tr("New Walk-In Consultation")}</p>
-                      <p className="text-xs text-primary-100">{tr("Ad-hoc patient intake & prescription")}</p>
-                    </div>
-                  </div>
-                  <Icon.Arrow size={14} className="text-blue-200" />
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold">{tr("New Walk-In Consultation")}</span>
+                      <span className="block text-xs text-primary-100">{tr("Ad-hoc patient intake & prescription")}</span>
+                    </span>
+                  </span>
+                  <Icon.Arrow size={14} className="shrink-0 transition-transform duration-150 group-hover/qa:translate-x-0.5" />
                 </Link>
 
                 <button
                   type="button"
-                  onClick={() => {
-                    const input = searchContainerRef.current?.querySelector('input');
-                    input?.focus();
-                  }}
-                  className="flex w-full items-center justify-between rounded-xl border border-hair bg-canvas p-3 text-left transition-colors hover:bg-white hover:border-hair-strong"
+                  onClick={() => searchContainerRef.current?.querySelector('input')?.focus()}
+                  className="flex w-full items-center gap-3 rounded-lg border border-hair bg-white p-3 text-left transition-colors hover:border-hair-strong hover:bg-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-8 w-8 place-items-center rounded-lg bg-white text-primary-700 border border-hair">
-                      <Icon.Search size={15} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-ink-900">{tr("Lookup Medical Archive")}</p>
-                      <p className="text-[0.6875rem] text-ink-600">{tr("Search by NID or Medra-UID")}</p>
-                    </div>
-                  </div>
-                  <span className="font-mono text-[0.625rem] text-ink-400 border border-hair px-1.5 py-0.5 rounded bg-white">⌘K</span>
+                  <span className="grid h-8 w-8 place-items-center rounded-md border border-hair bg-canvas text-primary-700" aria-hidden="true">
+                    <Icon.Search size={15} />
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-ink-900">{tr("Lookup Medical Archive")}</span>
+                    <span className="block text-xs text-ink-600">{tr("Search by NID or Medra-UID")}</span>
+                  </span>
                 </button>
               </div>
             </Card>
-
           </div>
         </div>
       </main>

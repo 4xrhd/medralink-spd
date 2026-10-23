@@ -13,7 +13,8 @@ export interface DataTableProps {
 
 export function DataTable({ children, minWidth = "min-w-[640px]", caption, className }: DataTableProps) {
   return (
-    <div className="overflow-x-auto">
+    // Focusable so keyboard users can scroll it; the edge shadows show there is more to the side
+    <div className="scroll-shadow-x relative overflow-x-auto" tabIndex={0} role="region" aria-label={caption}>
       <table className={cn("w-full text-sm", minWidth, className)}>
         {caption && <caption className="sr-only">{caption}</caption>}
         {children}

@@ -174,7 +174,7 @@ export const LandingPage: React.FC = () => {
 
           {/* Floating Live Consultation Workstation Preview */}
           <div className="relative z-10" aria-label={tr("Example consultation screen")} role="img">
-            <div className="absolute -inset-4 sm:-inset-6 rounded-3xl bg-primary-50" aria-hidden="true" />
+            <div className="absolute -inset-4 sm:-inset-6 rounded-xl bg-primary-50" aria-hidden="true" />
             <Card className="relative p-5 sm:p-6 shadow-card hover:shadow-card-hover border-hair bg-surface">
               <div className="flex items-center justify-between border-b border-hair pb-3.5">
                 <div className="flex items-center gap-3">
@@ -345,7 +345,7 @@ export const LandingPage: React.FC = () => {
             role="tablist"
             aria-label={tr("Workspaces")}
             onKeyDown={onTabKey}
-            className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-hair bg-primary-50/70 p-1.5"
+            className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-xl border border-hair bg-primary-50/70 p-1.5"
           >
             {tabs.map((t, i) => (
               <button
@@ -414,7 +414,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Enterprise Security & Compliance Banner */}
-      <section id="governance" className="scroll-mt-24 bg-gradient-to-br from-primary-900 via-primary-800 to-ink-900 py-16 text-white">
+      <section id="governance" className="scroll-mt-24 bg-primary-900 py-16 text-white">
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <h2 className="max-w-2xl font-display text-3xl sm:text-4xl font-bold tracking-tight">
             {tr("Privacy built into every patient record")}
@@ -426,7 +426,7 @@ export const LandingPage: React.FC = () => {
               ["Files behind sign-in", "Lab reports and prescription PDFs are served only to signed-in users allowed to see them.", <Icon.File size={20} />],
               ["Every change logged", "Record changes are written to a hash-chained audit log that administrators can verify.", <Icon.Pulse size={20} />],
             ].map(([t, b, icon]) => (
-              <div key={t as string} className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xs">
+              <div key={t as string} className="rounded-xl border border-white/10 bg-white/5 p-6">
                 <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-primary-200">
                   {icon}
                 </div>
@@ -440,7 +440,7 @@ export const LandingPage: React.FC = () => {
 
       <section id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
         <SectionHeading align="center" title={tr("Questions people ask")} />
-        <div className="mt-10 divide-y divide-hair rounded-2xl border border-hair bg-surface">
+        <div className="mt-10 divide-y divide-hair rounded-xl border border-hair bg-surface">
           {FAQ.map(([q, a]) => (
             <details key={q} className="group px-5 py-4 sm:px-6">
               <summary className="flex min-h-[44px] cursor-pointer text-base list-none items-center justify-between gap-4 rounded font-semibold text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-700 [&::-webkit-details-marker]:hidden">
@@ -454,7 +454,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       <section className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12 pb-14 sm:pb-18">
-        <div className="rounded-3xl bg-primary-800 p-8 sm:p-12 text-white">
+        <div className="rounded-xl bg-primary-800 p-8 sm:p-12 text-white">
           <div className="max-w-2xl">
             <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">
               {tr("Bring your records together")}

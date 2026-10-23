@@ -86,11 +86,9 @@ export const RegisterPage: React.FC = () => {
 
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 bg-canvas">
-      <div className="w-full max-w-5xl rounded-3xl border border-hair bg-surface shadow-card overflow-hidden grid lg:grid-cols-12">
+      <div className="w-full max-w-5xl rounded-xl border border-hair bg-surface shadow-card overflow-hidden grid lg:grid-cols-12">
         {/* Left Healthcare Reassurance Panel */}
-        <div className="relative hidden lg:flex lg:col-span-5 flex-col justify-between p-10 bg-gradient-to-br from-primary-900 via-primary-800 to-primary-950 text-white overflow-hidden">
-          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-primary-600/20 blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-primary-400/10 blur-3xl pointer-events-none" />
+        <div className="relative hidden lg:flex lg:col-span-5 flex-col justify-between p-10 bg-primary-900 text-white overflow-hidden">
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">
@@ -193,14 +191,15 @@ export const RegisterPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setRole('PATIENT')}
-                className={`relative flex items-start gap-3.5 p-4 rounded-2xl border text-left transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 ${
+                aria-pressed={role === 'PATIENT'}
+                className={`relative flex items-start gap-3.5 p-4 rounded-lg border text-left transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 ${
                   role === 'PATIENT'
-                    ? 'border-primary-600 bg-primary-50/60 ring-2 ring-primary-600/20 shadow-xs'
+                    ? 'border-primary-600 bg-primary-50/60 ring-1 ring-primary-600'
                     : 'border-hair bg-white hover:border-primary-200 hover:bg-slate-50/60'
                 }`}
               >
                 <div
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-md ${
                     role === 'PATIENT'
                       ? 'bg-primary-700 text-white shadow-xs'
                       : 'bg-primary-50 text-primary-700'
@@ -228,14 +227,15 @@ export const RegisterPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setRole('DOCTOR')}
-                className={`relative flex items-start gap-3.5 p-4 rounded-2xl border text-left transition-all cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 ${
+                aria-pressed={role === 'DOCTOR'}
+                className={`relative flex items-start gap-3.5 p-4 rounded-lg border text-left transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 ${
                   role === 'DOCTOR'
-                    ? 'border-primary-600 bg-primary-50/60 ring-2 ring-primary-600/20 shadow-xs'
+                    ? 'border-primary-600 bg-primary-50/60 ring-1 ring-primary-600'
                     : 'border-hair bg-white hover:border-primary-200 hover:bg-slate-50/60'
                 }`}
               >
                 <div
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-md ${
                     role === 'DOCTOR'
                       ? 'bg-primary-700 text-white shadow-xs'
                       : 'bg-primary-50 text-primary-700'

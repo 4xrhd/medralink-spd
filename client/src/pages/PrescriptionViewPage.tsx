@@ -1,10 +1,10 @@
 import { useLanguage } from '../context/LanguageContext.js';
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api, { getApiErrorMessage } from '../services/api.js';
-import { Icon } from '../ui/primitives.js';
+import { Button, ButtonLink, buttonClasses, EmptyState, Icon, Skeleton } from '../ui/primitives.js';
 
 function QR() {
   const { t: tr } = useLanguage();
@@ -49,25 +49,24 @@ export const PrescriptionViewPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center bg-ink-600">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-white border-t-transparent"></div>
+      <div className="min-h-screen bg-slate-100 px-2 py-6 sm:px-4 sm:py-10" role="status" aria-label={tr('Loading clinical portal module...')}>
+        <Skeleton className="mx-auto h-[600px] w-full max-w-[595px] rounded-sm bg-white" />
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-ink-600 px-4 py-16 text-center text-white">
-        <div className="mx-auto max-w-md rounded-2xl border border-white/10 bg-white/5 p-8 shadow-xl">
-          <Icon.Alert size={36} className="mx-auto text-rose-400 mb-3" />
-          <p className="text-sm font-semibold">{error || tr('Prescription record not found.')}</p>
-          <Link
-            to="/"
-            className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-white px-4 py-2 text-xs font-semibold text-primary-700 hover:bg-slate-100"
-          >
-            <Icon.Arrow size={14} className="rotate-180" /> {tr("Return to Workstation")}
-          </Link>
-        </div>
+      <div className="mx-auto max-w-xl px-4 py-16">
+        <EmptyState
+          icon={<Icon.Alert size={22} className="text-critical" />}
+          title={error || tr('Prescription record not found.')}
+          action={
+            <ButtonLink to="/" variant="secondary" icon={<Icon.Arrow size={14} className="rotate-180" />}>
+              {tr("Return to Workstation")}
+            </ButtonLink>
+          }
+        />
       </div>
     );
   }
@@ -83,26 +82,26 @@ export const PrescriptionViewPage: React.FC = () => {
       })
     : '-';
 
-  const doctorName = data.doctor_name || 'Consulting Physician';
+  const doctorName = data.doctor_name || '-';
   const doctorLicense = data.bmdc_license_number || '-';
-  const hospitalAffiliation = data.hospital_affiliation || 'Clinical Health Centre';
-  const chamberDetails = data.chamber_details || 'Outpatient Department';
+  const hospitalAffiliation = data.hospital_affiliation || '-';
+  const chamberDetails = data.chamber_details || '';
   const doctorPhone = data.doctor_phone || '-';
   const qualifications = data.qualifications || '';
-  const specialization = data.specialization || 'Clinical Medicine';
+  const specialization = data.specialization || '';
 
-  const patientName = data.patient_name || 'Patient';
+  const patientName = data.patient_name || '-';
   const patientUid = data.patient_uid || '-';
   const gender = data.gender || '-';
   const bloodGroup = data.blood_group || '-';
   const age = data.date_of_birth
-    ? `${new Date().getFullYear() - new Date(data.date_of_birth).getFullYear()} Yrs`
+    ? tr('{n} yrs', { n: new Date().getFullYear() - new Date(data.date_of_birth).getFullYear() })
     : '-';
 
   const items = Array.isArray(data.items) ? data.items : [];
 
   return (
-    <div className="min-h-screen overflow-x-auto bg-ink-600 py-6 sm:py-10 px-2 sm:px-4">
+    <div className="min-h-screen bg-slate-100 px-2 py-6 sm:px-4 sm:py-10">
       <style>{`
         @media print {
           body { background: white !important; }
@@ -120,45 +119,34 @@ export const PrescriptionViewPage: React.FC = () => {
       `}</style>
 
       {/* Top Action Controls */}
-      <div className="print-controls mx-auto flex max-w-[595px] flex-wrap items-center justify-between gap-3 pb-4">
-        <button
-          type="button"
+      <div className="print-controls mx-auto flex max-w-[595px] flex-col gap-2 pb-4 sm:flex-row sm:items-center sm:justify-between">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="self-start"
+          icon={<Icon.Arrow size={14} className="rotate-180" />}
           onClick={() => {
-            if (window.history.length > 2) {
-              navigate(-1);
-            } else if (user?.role === 'DOCTOR') {
-              navigate('/doctor');
-            } else if (user?.role === 'PATIENT') {
-              navigate('/patient');
-            } else {
-              navigate('/');
-            }
+            if (window.history.length > 2) navigate(-1);
+            else if (user?.role === 'DOCTOR') navigate('/doctor');
+            else if (user?.role === 'PATIENT') navigate('/patient');
+            else navigate('/');
           }}
-          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-300 transition-colors hover:text-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white"
         >
-          <Icon.Arrow size={14} className="rotate-180" /> {tr("Back to Records")}
-        </button>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-white/10 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white"
-          >
-            <Icon.Download size={14} /> {tr("Print Document")}
-          </button>
-          <a
-            href={pdfDownloadUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-xl bg-white px-3.5 py-2 text-xs font-semibold text-primary-700 shadow-sm transition-colors hover:bg-slate-100 focus-visible:ring-2 focus-visible:ring-primary-600"
-          >
-            <Icon.Download size={14} /> {tr("Official PDF (℞)")}
+          {tr("Back to Records")}
+        </Button>
+        <div className="grid grid-cols-2 gap-2 sm:flex">
+          <Button variant="secondary" size="sm" onClick={() => window.print()} icon={<Icon.File size={14} />}>
+            {tr("Print Document")}
+          </Button>
+          <a href={pdfDownloadUrl} target="_blank" rel="noreferrer" className={buttonClasses({ size: 'sm' })}>
+            <Icon.Download size={14} />
+            <span>{tr("Official PDF (℞)")}</span>
           </a>
         </div>
       </div>
 
       {/* A4 page: 595 x 842 pt ratio, fully responsive on mobile */}
-      <div className="print-sheet mx-auto flex min-h-[842px] w-full max-w-[595px] flex-col bg-white shadow-2xl rounded-sm">
+      <div className="print-sheet mx-auto flex min-h-[842px] w-full max-w-[595px] flex-col rounded-sm border border-hair bg-white shadow-elevated">
         {/* Header banner */}
         <div className="flex flex-wrap items-center justify-between gap-3 bg-primary-700 px-6 sm:px-8 py-5 text-white">
           <div className="flex items-center gap-3">
@@ -250,7 +238,7 @@ export const PrescriptionViewPage: React.FC = () => {
               <div className="h-px flex-1 bg-hair" />
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" tabIndex={0} role="region" aria-label={tr("Medicine Name & Generic")}>
               <table className="mt-3 w-full min-w-[500px] border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-hair-strong text-left text-xs font-semibold text-ink-600">
@@ -320,7 +308,7 @@ export const PrescriptionViewPage: React.FC = () => {
                   {tr("Authenticated electronic medical record generated via MedraLink Clinical Infrastructure. Scan to verify on national registry.")}
                 </p>
                 <p className="mt-0.5 font-mono text-[0.5625rem] text-ink-400">
-                  SHA-256: {data.prescription_uid ? `${data.prescription_uid.toLowerCase()}-verified` : 'Record Verified'}
+                  {tr('Rx ID')}: {data.prescription_uid || '-'}
                 </p>
               </div>
             </div>
@@ -330,13 +318,13 @@ export const PrescriptionViewPage: React.FC = () => {
               <img
                 src="/assets/verified_seal.png"
                 alt={tr("MedraLink Cryptographically Verified Seal")}
-                className="h-16 w-16 shrink-0 object-contain opacity-95 transition-opacity hover:opacity-100"
+                className="h-16 w-16 shrink-0 object-contain"
                 loading="lazy"
               />
               <div className="text-center sm:text-right">
                 <div className="mb-1 flex h-10 w-36 items-end justify-center border-b border-ink-900 mx-auto sm:ml-auto">
                   <span className="font-serif text-lg italic text-primary-700">
-                    {doctorName.replace('Dr. ', '')}
+                    {doctorName.replace(/^Dr\.?\s*/, '')}
                   </span>
                 </div>
                 <p className="inline-flex items-center gap-1 text-[0.625rem] font-semibold text-success">

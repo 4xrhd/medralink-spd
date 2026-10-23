@@ -66,12 +66,13 @@ export const AdminUsersPanel: React.FC = () => {
   };
 
   return (
-    <Card className="overflow-hidden p-0" id="users">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-hair px-4 py-4 sm:px-6">
-        <div className="flex items-center gap-2">
-          <Icon.User size={18} className="text-primary-700" />
-          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">{tr("User Accounts")}</h2>
-        </div>
+    <Card
+      className="overflow-hidden"
+      id="users"
+      header={{
+        title: tr("User Accounts"),
+        icon: <Icon.User size={15} />,
+        action: (
         <label className="flex items-center gap-2 text-xs font-semibold text-ink-600">
           {tr("Role")}
           <Select
@@ -86,7 +87,9 @@ export const AdminUsersPanel: React.FC = () => {
             <option value="ADMIN">{tr("Admin")}</option>
           </Select>
         </label>
-      </div>
+        ),
+      }}
+    >
       <DataTable caption={tr("User accounts")}>
         <THead>
           <tr>
@@ -102,17 +105,17 @@ export const AdminUsersPanel: React.FC = () => {
             <Tr key={u.id}>
               <Td className="font-semibold">{u.full_name}</Td>
               <Td className="text-ink-600">{u.email}</Td>
-              <Td><Pill tone="slate">{u.role}</Pill></Td>
-              <Td><Pill tone={statusTone(u.status)}>{u.status}</Pill></Td>
+              <Td><Pill tone="slate">{tr(u.role === 'DOCTOR' ? 'Doctor' : u.role === 'PATIENT' ? 'Patient' : 'Admin')}</Pill></Td>
+              <Td><Pill tone={statusTone(u.status)}>{tr(u.status === 'ACTIVE' ? 'Active' : u.status === 'SUSPENDED' ? 'Suspended' : 'Pending')}</Pill></Td>
               <Td className="text-right">
                 {u.id !== me?.id && (
                   <Button
                     size="sm"
-                    variant={u.status === 'SUSPENDED' ? 'secondary' : 'outline'}
+                    variant={u.status === 'SUSPENDED' ? 'secondary' : 'danger-soft'}
                     onClick={() => setTarget(u)}
-                    aria-label={`${u.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'} ${u.full_name}`}
+                    aria-label={`${tr(u.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend')} ${u.full_name}`}
                   >
-                    {u.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
+                    {tr(u.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend')}
                   </Button>
                 )}
               </Td>
@@ -122,13 +125,13 @@ export const AdminUsersPanel: React.FC = () => {
       </DataTable>
       <ConfirmModal
         isOpen={Boolean(target)}
-        title={target?.status === 'SUSPENDED' ? 'Reactivate account?' : 'Suspend account?'}
+        title={tr(target?.status === 'SUSPENDED' ? 'Reactivate account?' : 'Suspend account?')}
         message={
           target?.status === 'SUSPENDED'
             ? tr('{name} will be able to sign in again.', { name: target?.full_name ?? '' })
             : tr('{name} will be signed out immediately and cannot sign in until reactivated.', { name: target?.full_name ?? '' })
         }
-        confirmLabel={target?.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
+        confirmLabel={tr(target?.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend')}
         isDestructive={target?.status !== 'SUSPENDED'}
         isLoading={saving}
         onConfirm={toggleStatus}
@@ -179,13 +182,9 @@ export const AdminSettingsPanel: React.FC = () => {
   };
 
   return (
-    <Card className="p-0" id="settings">
+    <Card id="settings" header={{ title: tr("System Parameters"), icon: <Icon.Sliders size={15} /> }}>
       <form onSubmit={save}>
-        <div className="flex items-center gap-2 border-b border-hair px-4 py-4 sm:px-6">
-          <Icon.Sliders size={18} className="text-primary-700" />
-          <h2 className="font-display text-xl font-bold tracking-tight text-ink-900">{tr("System Parameters")}</h2>
-        </div>
-        <div className="grid gap-4 px-4 py-5 sm:grid-cols-2 sm:px-6">
+        <div className="grid gap-4 px-4 py-5 sm:grid-cols-2 sm:px-5">
           {settings.map((s) =>
             // On/off settings are switches, so nobody has to type "true"
             s.value === 'true' || s.value === 'false' ? (
@@ -210,7 +209,7 @@ export const AdminSettingsPanel: React.FC = () => {
             )
           )}
         </div>
-        <div className="border-t border-hair px-4 py-3 sm:px-6">
+        <div className="flex justify-end border-t border-hair px-4 py-3 sm:px-5">
           <Button type="submit" isLoading={saving}>{tr("Save settings")}</Button>
         </div>
       </form>

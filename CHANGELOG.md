@@ -2,6 +2,18 @@
 
 All notable changes to MedraLink. Detailed notes per date live in `docs/date-*/update-log.md`.
 
+## 2026-10-24
+
+### Changed
+- Calmer clinical styling: one button system (including link buttons), panel title bars, page headers, flat surfaces, loading placeholders.
+- Fully responsive from 360px to 1920px; the medicine list becomes labelled cards on phones; hospital list and map sit side by side on wide screens.
+- Navbar links and buttons get green hover states that match the site theme.
+
+### Fixed
+- Removed made-up clinical data shown as fallbacks: a fixed "Penicillin, Sulfa" allergy alert on every consultation, sample prescriptions, vitals, lab results and a fake SHA-256 hash.
+- Consultation page now shows the selected patient's real allergies.
+- Error screen no longer shows stack traces in production builds.
+
 ## 2026-10-23
 
 ### Security
