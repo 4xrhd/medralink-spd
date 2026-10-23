@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { execute, query, queryOne, runTransaction } from '../db/database.js';
+import { execute, listAgg, query, queryOne, runTransaction } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
 import { canAccessPatient } from '../services/accessService.js';
 import { createNotification } from '../services/notificationService.js';
@@ -430,13 +430,13 @@ export async function downloadPatientSummaryPDF(req: Request, res: Response) {
     const conditions = await query('SELECT * FROM medical_conditions WHERE patient_id = ?', [patient.id]);
     const consultations = await query(
       `SELECT r.record_uid, r.visit_date, du.full_name as doctor_name, d.specialization, r.chief_complaint,
-              COALESCE(GROUP_CONCAT(diag.diagnosis_title, ', '), 'None') as diagnoses
+              COALESCE(${listAgg('diag.diagnosis_title')}, 'None') as diagnoses
        FROM medical_records r
        JOIN doctors d ON r.doctor_id = d.id
        JOIN users du ON d.user_id = du.id
        LEFT JOIN diagnoses diag ON diag.record_id = r.id
        WHERE r.patient_id = ?
-       GROUP BY r.id
+       GROUP BY r.id, du.full_name, d.specialization
        ORDER BY r.visit_date DESC LIMIT 10`,
       [patient.id]
     );
@@ -444,13 +444,13 @@ export async function downloadPatientSummaryPDF(req: Request, res: Response) {
     const prescriptions = await query(
       `SELECT pr.prescription_uid, pr.issue_date, du.full_name as doctor_name,
               COUNT(pi.id) as items_count,
-              COALESCE(GROUP_CONCAT(pi.medication_name, ', '), '') as items_summary
+              COALESCE(${listAgg('pi.medication_name')}, '') as items_summary
        FROM prescriptions pr
        JOIN doctors d ON pr.doctor_id = d.id
        JOIN users du ON d.user_id = du.id
        LEFT JOIN prescription_items pi ON pi.prescription_id = pr.id
        WHERE pr.patient_id = ?
-       GROUP BY pr.id
+       GROUP BY pr.id, du.full_name
        ORDER BY pr.issue_date DESC LIMIT 10`,
       [patient.id]
     );

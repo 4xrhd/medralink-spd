@@ -29,6 +29,10 @@ let sqliteQueue: Promise<unknown> = Promise.resolve();
 
 export const isPostgresDialect = (): boolean => isPostgres;
 
+/** Comma-separated list aggregate in the active dialect (GROUP_CONCAT is SQLite-only). */
+export const listAgg = (column: string): string =>
+  isPostgres ? `STRING_AGG(${column}::text, ', ')` : `GROUP_CONCAT(${column}, ', ')`;
+
 function toPgPlaceholders(sql: string): string {
   let paramIndex = 1;
   return sql.replace(/\?/g, () => `$${paramIndex++}`);

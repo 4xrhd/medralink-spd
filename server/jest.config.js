@@ -4,6 +4,7 @@ module.exports = {
   roots: ['<rootDir>/src'],
   testMatch: ['**/*.test.ts'],
   setupFiles: ['<rootDir>/src/tests/setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/src/tests/pgIsolation.ts'],
   collectCoverageFrom: ['src/**/*.ts', '!src/tests/**', '!src/db/seed.ts'],
   // Proposal objective 11: at least 80% line coverage. Branch floor is lower because the
   // PostgreSQL-only paths in database.ts are not exercised by the SQLite test run.
