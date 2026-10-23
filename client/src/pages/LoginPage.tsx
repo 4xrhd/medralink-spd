@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useState, useEffect } from 'react';
 import { Alert } from '../ui/forms.js';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
@@ -18,6 +19,7 @@ const DEMO_ACCOUNTS: Record<string, { email: string; password: string }> = DEMO_
   : {};
 
 export const LoginPage: React.FC = () => {
+  const { t: tr } = useLanguage();
   useDocumentTitle('Sign In');
   const toast = useToast();
   const [searchParams] = useSearchParams();
@@ -55,9 +57,9 @@ export const LoginPage: React.FC = () => {
     setIsSubmitting(true);
     try {
       await login(email, password);
-      toast.success('Successfully authenticated');
+      toast.success(tr('Successfully authenticated'));
     } catch (err: unknown) {
-      const msg = getApiErrorMessage(err, 'Invalid email or password.');
+      const msg = getApiErrorMessage(err, tr('Invalid email or password.'));
       setError(msg);
       toast.error(msg);
     } finally {
@@ -75,26 +77,26 @@ export const LoginPage: React.FC = () => {
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">
-              <img src="/logo-mark.png" alt="MedraLink Logo" className="h-11 w-11 rounded-lg bg-white p-1 object-contain" />
+              <img src="/logo-mark.png" alt={tr("MedraLink Logo")} className="h-11 w-11 rounded-lg bg-white p-1 object-contain" />
               <div>
                 <span className="font-display text-xl font-bold tracking-tight">
                   Medra<span className="text-primary-300">Link</span>
                 </span>
                 <p className="text-[11px] font-medium text-primary-200">
-                  Clinical Portal
+                  {tr("Clinical Portal")}
                 </p>
               </div>
             </div>
 
             <div className="mt-10">
               <p className="text-xs font-semibold text-primary-300">
-                Connected Care Network
+                {tr("Connected Care Network")}
               </p>
               <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-white leading-snug">
-                One unified record for every clinical visit.
+                {tr("One unified record for every clinical visit.")}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-primary-100/90">
-                Secure access to patient timelines, compliant electronic prescriptions, and diagnostic histories across Bangladesh.
+                {tr("Secure access to patient timelines, compliant electronic prescriptions, and diagnostic histories across Bangladesh.")}
               </p>
             </div>
 
@@ -108,9 +110,9 @@ export const LoginPage: React.FC = () => {
                   <Icon.Check size={14} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">BMDC Verified Standards</p>
+                  <p className="text-sm font-semibold text-white">{tr("BMDC Verified Standards")}</p>
                   <p className="text-xs text-primary-200/80">
-                    Compliant with Bangladesh Medical &amp; Dental Council guidelines.
+                    {tr("Compliant with Bangladesh Medical & Dental Council guidelines.")}
                   </p>
                 </div>
               </div>
@@ -120,9 +122,9 @@ export const LoginPage: React.FC = () => {
                   <Icon.Check size={14} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Encrypted Patient Timeline</p>
+                  <p className="text-sm font-semibold text-white">{tr("Encrypted Patient Timeline")}</p>
                   <p className="text-xs text-primary-200/80">
-                    Role-governed consent and strict clinical privacy controls.
+                    {tr("Role-governed consent and strict clinical privacy controls.")}
                   </p>
                 </div>
               </div>
@@ -132,9 +134,9 @@ export const LoginPage: React.FC = () => {
                   <Icon.Check size={14} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Drug-Safety &amp; Allergy Guard</p>
+                  <p className="text-sm font-semibold text-white">{tr("Drug-Safety & Allergy Guard")}</p>
                   <p className="text-xs text-primary-200/80">
-                    Instant interaction checks during every doctor consultation.
+                    {tr("Instant interaction checks during every doctor consultation.")}
                   </p>
                 </div>
               </div>
@@ -142,29 +144,29 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <div className="relative z-10 pt-8 border-t border-white/10 text-xs text-primary-200/80 flex items-center justify-between">
-            <span>Protected Healthcare Session</span>
+            <span>{tr("Protected Healthcare Session")}</span>
           </div>
         </div>
 
         {/* Right Panel - Form */}
         <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
           <div className="lg:hidden text-center mb-6">
-            <img src="/logo-mark.png" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
+            <img src="/logo-mark.png" alt={tr("MedraLink Logo")} className="mx-auto h-12 w-12 object-contain mb-2" />
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
-              Sign in to Medra<span className="text-primary-700">Link</span>
+              {tr("Sign in to MedraLink")}
             </h1>
             <p className="text-xs text-ink-600 mt-1">
-              Connected Electronic Medical Records &amp; Clinical Portals
+              {tr("Connected Electronic Medical Records & Clinical Portals")}
             </p>
           </div>
 
           <div className="max-w-md w-full mx-auto">
             <div className="hidden lg:block mb-6">
               <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink-900">
-                Sign in to MedraLink
+                {tr("Sign in to MedraLink")}
               </h1>
               <p className="text-sm text-ink-600 mt-1.5 leading-relaxed">
-                Use the email and password for your MedraLink account.
+                {tr("Use the email and password for your MedraLink account.")}
               </p>
             </div>
 
@@ -175,7 +177,7 @@ export const LoginPage: React.FC = () => {
             {/* Demo builds only: one click fills a seeded account */}
             {DEMO_MODE && (
               <fieldset className="mb-6">
-                <legend className="mb-2 text-sm font-medium text-ink-600">Try a demo account</legend>
+                <legend className="mb-2 text-sm font-medium text-ink-600">{tr("Try a demo account")}</legend>
                 <div className="grid grid-cols-3 gap-2">
                   {Object.entries(DEMO_ACCOUNTS).map(([role, account]) => {
                     const selected = email === account.email;
@@ -202,19 +204,19 @@ export const LoginPage: React.FC = () => {
               </fieldset>
             )}
             <form className="space-y-4" onSubmit={handleSubmit}>
-              <FormField label="Email address" htmlFor="login-email" required>
+              <FormField label={tr("Email address")} htmlFor="login-email" required>
                 <Input
                   id="login-email"
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. dr.ahmed@medralink.com"
+                  placeholder={tr("e.g. dr.ahmed@medralink.com")}
                   leftIcon={<Icon.User size={16} />}
                 />
               </FormField>
 
-              <FormField label="Account password" htmlFor="login-password" required>
+              <FormField label={tr("Account password")} htmlFor="login-password" required>
                 <Input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
@@ -237,7 +239,7 @@ export const LoginPage: React.FC = () => {
               </FormField>
               <div className="-mt-2 text-right">
                 <Link to="/forgot-password" className="text-xs font-semibold text-primary-700 hover:underline">
-                  Forgot password?
+                  {tr("Forgot password?")}
                 </Link>
               </div>
 
@@ -249,14 +251,14 @@ export const LoginPage: React.FC = () => {
                 isLoading={isSubmitting}
                 icon={<Icon.Lock size={16} />}
               >
-                Sign in
+                {tr("Sign in")}
               </Button>
             </form>
 
             <div className="mt-6 border-t border-hair pt-5 text-center text-xs text-ink-600">
               Don't have a clinical account?{' '}
               <Link to="/register" className="font-semibold text-primary-700 hover:underline">
-                Register Patient or Doctor Profile
+                {tr("Register Patient or Doctor Profile")}
               </Link>
             </div>
           </div>

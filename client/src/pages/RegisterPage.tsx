@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useState } from 'react';
 import { Alert, Select } from '../ui/forms.js';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
@@ -9,6 +10,7 @@ import { EcgLine } from '../ui/medical.js';
 import { getApiErrorMessage } from '../services/api';
 
 export const RegisterPage: React.FC = () => {
+  const { t: tr } = useLanguage();
   useDocumentTitle('Account Registration');
   const toast = useToast();
   const [searchParams] = useSearchParams();
@@ -55,8 +57,8 @@ export const RegisterPage: React.FC = () => {
         };
       } else {
         if (!bmdcLicense.trim()) {
-          setError('BMDC license number is required for doctor registration.');
-          toast.error('BMDC license number is required.');
+          setError(tr('BMDC license number is required for doctor registration.'));
+          toast.error(tr('BMDC license number is required.'));
           setIsSubmitting(false);
           return;
         }
@@ -69,11 +71,11 @@ export const RegisterPage: React.FC = () => {
       }
 
       await register(payload);
-      toast.success('Account successfully registered!');
+      toast.success(tr('Account successfully registered!'));
       if (role === 'DOCTOR') navigate('/doctor');
       else navigate('/patient');
     } catch (err: any) {
-      const msg = getApiErrorMessage(err, 'Registration failed. Please check inputs.');
+      const msg = getApiErrorMessage(err, tr('Registration failed. Please check inputs.'));
       setError(msg);
       toast.error(msg);
     } finally {
@@ -92,26 +94,26 @@ export const RegisterPage: React.FC = () => {
 
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">
-              <img src="/logo-mark.png" alt="MedraLink Logo" className="h-11 w-11 rounded-lg bg-white p-1 object-contain" />
+              <img src="/logo-mark.png" alt={tr("MedraLink Logo")} className="h-11 w-11 rounded-lg bg-white p-1 object-contain" />
               <div>
                 <span className="font-display text-xl font-bold tracking-tight">
                   Medra<span className="text-primary-300">Link</span>
                 </span>
                 <p className="text-[11px] font-medium text-primary-200">
-                  Registration Portal
+                  {tr("Registration Portal")}
                 </p>
               </div>
             </div>
 
             <div className="mt-10">
               <p className="text-xs font-semibold text-primary-300">
-                Join the Network
+                {tr("Join the Network")}
               </p>
               <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-white leading-snug">
-                One digital identity for continuous clinical care.
+                {tr("One digital identity for continuous clinical care.")}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-primary-100/90">
-                Whether you are a patient building your lifelong medical record or a clinician managing your practice queue, MedraLink keeps every record safe, structured, and instantly accessible.
+                {tr("Whether you are a patient building your lifelong medical record or a clinician managing your practice queue, MedraLink keeps every record safe, structured, and instantly accessible.")}
               </p>
             </div>
 
@@ -125,9 +127,9 @@ export const RegisterPage: React.FC = () => {
                   <Icon.Check size={14} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Unique Health ID (HID)</p>
+                  <p className="text-sm font-semibold text-white">{tr("Unique Health ID (HID)")}</p>
                   <p className="text-xs text-primary-200/80">
-                    A permanent digital health identifier linked to your national clinical timeline.
+                    {tr("A permanent digital health identifier linked to your national clinical timeline.")}
                   </p>
                 </div>
               </div>
@@ -137,9 +139,9 @@ export const RegisterPage: React.FC = () => {
                   <Icon.Check size={14} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Verified BMDC Practitioner Status</p>
+                  <p className="text-sm font-semibold text-white">{tr("Verified BMDC Practitioner Status")}</p>
                   <p className="text-xs text-primary-200/80">
-                    Doctors undergo registration and verification before gaining prescribing privileges.
+                    {tr("Doctors undergo registration and verification before gaining prescribing privileges.")}
                   </p>
                 </div>
               </div>
@@ -149,9 +151,9 @@ export const RegisterPage: React.FC = () => {
                   <Icon.Check size={14} />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">Patient-Controlled Consent</p>
+                  <p className="text-sm font-semibold text-white">{tr("Patient-Controlled Consent")}</p>
                   <p className="text-xs text-primary-200/80">
-                    Only authorized doctors can view your timeline during an active clinical encounter.
+                    {tr("Only authorized doctors can view your timeline during an active clinical encounter.")}
                   </p>
                 </div>
               </div>
@@ -159,30 +161,30 @@ export const RegisterPage: React.FC = () => {
           </div>
 
           <div className="relative z-10 pt-8 border-t border-white/10 text-xs text-primary-200/80 flex items-center justify-between">
-            <span>Clinical Standards Compliant</span>
-            <span className="font-mono text-[11px] text-primary-300">BMDC Guidelines</span>
+            <span>{tr("Clinical Standards Compliant")}</span>
+            <span className="font-mono text-[11px] text-primary-300">{tr("BMDC Guidelines")}</span>
           </div>
         </div>
 
         {/* Right Panel - Form */}
         <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center">
           <div className="lg:hidden text-center mb-6">
-            <img src="/logo-mark.png" alt="MedraLink Logo" className="mx-auto h-12 w-12 object-contain mb-2" />
+            <img src="/logo-mark.png" alt={tr("MedraLink Logo")} className="mx-auto h-12 w-12 object-contain mb-2" />
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">
-              Create Medra<span className="text-primary-700">Link</span> Account
+              {tr("Create your MedraLink account")}
             </h1>
             <p className="text-xs text-ink-600 mt-1">
-              Register for continuous clinical record management
+              {tr("Register for continuous clinical record management")}
             </p>
           </div>
 
           <div className="max-w-xl w-full mx-auto">
             <div className="hidden lg:block mb-6">
               <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-ink-900">
-                Create your clinical account
+                {tr("Create your clinical account")}
               </h1>
               <p className="text-sm text-ink-600 mt-1.5 leading-relaxed">
-                Select your account type to begin setup.
+                {tr("Select your account type to begin setup.")}
               </p>
             </div>
 
@@ -209,7 +211,7 @@ export const RegisterPage: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <span className="font-display text-sm font-bold text-ink-900">
-                      Patient Profile
+                      {tr("Patient Profile")}
                     </span>
                     {role === 'PATIENT' && (
                       <span className="grid h-4 w-4 place-items-center rounded-full bg-primary-700 text-white">
@@ -218,7 +220,7 @@ export const RegisterPage: React.FC = () => {
                     )}
                   </div>
                   <p className="text-xs text-ink-600 mt-0.5 leading-snug">
-                    Personal health record, prescriptions &amp; visit history
+                    {tr("Personal health record, prescriptions & visit history")}
                   </p>
                 </div>
               </button>
@@ -244,7 +246,7 @@ export const RegisterPage: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <span className="font-display text-sm font-bold text-ink-900">
-                      Doctor Portal
+                      {tr("Doctor Portal")}
                     </span>
                     {role === 'DOCTOR' && (
                       <span className="grid h-4 w-4 place-items-center rounded-full bg-primary-700 text-white">
@@ -253,7 +255,7 @@ export const RegisterPage: React.FC = () => {
                     )}
                   </div>
                   <p className="text-xs text-ink-600 mt-0.5 leading-snug">
-                    BMDC clinical workstation &amp; e-prescriptions
+                    {tr("BMDC clinical workstation & e-prescriptions")}
                   </p>
                 </div>
               </button>
@@ -265,7 +267,7 @@ export const RegisterPage: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Full legal name" htmlFor="reg-fullname" required>
+                <FormField label={tr("Full legal name")} htmlFor="reg-fullname" required>
                   <Input
                     id="reg-fullname"
                     type="text"
@@ -277,7 +279,7 @@ export const RegisterPage: React.FC = () => {
                   />
                 </FormField>
 
-                <FormField label="Phone number" htmlFor="reg-phone" required>
+                <FormField label={tr("Phone number")} htmlFor="reg-phone" required>
                   <Input
                     id="reg-phone"
                     type="tel"
@@ -290,18 +292,18 @@ export const RegisterPage: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField label="Email address" htmlFor="reg-email" required>
+                <FormField label={tr("Email address")} htmlFor="reg-email" required>
                   <Input
                     id="reg-email"
                     type="email"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="user@example.com"
+                    placeholder={tr("user@example.com")}
                   />
                 </FormField>
 
-                <FormField label="Account password" htmlFor="reg-password" required>
+                <FormField label={tr("Account password")} htmlFor="reg-password" required>
                   <Input
                     id="reg-password"
                     type={showPassword ? 'text' : 'password'}
@@ -309,7 +311,7 @@ export const RegisterPage: React.FC = () => {
                     minLength={8}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="At least 8 characters"
+                    placeholder={tr("At least 8 characters")}
                     leftIcon={<Icon.Lock size={16} />}
                     rightElement={
                       <button
@@ -328,7 +330,7 @@ export const RegisterPage: React.FC = () => {
               {/* Conditional Fields based on Role */}
               {role === 'PATIENT' ? (
                 <div className="pt-3 border-t border-hair grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <FormField label="Date of birth" htmlFor="reg-dob" required>
+                  <FormField label={tr("Date of birth")} htmlFor="reg-dob" required>
                     <Input
                       id="reg-dob"
                       type="date"
@@ -338,19 +340,19 @@ export const RegisterPage: React.FC = () => {
                     />
                   </FormField>
 
-                  <FormField label="Gender" htmlFor="reg-gender">
+                  <FormField label={tr("Gender")} htmlFor="reg-gender">
                     <Select
                       id="reg-gender"
                       value={gender}
                       onChange={(e) => setGender(e.target.value as typeof gender)}
                     >
-                      <option value="MALE">Male</option>
-                      <option value="FEMALE">Female</option>
-                      <option value="OTHER">Other</option>
+                      <option value="MALE">{tr("Male")}</option>
+                      <option value="FEMALE">{tr("Female")}</option>
+                      <option value="OTHER">{tr("Other")}</option>
                     </Select>
                   </FormField>
 
-                  <FormField label="Blood group" htmlFor="reg-bloodgroup">
+                  <FormField label={tr("Blood group")} htmlFor="reg-bloodgroup">
                     <Select
                       id="reg-bloodgroup"
                       value={bloodGroup}
@@ -369,45 +371,45 @@ export const RegisterPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="pt-3 border-t border-hair grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField label="Medical specialization" htmlFor="reg-spec" required>
+                  <FormField label={tr("Medical specialization")} htmlFor="reg-spec" required>
                     <Input
                       id="reg-spec"
                       type="text"
                       required
                       value={specialization}
                       onChange={(e) => setSpecialization(e.target.value)}
-                      placeholder="e.g. Internal Medicine"
+                      placeholder={tr("e.g. Internal Medicine")}
                     />
                   </FormField>
 
-                  <FormField label="BMDC license number" htmlFor="reg-bmdc" required>
+                  <FormField label={tr("BMDC license number")} htmlFor="reg-bmdc" required>
                     <Input
                       id="reg-bmdc"
                       type="text"
                       required
                       value={bmdcLicense}
                       onChange={(e) => setBmdcLicense(e.target.value)}
-                      placeholder="e.g. A-98120"
+                      placeholder={tr("e.g. A-98120")}
                     />
                   </FormField>
 
-                  <FormField label="Degrees & qualifications" htmlFor="reg-qual">
+                  <FormField label={tr("Degrees & qualifications")} htmlFor="reg-qual">
                     <Input
                       id="reg-qual"
                       type="text"
                       value={qualifications}
                       onChange={(e) => setQualifications(e.target.value)}
-                      placeholder="e.g. MBBS, FCPS"
+                      placeholder={tr("e.g. MBBS, FCPS")}
                     />
                   </FormField>
 
-                  <FormField label="Hospital affiliation" htmlFor="reg-hosp">
+                  <FormField label={tr("Hospital affiliation")} htmlFor="reg-hosp">
                     <Input
                       id="reg-hosp"
                       type="text"
                       value={hospital}
                       onChange={(e) => setHospital(e.target.value)}
-                      placeholder="e.g. Square Hospital"
+                      placeholder={tr("e.g. Square Hospital")}
                     />
                   </FormField>
                 </div>
@@ -421,14 +423,14 @@ export const RegisterPage: React.FC = () => {
                 isLoading={isSubmitting}
                 icon={<Icon.Lock size={16} />}
               >
-                Complete Registration
+                {tr("Complete Registration")}
               </Button>
             </form>
 
             <div className="mt-6 text-center text-xs text-ink-600 border-t border-hair pt-5">
               Already registered?{' '}
               <Link to="/login" className="font-semibold text-primary-700 hover:underline">
-                Sign In
+                {tr("Sign In")}
               </Link>
             </div>
           </div>

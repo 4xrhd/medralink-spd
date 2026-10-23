@@ -1,3 +1,4 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
@@ -14,8 +15,9 @@ const FAQ: [string, string][] = [
 ];
 
 export const LandingPage: React.FC = () => {
-  useDocumentTitle('MedraLink | Connected Health Records for Patients and Doctors');
-  const navigate = useNavigate();
+  const { t: tr } = useLanguage();
+  useDocumentTitle(tr('MedraLink | Connected Health Records for Patients and Doctors'));
+    const navigate = useNavigate();
   const { user } = useAuth();
   const [tab, setTab] = useState(0);
 
@@ -105,12 +107,11 @@ export const LandingPage: React.FC = () => {
         <div className="mx-auto grid max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 items-center gap-12 2xl:gap-16 px-4 sm:px-6 lg:px-8 2xl:px-12 py-14 sm:py-18 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
           <div className="relative z-10">
             <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-ink-900 leading-[1.12] text-balance">
-              Your complete health record, in one caring place.
+              {tr("Your complete health record, in one caring place.")}
             </h1>
 
             <p className="mt-5 max-w-xl text-base sm:text-lg lg:text-xl leading-relaxed text-ink-600">
-              Eliminate lost paper slips and repeated diagnostic testing. MedraLink connects patients,
-              verified physicians, and diagnostic clinics with one lifelong, role-secured medical timeline.
+              {tr("Every consultation, prescription and lab report in one timeline that you and your doctors can open from any device.")}
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
@@ -122,7 +123,7 @@ export const LandingPage: React.FC = () => {
                   iconPosition="right"
                   className="w-full sm:w-auto justify-center"
                 >
-                  Open your dashboard
+                  {tr("Open your dashboard")}
                 </Button>
               ) : (
                 <>
@@ -133,7 +134,7 @@ export const LandingPage: React.FC = () => {
                     iconPosition="right"
                     className="w-full sm:w-auto justify-center"
                   >
-                    Create a free account
+                    {tr("Create a free account")}
                   </Button>
                   <Button
                     size="lg"
@@ -141,38 +142,38 @@ export const LandingPage: React.FC = () => {
                     onClick={() => navigate('/login')}
                     className="w-full sm:w-auto justify-center"
                   >
-                    Sign in
+                    {tr("Sign in")}
                   </Button>
                 </>
               )}
             </div>
             {!dashboardPath && (
-              <p className="mt-3 text-sm text-ink-600">Free for patients. Doctors are verified before they can prescribe.</p>
+              <p className="mt-3 text-sm text-ink-600">{tr("Free for patients. Doctors are verified before they can prescribe.")}</p>
             )}
 
             
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-hair pt-6 text-sm text-ink-600">
               <div className="flex items-center gap-2 font-medium">
                 <Icon.ShieldPlus size={16} className="text-primary-700 shrink-0" />
-                <span>BMDC-verified doctors</span>
+                <span>{tr("BMDC-verified doctors")}</span>
               </div>
               <div className="flex items-center gap-2 font-medium">
                 <Icon.Lock size={16} className="text-primary-700 shrink-0" />
-                <span>Encrypted in transit</span>
+                <span>{tr("Encrypted in transit")}</span>
               </div>
               <div className="flex items-center gap-2 font-medium">
                 <Icon.Capsule size={16} className="text-primary-700 shrink-0" />
-                <span>QR-checked prescriptions</span>
+                <span>{tr("QR-checked prescriptions")}</span>
               </div>
               <div className="flex items-center gap-2 font-medium">
                 <Icon.HeartPulse size={16} className="text-primary-700 shrink-0" />
-                <span>One lifelong record</span>
+                <span>{tr("One lifelong record")}</span>
               </div>
             </div>
           </div>
 
           {/* Floating Live Consultation Workstation Preview */}
-          <div className="relative z-10" aria-label="Example consultation screen" role="img">
+          <div className="relative z-10" aria-label={tr("Example consultation screen")} role="img">
             <div className="absolute -inset-4 sm:-inset-6 rounded-3xl bg-primary-50" aria-hidden="true" />
             <Card className="relative p-5 sm:p-6 shadow-card hover:shadow-card-hover border-hair bg-surface">
               <div className="flex items-center justify-between border-b border-hair pb-3.5">
@@ -181,26 +182,26 @@ export const LandingPage: React.FC = () => {
                     <Icon.Stethoscope size={18} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-ink-900">Dr. Ahmed Tariq, MBBS</p>
+                    <p className="text-sm font-bold text-ink-900">{tr("Dr. Ahmed Tariq, MBBS")}</p>
                     <p className="text-xs text-ink-400">Patient: Rahim Ahmed, P-1001</p>
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
-                  <span className="h-1.5 w-1.5 rounded-full bg-success" /> In progress
+                  <span className="h-1.5 w-1.5 rounded-full bg-success" /> {tr("In progress")}
                 </span>
               </div>
 
               {/* Vitals Telemetry Row */}
               <div className="mt-4 grid grid-cols-3 gap-2">
-                <VitalPill label="Blood Pressure" value="120/80" tone="slate" />
-                <VitalPill label="Pulse" value="74 bpm" tone="slate" />
-                <VitalPill label="SpO₂" value="99%" tone="emerald" />
+                <VitalPill label={tr("Blood Pressure")} value="120/80" tone="slate" />
+                <VitalPill label={tr("Pulse")} value="74 bpm" tone="slate" />
+                <VitalPill label={tr("SpO₂")} value="99%" tone="emerald" />
               </div>
 
               {/* Diagnosis Row */}
               <div className="mt-4">
                 <p className="text-xs font-bold text-ink-400">
-                  Diagnosis (ICD-10)
+                  {tr("Diagnosis (ICD-10)")}
                 </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <span className="inline-flex items-center rounded-lg border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700">
@@ -216,17 +217,17 @@ export const LandingPage: React.FC = () => {
               <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5">
                 <div className="mb-2 flex items-center justify-between text-xs font-semibold text-emerald-800">
                   <div className="flex items-center gap-1.5">
-                    <Icon.Capsule size={15} /> Prescription
+                    <Icon.Capsule size={15} /> {tr("Prescription")}
                   </div>
-                  <span className="font-mono text-[10px] text-emerald-700">QR code attached</span>
+                  <span className="font-mono text-[10px] text-emerald-700">{tr("QR code attached")}</span>
                 </div>
                 <div className="space-y-1.5 text-xs text-ink-900 font-medium">
                   <div className="flex flex-wrap justify-between gap-x-3 tabular">
-                    <span>Tab. Amlocard 5mg (Amlodipine)</span>
+                    <span>{tr("Tab. Amlocard 5mg (Amlodipine)")}</span>
                     <span className="font-mono text-ink-600">1+0+0, 30 days</span>
                   </div>
                   <div className="flex flex-wrap justify-between gap-x-3 tabular">
-                    <span>Tab. Napa Extra (Paracetamol/Caffeine)</span>
+                    <span>{tr("Tab. Napa Extra (Paracetamol/Caffeine)")}</span>
                     <span className="font-mono text-ink-600">1+0+1, as needed</span>
                   </div>
                 </div>
@@ -239,8 +240,8 @@ export const LandingPage: React.FC = () => {
       {/* Problem vs MedraLink Solution */}
       <section id="solutions" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <SectionHeading
-          title="Paper slips get lost. Your history should not."
-          subtitle="Most patients carry their medical history in a bag of loose prescriptions. MedraLink replaces that with one record every doctor you visit can read."
+          title={tr("Paper slips get lost. Your history should not.")}
+          subtitle={tr("Most patients carry their medical history in a bag of loose prescriptions. MedraLink replaces that with one record every doctor you visit can read.")}
         />
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
@@ -281,17 +282,17 @@ export const LandingPage: React.FC = () => {
               <div className={`flex h-44 w-full items-center justify-center p-4 ${c.headerBg}`}>
                 <img
                   src={c.image}
-                  alt={c.imageAlt}
+                  alt={tr(c.imageAlt)}
                   className="max-h-32 w-auto object-contain"
                   loading="lazy"
                 />
               </div>
               <div className="flex flex-1 flex-col p-6">
                 <span className="text-xs font-bold" style={{ color: c.accent }}>
-                  {c.tag}
+                  {tr(c.tag)}
                 </span>
-                <h3 className="mt-2 font-display text-xl font-bold text-ink-900">{c.title}</h3>
-                <p className="mt-3 text-base leading-relaxed text-ink-600">{c.body}</p>
+                <h3 className="mt-2 font-display text-xl font-bold text-ink-900">{tr(c.title)}</h3>
+                <p className="mt-3 text-base leading-relaxed text-ink-600">{tr(c.body)}</p>
               </div>
             </Card>
           ))}
@@ -303,28 +304,28 @@ export const LandingPage: React.FC = () => {
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <SectionHeading
             align="center"
-            title="How it works"
-            subtitle="Three steps from first sign-up to a record that keeps itself up to date."
+            title={tr("How it works")}
+            subtitle={tr("Three steps from first sign-up to a record that keeps itself up to date.")}
           />
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             <StepCard
               step={1}
               icon={<Icon.IdCard size={20} className="text-primary-700" />}
-              title="Create your account"
-              description="Patients get a Health ID that links every future consultation, lab report and allergy to one record. Doctors register with their BMDC number."
+              title={tr("Create your account")}
+              description={tr("Patients get a Health ID that links every future consultation, lab report and allergy to one record. Doctors register with their BMDC number.")}
             />
             <StepCard
               step={2}
               icon={<Icon.Stethoscope size={20} className="text-primary-700" />}
-              title="See the doctor"
-              description="The doctor reads your history, records vitals and diagnosis, and issues the prescription from the same screen."
+              title={tr("See the doctor")}
+              description={tr("The doctor reads your history, records vitals and diagnosis, and issues the prescription from the same screen.")}
             />
             <StepCard
               step={3}
               icon={<Icon.ClipboardHeart size={20} className="text-primary-700" />}
-              title="Keep it with you"
-              description="The visit appears on your timeline right away. Download the prescription, and a pharmacy can check it by scanning the QR code."
+              title={tr("Keep it with you")}
+              description={tr("The visit appears on your timeline right away. Download the prescription, and a pharmacy can check it by scanning the QR code.")}
             />
           </div>
         </div>
@@ -334,15 +335,15 @@ export const LandingPage: React.FC = () => {
       <section id="clinical-architecture" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-14 sm:py-20">
         <SectionHeading
           align="center"
-          title="A workspace for each role"
-          subtitle="Doctors, patients and administrators each get a screen built around what they do."
+          title={tr("A workspace for each role")}
+          subtitle={tr("Doctors, patients and administrators each get a screen built around what they do.")}
         />
 
         {/* Centered Segmented Control Tab Bar */}
         <div className="mt-8 flex justify-center">
           <div
             role="tablist"
-            aria-label="Workspaces"
+            aria-label={tr("Workspaces")}
             onKeyDown={onTabKey}
             className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 rounded-2xl border border-hair bg-primary-50/70 p-1.5"
           >
@@ -363,7 +364,7 @@ export const LandingPage: React.FC = () => {
                 }`}
               >
                 <span className={tab === i ? "text-primary-100" : "text-primary-700"}>{t.icon}</span>
-                <span>{t.label}</span>
+                <span>{tr(t.label)}</span>
               </button>
             ))}
           </div>
@@ -373,13 +374,13 @@ export const LandingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hair pb-5">
             <div>
               <p className="text-xs font-bold text-primary-700">
-                {tabs[tab].label}
+                {tr(tabs[tab].label)}
               </p>
               <h3 className="mt-1.5 font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-ink-900">
-                {content[tab].title}
+                {tr(content[tab].title)}
               </h3>
               <p className="mt-1.5 text-sm sm:text-base text-ink-600 leading-relaxed">
-                {content[tab].subtitle}
+                {tr(content[tab].subtitle)}
               </p>
             </div>
             <Button
@@ -390,7 +391,7 @@ export const LandingPage: React.FC = () => {
               iconPosition="right"
               className="shrink-0"
             >
-              {['Open doctor workspace', 'Open my health record', 'Open admin console'][tab]}
+              {tr(['Open doctor workspace', 'Open my health record', 'Open admin console'][tab])}
             </Button>
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -403,8 +404,8 @@ export const LandingPage: React.FC = () => {
                   <Icon.Check size={15} />
                 </div>
                 <div>
-                  <p className="text-base font-semibold text-ink-900">{t}</p>
-                  <p className="mt-1 text-sm text-ink-600 leading-relaxed">{b}</p>
+                  <p className="text-base font-semibold text-ink-900">{tr(t)}</p>
+                  <p className="mt-1 text-sm text-ink-600 leading-relaxed">{tr(b)}</p>
                 </div>
               </div>
             ))}
@@ -416,7 +417,7 @@ export const LandingPage: React.FC = () => {
       <section id="governance" className="scroll-mt-24 bg-gradient-to-br from-primary-900 via-primary-800 to-ink-900 py-16 text-white">
         <div className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <h2 className="max-w-2xl font-display text-3xl sm:text-4xl font-bold tracking-tight">
-            Privacy built into every patient record
+            {tr("Privacy built into every patient record")}
           </h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
@@ -429,8 +430,8 @@ export const LandingPage: React.FC = () => {
                 <div className="grid h-11 w-11 place-items-center rounded-xl bg-white/10 text-primary-200">
                   {icon}
                 </div>
-                <p className="mt-4 font-display text-lg font-semibold">{t as string}</p>
-                <p className="mt-1.5 text-[15px] leading-relaxed text-slate-300">{b as string}</p>
+                <p className="mt-4 font-display text-lg font-semibold">{tr(t as string)}</p>
+                <p className="mt-1.5 text-[15px] leading-relaxed text-slate-300">{tr(b as string)}</p>
               </div>
             ))}
           </div>
@@ -438,15 +439,15 @@ export const LandingPage: React.FC = () => {
       </section>
 
       <section id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-        <SectionHeading align="center" title="Questions people ask" />
+        <SectionHeading align="center" title={tr("Questions people ask")} />
         <div className="mt-10 divide-y divide-hair rounded-2xl border border-hair bg-surface">
           {FAQ.map(([q, a]) => (
             <details key={q} className="group px-5 py-4 sm:px-6">
               <summary className="flex min-h-[44px] cursor-pointer text-base list-none items-center justify-between gap-4 rounded font-semibold text-ink-900 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-700 [&::-webkit-details-marker]:hidden">
-                {q}
+                {tr(q)}
                 <Icon.Chevron size={18} className="shrink-0 text-ink-400 transition-transform group-open:rotate-180" />
               </summary>
-              <p className="mt-3 text-base leading-relaxed text-ink-600">{a}</p>
+              <p className="mt-3 text-base leading-relaxed text-ink-600">{tr(a)}</p>
             </details>
           ))}
         </div>
@@ -456,10 +457,10 @@ export const LandingPage: React.FC = () => {
         <div className="rounded-3xl bg-primary-800 p-8 sm:p-12 text-white">
           <div className="max-w-2xl">
             <h2 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">
-              Bring your records together
+              {tr("Bring your records together")}
             </h2>
             <p className="mt-3 text-base sm:text-lg text-primary-50 leading-relaxed">
-              Patients sign up in a minute. Doctors register with their BMDC number and start after verification.
+              {tr("Patients sign up in a minute. Doctors register with their BMDC number and start after verification.")}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button
@@ -469,7 +470,7 @@ export const LandingPage: React.FC = () => {
                 icon={<Icon.Arrow size={16} />}
                 iconPosition="right"
               >
-                {dashboardPath ? 'Open your dashboard' : 'Create a free account'}
+                {tr(dashboardPath ? 'Open your dashboard' : 'Create a free account')}
               </Button>
               {!dashboardPath && (
                 <Button
@@ -478,7 +479,7 @@ export const LandingPage: React.FC = () => {
                   className="text-white border-white/40 hover:bg-white/10"
                   onClick={() => navigate('/register?role=doctor')}
                 >
-                  Register as a doctor
+                  {tr("Register as a doctor")}
                 </Button>
               )}
             </div>
@@ -492,7 +493,7 @@ export const LandingPage: React.FC = () => {
         <div className="border-b border-hair bg-rose-50/80 px-4 py-3 text-center text-xs text-rose-800 font-medium">
           <div className="mx-auto flex max-w-[1200px] items-center justify-center gap-2">
             <Icon.Alert size={14} className="text-critical shrink-0" />
-            <span>Need urgent emergency medical assistance? Please dial 999 or proceed immediately to the nearest hospital emergency room.</span>
+            <span>{tr("Need urgent emergency medical assistance? Please dial 999 or proceed immediately to the nearest hospital emergency room.")}</span>
           </div>
         </div>
 
@@ -500,13 +501,13 @@ export const LandingPage: React.FC = () => {
           <div className="grid gap-10 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
             <div>
               <div className="flex items-center gap-2.5">
-                <img src="/logo-mark.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
+                <img src="/logo-mark.png" alt={tr("MedraLink Logo")} className="h-9 w-9 object-contain" />
                 <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
                   Medra<span className="text-primary-700">Link</span>
                 </span>
               </div>
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-600">
-                One medical record shared between patients and the doctors who treat them.
+                {tr("One medical record shared between patients and the doctors who treat them.")}
               </p>
             </div>
 
@@ -527,7 +528,7 @@ export const LandingPage: React.FC = () => {
               ]],
             ].map(([title, links]) => (
               <div key={title as string}>
-                <p className="text-sm font-bold text-ink-900">{title as string}</p>
+                <p className="text-sm font-bold text-ink-900">{tr(title as string)}</p>
                 <ul className="mt-4 space-y-2.5">
                   {(links as [string, string][]).map(([label, href]) => (
                     <li key={label}>
@@ -541,7 +542,7 @@ export const LandingPage: React.FC = () => {
                           }}
                           className="text-sm text-ink-600 cursor-pointer transition-colors hover:text-primary-700"
                         >
-                          {label}
+                          {tr(label)}
                         </a>
                       ) : (
                         <button
@@ -549,7 +550,7 @@ export const LandingPage: React.FC = () => {
                           onClick={() => navigate(href)}
                           className="text-sm text-ink-600 cursor-pointer transition-colors hover:text-primary-700 text-left"
                         >
-                          {label}
+                          {tr(label)}
                         </button>
                       )}
                     </li>
@@ -561,7 +562,7 @@ export const LandingPage: React.FC = () => {
 
           <div className="mt-12 flex flex-col gap-2 border-t border-hair pt-6 text-xs text-ink-400 sm:flex-row sm:items-center sm:justify-between">
             <p>© 2026 MedraLink. University of Information Technology &amp; Sciences (UITS).</p>
-            <p>Built for CSE 416, Software Project Design and Development.</p>
+            <p>{tr("Built for CSE 416, Software Project Design and Development.")}</p>
           </div>
         </div>
       </footer>

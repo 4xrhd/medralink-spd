@@ -1,9 +1,11 @@
+import { useLanguage } from '../context/LanguageContext.js';
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useNotifications } from '../context/NotificationContext.js';
 import { NotificationSettingsModal } from './NotificationSettingsModal.js';
-import { Icon, Pill, Badge } from '../ui/primitives.js';
+import { Icon, Badge } from '../ui/primitives.js';
+import { LanguageToggle } from './LanguageToggle.js';
 
 function formatRelativeTime(dateStr: string): string {
   try {
@@ -21,6 +23,7 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 export const Navbar: React.FC = () => {
+  const { t: tr } = useLanguage();
   const { user, logout } = useAuth();
   const {
     notifications,
@@ -38,6 +41,14 @@ export const Navbar: React.FC = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 4);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -142,7 +153,7 @@ export const Navbar: React.FC = () => {
 
   const getRoleBadge = () =>
     user ? (
-      <span className="hidden sm:inline-block border-l border-hair pl-3 text-sm text-ink-600">{ROLE_LABEL[user.role]}</span>
+      <span className="hidden sm:inline-block border-l border-hair pl-3 text-sm font-medium text-ink-600">{tr(ROLE_LABEL[user.role])}</span>
     ) : null;
 
   const initials = user?.fullName
@@ -164,26 +175,24 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 h-16 border-b border-hair bg-white">
-      <div className="mx-auto flex h-full max-w-[1720px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 2xl:px-12">
+      <header className={`sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md transition-shadow duration-200 supports-[backdrop-filter]:bg-white/80 ${scrolled ? 'border-hair shadow-[0_1px_12px_-4px_rgb(20_33_28/0.12)]' : 'border-hair/70'}`}>
+      <div className="mx-auto flex h-16 max-w-[1720px] items-center justify-between gap-6 px-4 sm:px-6 lg:px-8 2xl:px-12">
         {/* Brand Logo & Status */}
         <div className="flex shrink-0 items-center gap-3">
           <Link
             to="/"
-            className="flex items-center gap-2.5 transition-opacity hover:opacity-90"
-            aria-label="MedraLink Home"
+            className="flex items-center gap-2 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary-700"
+            aria-label={tr("MedraLink home")}
           >
-            <img src="/logo-mark.png" alt="MedraLink Logo" className="h-9 w-9 object-contain" />
-            <span className="font-display text-lg font-extrabold tracking-tight text-ink-900">
-              Medra<span className="text-primary-700">Link</span>
-            </span>
+            <img src="/logo-mark.png" alt="" className="h-8 w-8 object-contain" />
+            <span className="font-display text-[19px] font-bold tracking-[-0.02em] text-ink-900">{tr("MedraLink")}</span>
           </Link>
           {getRoleBadge()}
         </div>
 
         {/* Center Navigation Links (Desktop) */}
         {user ? (
-          <nav aria-label="Main" className="hidden md:flex h-full items-stretch gap-6 text-sm font-medium">
+          <nav aria-label={tr("Main")} className="hidden md:flex h-16 flex-1 items-stretch gap-7 pl-4 text-sm font-medium">
             {roleNavItems.map((item) => {
               const active = item.match(location.pathname);
               return (
@@ -191,11 +200,11 @@ export const Navbar: React.FC = () => {
                   key={item.to}
                   to={item.to}
                   aria-current={active ? 'page' : undefined}
-                  className={`inline-flex items-center whitespace-nowrap border-b-2 px-0.5 pt-0.5 transition-colors ${
-                    active ? 'border-primary-700 text-ink-900' : 'border-transparent text-ink-600 hover:text-ink-900'
+                  className={`-mb-px inline-flex items-center whitespace-nowrap border-b-2 px-0.5 pt-0.5 transition-colors duration-150 ${
+                    active ? 'border-primary-700 font-semibold text-ink-900' : 'border-transparent text-ink-600 hover:border-hair-strong hover:text-ink-900'
                   }`}
                 >
-                  {item.label}
+                  {tr(item.label)}
                 </Link>
               );
             })}
@@ -204,21 +213,21 @@ export const Navbar: React.FC = () => {
           <nav className="hidden sm:flex items-center">
             <Link
               to="/"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-600 transition-colors hover:text-primary-700"
+              className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
             >
-              <Icon.Arrow size={14} className="rotate-180" /> Back to home
+              <Icon.Arrow size={14} className="rotate-180" /> {tr("Back to home")}
             </Link>
           </nav>
         ) : (
-          <nav className="hidden xl:flex items-center gap-6 2xl:gap-8">
+          <nav aria-label={tr("Main")} className="hidden lg:flex items-center gap-1">
             {publicNavItems.map(([label, hash]) => (
               <a
                 key={label}
                 href={hash}
                 onClick={(e) => handleNavAnchor(e, hash)}
-                className="whitespace-nowrap text-sm font-medium text-ink-600 transition-colors hover:text-primary-700"
+                className="whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-ink-600 transition-colors duration-150 hover:bg-primary-50 hover:text-ink-900"
               >
-                {label}
+                {tr(label)}
               </a>
             ))}
           </nav>
@@ -226,28 +235,29 @@ export const Navbar: React.FC = () => {
 
         {/* Right Section: Actions & Profiles */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <LanguageToggle className="hidden sm:inline-flex" />
           {user ? (
             <>
               {/* Notification Center Popover */}
               <div className="relative" ref={notifRef}>
                 <button
                   type="button"
-                  aria-label="View system notifications"
+                  aria-label={unreadCount > 0 ? tr('Notifications, {n} unread', { n: unreadCount }) : tr('Notifications')}
                   aria-expanded={showNotifications}
                   onClick={() => {
                     setShowNotifications(!showNotifications);
                     setShowProfileMenu(false);
                   }}
-                  className={`relative grid h-9 w-9 place-items-center rounded-xl border transition-colors ${
+                  className={`relative grid h-9 w-9 place-items-center rounded-lg transition-colors duration-150 ${
                     showNotifications
-                      ? 'border-primary-600 bg-primary-50 text-primary-700'
-                      : 'border-hair text-ink-600 hover:bg-slate-100 hover:text-ink-900'
+                      ? 'bg-primary-50 text-primary-700'
+                      : 'text-ink-600 hover:bg-primary-50 hover:text-ink-900'
                   }`}
                 >
                   <Icon.Bell size={18} />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-critical text-[9px] font-bold text-white ring-2 ring-white">
-                      {unreadCount}
+                    <span aria-hidden="true" className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-critical px-1 text-[10px] font-bold leading-none text-white ring-2 ring-white">
+                      {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </button>
@@ -258,11 +268,11 @@ export const Navbar: React.FC = () => {
                     <div className="flex items-center justify-between border-b border-hair pb-2.5 px-1">
                       <div className="flex items-center gap-2">
                         <span className="font-display text-sm font-bold text-ink-900">
-                          Clinical Alerts
+                          {tr("Notifications")}
                         </span>
                         {unreadCount > 0 && (
                           <Badge tone="crimson" size="sm">
-                            {unreadCount} New
+                            {tr('{n} new', { n: unreadCount })}
                           </Badge>
                         )}
                       </div>
@@ -271,9 +281,9 @@ export const Navbar: React.FC = () => {
                           <button
                             type="button"
                             onClick={markAllAsRead}
-                            className="text-[11px] font-semibold text-primary-700 hover:underline cursor-pointer"
+                            className="text-xs font-semibold text-primary-700 hover:underline cursor-pointer"
                           >
-                            Mark all read
+                            {tr("Mark all read")}
                           </button>
                         )}
                         <button
@@ -282,8 +292,8 @@ export const Navbar: React.FC = () => {
                             setShowSettingsModal(true);
                             setShowNotifications(false);
                           }}
-                          aria-label="Notification settings"
-                          title="Notification settings"
+                          aria-label={tr("Notification settings")}
+                          title={tr("Notification settings")}
                           className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors cursor-pointer"
                         >
                           <Icon.Settings size={15} />
@@ -302,7 +312,7 @@ export const Navbar: React.FC = () => {
                             : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                         }`}
                       >
-                        All ({notifications.length})
+                        {tr('All')} ({notifications.length})
                       </button>
                       <button
                         type="button"
@@ -313,7 +323,7 @@ export const Navbar: React.FC = () => {
                             : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                         }`}
                       >
-                        <span>Unread</span>
+                        <span>{tr("Unread")}</span>
                         {unreadCount > 0 && (
                           <span
                             className={`rounded-full px-1.5 py-0.2 text-[10px] ${
@@ -335,11 +345,11 @@ export const Navbar: React.FC = () => {
                           <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-slate-100 text-slate-400">
                             <Icon.Check size={18} />
                           </div>
-                          <p className="text-xs font-semibold text-slate-700">All caught up!</p>
-                          <p className="text-[11px] text-slate-400 max-w-[200px] mx-auto leading-relaxed">
+                          <p className="text-sm font-semibold text-ink-900">{tr("You're all caught up")}</p>
+                          <p className="text-xs text-ink-600 max-w-[220px] mx-auto leading-relaxed">
                             {activeFilter === 'unread'
-                              ? 'No unread notifications at this time.'
-                              : 'No system or clinical notifications to display.'}
+                              ? tr('No unread notifications.')
+                              : tr('New prescriptions, lab results and account alerts will appear here.')}
                           </p>
                         </div>
                       ) : (
@@ -384,7 +394,7 @@ export const Navbar: React.FC = () => {
                                 }
                               }}
                               className={`group relative p-2.5 rounded-xl transition-all hover:bg-slate-50 cursor-pointer flex items-start gap-2.5 ${
-                                isUnread ? 'bg-blue-50/40' : ''
+                                isUnread ? 'bg-primary-50/60' : ''
                               }`}
                             >
                               <div
@@ -395,14 +405,14 @@ export const Navbar: React.FC = () => {
 
                               <div className="flex-1 min-w-0 pr-6">
                                 <div className="flex items-start justify-between gap-1">
-                                  <p className="text-xs font-semibold text-ink-900 truncate">
+                                  <p className="text-sm font-semibold text-ink-900 truncate">
                                     {item.title}
                                   </p>
-                                  <span className="text-[10px] font-medium text-ink-400 shrink-0">
+                                  <span className="text-xs text-ink-400 shrink-0">
                                     {formatRelativeTime(item.created_at)}
                                   </span>
                                 </div>
-                                <p className="mt-0.5 text-[11px] text-ink-600 leading-relaxed line-clamp-2">
+                                <p className="mt-0.5 text-xs text-ink-600 leading-relaxed line-clamp-2">
                                   {item.message}
                                 </p>
                               </div>
@@ -419,8 +429,8 @@ export const Navbar: React.FC = () => {
                                   e.stopPropagation();
                                   deleteNotification(item.id);
                                 }}
-                                title="Dismiss notification"
-                                aria-label="Dismiss notification"
+                                title={tr("Dismiss notification")}
+                                aria-label={tr("Dismiss notification")}
                                 className="absolute top-2 right-1.5 hidden group-hover:grid h-5 w-5 place-items-center rounded-md text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
                               >
                                 <Icon.X size={12} />
@@ -432,22 +442,18 @@ export const Navbar: React.FC = () => {
                     </div>
 
                     {/* Popover Footer */}
-                    <div className="mt-2.5 border-t border-hair pt-2 px-1 flex items-center justify-between text-[11px]">
+                    <div className="mt-2.5 border-t border-hair pt-2 px-1 flex items-center text-xs">
                       <button
                         type="button"
                         onClick={() => {
                           setShowSettingsModal(true);
                           setShowNotifications(false);
                         }}
-                        className="text-slate-500 hover:text-blue-600 font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+                        className="text-ink-600 hover:text-primary-700 font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
                       >
                         <Icon.Settings size={12} />
-                        <span>Preferences</span>
+                        <span>{tr("Notification preferences")}</span>
                       </button>
-                      <span className="text-[10px] font-mono text-emerald-600 flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                        Ledger Verified
-                      </span>
                     </div>
                   </div>
                 )}
@@ -461,44 +467,32 @@ export const Navbar: React.FC = () => {
                     setShowProfileMenu(!showProfileMenu);
                     setShowNotifications(false);
                   }}
-                  className="flex items-center gap-2 rounded-full border border-hair bg-white p-1 sm:pr-3 shadow-xs hover:border-hair-strong transition-all"
+                  className={`flex items-center gap-2 rounded-lg p-1 sm:pr-2 transition-colors duration-150 ${showProfileMenu ? 'bg-primary-50' : 'hover:bg-primary-50'}`}
                   aria-expanded={showProfileMenu}
-                  aria-label="User account menu"
+                  aria-label={tr("User account menu")}
                 >
-                  <div className="grid h-8 w-8 place-items-center rounded-full bg-primary-700 text-xs font-bold text-white shadow-xs">
+                  <div className="grid h-8 w-8 place-items-center rounded-full bg-primary-700 text-xs font-semibold text-white" aria-hidden="true">
                     {initials}
                   </div>
                   <div className="hidden leading-tight sm:block text-left">
-                    <p className="text-xs font-semibold text-ink-900">{user.fullName}</p>
-                    <p className="font-mono text-[10px] text-ink-400">
-                      {user.role === 'DOCTOR'
-                        ? user.doctorProfile?.bmdcLicenseNumber || user.doctorUid || 'BMDC Verified'
-                        : user.role === 'PATIENT'
-                        ? user.patientUid || 'Verified Patient'
-                        : 'SECURITY OFFICER'}
-                    </p>
+                    <p className="max-w-[160px] truncate text-sm font-semibold text-ink-900">{user.fullName}</p>
+                    <p className="text-xs text-ink-400">{tr(ROLE_LABEL[user.role])}</p>
                   </div>
-                  <Icon.Chevron size={14} className="hidden sm:block text-ink-400" />
+                  <Icon.Chevron size={14} className={`hidden sm:block text-ink-400 transition-transform duration-150 ${showProfileMenu ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* Profile Dropdown Menu */}
                 {showProfileMenu && (
-                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-64 max-w-xs rounded-2xl border border-hair bg-white p-2 shadow-xl z-50">
+                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-64 max-w-xs rounded-xl border border-hair bg-white p-1.5 shadow-elevated z-50">
                     <div className="border-b border-hair p-3">
-                      <p className="text-xs font-bold text-ink-900">{user.fullName}</p>
-                      <p className="text-[11px] text-ink-600">{user.email || user.role}</p>
-                      <div className="mt-2 flex items-center gap-1.5">
-                        <Pill tone={user.role === 'DOCTOR' ? 'blue' : user.role === 'PATIENT' ? 'emerald' : 'purple'}>
-                          {user.role}
-                        </Pill>
-                        <span className="text-[10px] font-mono text-ink-400">
-                          {user.role === 'DOCTOR'
-                            ? user.doctorProfile?.bmdcLicenseNumber || user.doctorUid || 'BMDC Verified'
-                            : user.role === 'PATIENT'
-                            ? user.patientUid || 'Patient Record'
-                            : 'ADMIN'}
-                        </span>
-                      </div>
+                      <p className="truncate text-sm font-semibold text-ink-900">{user.fullName}</p>
+                      <p className="truncate text-xs text-ink-600">{user.email}</p>
+                      {(user.role === 'DOCTOR' ? user.doctorProfile?.bmdcLicenseNumber || user.doctorUid : user.patientUid) && (
+                        <p className="mt-1.5 text-xs text-ink-400 tabular">
+                          {user.role === 'DOCTOR' ? 'BMDC ' : tr('Health ID') + ' '}
+                          {user.role === 'DOCTOR' ? user.doctorProfile?.bmdcLicenseNumber || user.doctorUid : user.patientUid}
+                        </p>
+                      )}
                     </div>
 
                     <div className="py-1">
@@ -506,15 +500,15 @@ export const Navbar: React.FC = () => {
                         <>
                           <Link
                             to="/doctor"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
                           >
-                            <Icon.Stethoscope size={15} /> Clinical Workstation
+                            <Icon.Stethoscope size={15} /> {tr("Dashboard")}
                           </Link>
                           <Link
                             to="/doctor/new-consultation"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
                           >
-                            <Icon.Plus size={15} /> Open New Consultation
+                            <Icon.Plus size={15} /> {tr("New consultation")}
                           </Link>
                         </>
                       )}
@@ -523,15 +517,15 @@ export const Navbar: React.FC = () => {
                         <>
                           <Link
                             to="/patient"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
                           >
-                            <Icon.User size={15} /> My Health Record
+                            <Icon.User size={15} /> {tr("My record")}
                           </Link>
                           <Link
                             to={user.patientId ? `/patient/timeline/${user.patientId}` : '/patient'}
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
                           >
-                            <Icon.Clock size={15} /> Medical Timeline
+                            <Icon.Clock size={15} /> {tr("Timeline")}
                           </Link>
                         </>
                       )}
@@ -540,24 +534,24 @@ export const Navbar: React.FC = () => {
                         <>
                           <Link
                             to="/admin"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
                           >
-                            <Icon.Shield size={15} /> Governance Console
+                            <Icon.Shield size={15} /> {tr("Overview")}
                           </Link>
                           <Link
                             to="/admin/audit-logs"
-                            className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                            className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
                           >
-                            <Icon.Lock size={15} /> Cryptographic Audit Trail
+                            <Icon.Lock size={15} /> {tr("Audit trail")}
                           </Link>
                         </>
                       )}
 
                       <Link
                         to="/"
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
                       >
-                        <img src="/logo-mark.png" alt="Logo" className="h-4 w-4 object-contain" /> System Overview
+                        <Icon.Arrow size={15} className="rotate-180" /> {tr("MedraLink home")}
                       </Link>
 
                       <button
@@ -566,16 +560,16 @@ export const Navbar: React.FC = () => {
                           setShowSettingsModal(true);
                           setShowProfileMenu(false);
                         }}
-                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900 cursor-pointer"
+                        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900 cursor-pointer"
                       >
-                        <Icon.Settings size={15} /> Notification Preferences
+                        <Icon.Settings size={15} /> {tr("Notification preferences")}
                       </button>
                       <Link
                         to="/account"
                         onClick={() => setShowProfileMenu(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
                       >
-                        <Icon.User size={15} /> Account Settings
+                        <Icon.User size={15} /> {tr("Account settings")}
                       </Link>
                     </div>
 
@@ -583,57 +577,28 @@ export const Navbar: React.FC = () => {
                       <button
                         type="button"
                         onClick={handleLogout}
-                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-critical hover:bg-rose-50"
+                        className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-critical transition-colors hover:bg-rose-50"
                       >
-                        <Icon.LogOut size={15} /> Sign Out
+                        <Icon.LogOut size={15} /> {tr("Sign out")}
                       </button>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Direct Quick Sign Out Button */}
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="hidden sm:grid h-9 w-9 place-items-center rounded-xl border border-hair text-ink-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-critical"
-                title="Sign Out of Session"
-                aria-label="Sign Out of Session"
-              >
-                <Icon.LogOut size={16} />
-              </button>
             </>
-          ) : isAuthPage ? (
-            location.pathname === '/login' ? (
-              <Link
-                to="/register"
-                className="whitespace-nowrap rounded-xl bg-primary-700 px-3.5 py-1.5 text-xs sm:text-sm sm:px-4 sm:py-2 font-semibold text-white shadow-sm transition-colors hover:bg-primary-800"
-              >
-                Register Clinic
-              </Link>
-            ) : (
-              <Link
-                to="/login"
-                className="whitespace-nowrap rounded-xl border border-hair bg-white px-3.5 py-1.5 text-xs sm:text-sm sm:px-4 sm:py-2 font-semibold text-primary-700 transition-colors hover:bg-slate-50"
-              >
-                Portal Login
-              </Link>
-            )
           ) : (
             <>
-              {/* Logged Out CTAs */}
-              <Link
-                to="/login"
-                className="whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs sm:text-sm sm:px-3.5 sm:py-2 font-semibold text-primary-700 transition-colors hover:bg-primary-50"
-              >
-                Portal Login
-              </Link>
-              <Link
-                to="/register"
-                className="hidden sm:inline-flex whitespace-nowrap rounded-lg bg-primary-700 px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-800"
-              >
-                Register Clinic
-              </Link>
+              {location.pathname !== '/login' && (
+                <Link to="/login" className="inline-flex h-9 items-center whitespace-nowrap rounded-lg px-3 text-sm font-semibold text-ink-900 transition-colors duration-150 hover:bg-primary-50">
+                  {tr("Sign in")}
+                </Link>
+              )}
+              {location.pathname !== '/register' && (
+                <Link to="/register" className={`inline-flex h-9 items-center whitespace-nowrap rounded-lg bg-primary-700 px-4 text-sm font-semibold text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.12),0_1px_2px_rgb(11_93_70/0.25)] transition-[background-color,box-shadow,transform] duration-200 hover:-translate-y-px hover:bg-primary-800 active:translate-y-0 active:scale-[0.97] motion-reduce:transform-none ${location.pathname === '/login' ? '' : 'hidden sm:inline-flex'}`}>
+                  {tr("Get started")}
+                </Link>
+              )}
             </>
           )}
 
@@ -642,10 +607,10 @@ export const Navbar: React.FC = () => {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`grid h-9 w-9 place-items-center rounded-xl border border-hair text-ink-600 hover:bg-slate-100 transition-colors ${
-                user ? 'md:hidden' : 'xl:hidden'
+              className={`grid h-9 w-9 place-items-center rounded-lg text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900 ${
+                user ? 'md:hidden' : 'lg:hidden'
               }`}
-              aria-label="Toggle Navigation Menu"
+              aria-label={mobileMenuOpen ? tr('Close menu') : tr('Open menu')}
               aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <Icon.X size={18} /> : <Icon.Menu size={18} />}
@@ -656,104 +621,48 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile/Tablet Drawer */}
       {mobileMenuOpen && (
-        <div className={`border-b border-hair bg-white px-4 py-5 shadow-xl ${user ? 'md:hidden' : 'xl:hidden'}`}>
+        <div className={`border-t border-hair bg-white px-4 py-4 shadow-elevated ${user ? 'md:hidden' : 'lg:hidden'}`}>
+          <LanguageToggle className="mb-4 sm:hidden" />
           {user ? (
             <div className="space-y-4">
-              {/* User Identity Box */}
-              <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3.5 border border-hair">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-700 font-bold text-white">
+              <div className="flex items-center gap-3 px-1">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-primary-700 text-sm font-semibold text-white" aria-hidden="true">
                   {initials}
                 </div>
-                <div>
-                  <p className="text-sm font-bold text-ink-900">{user.fullName}</p>
-                  <p className="text-xs text-ink-600">
-                    {user.role} • {user.doctorUid || user.patientUid || user.email}
-                  </p>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-ink-900">{user.fullName}</p>
+                  <p className="truncate text-xs text-ink-600">{tr(ROLE_LABEL[user.role])}, {user.email}</p>
                 </div>
               </div>
 
-              {/* Role Navigation Links */}
-              <div className="space-y-1">
-                {user.role === 'DOCTOR' && (
-                  <>
+              <nav aria-label={tr("Main")} className="space-y-0.5">
+                {[...roleNavItems, { to: '/account', label: 'Account settings', match: (p: string) => p === '/account' }].map((item) => {
+                  const active = item.match(location.pathname);
+                  return (
                     <Link
-                      to="/doctor"
-                      className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-slate-100"
+                      key={item.to + item.label}
+                      to={item.to}
+                      aria-current={active ? 'page' : undefined}
+                      className={`block rounded-lg border-l-2 px-3.5 py-2.5 text-sm transition-colors ${
+                        active
+                          ? 'border-primary-700 bg-primary-50 font-semibold text-ink-900'
+                          : 'border-transparent text-ink-600 hover:bg-primary-50 hover:text-ink-900'
+                      }`}
                     >
-                      Clinical Workstation
+                      {tr(item.label)}
                     </Link>
-                    <Link
-                      to="/doctor/new-consultation"
-                      className="flex items-center gap-2 rounded-xl bg-primary-700 px-3.5 py-2.5 text-sm font-semibold text-white"
-                    >
-                      <Icon.Stethoscope size={16} /> Open New Consultation
-                    </Link>
-                  </>
-                )}
-
-                {user.role === 'PATIENT' && (
-                  <>
-                    <Link
-                      to="/patient"
-                      className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-slate-100"
-                    >
-                      My Health Record
-                    </Link>
-                    <Link
-                      to={user.patientId ? `/patient/timeline/${user.patientId}` : '/patient'}
-                      className="flex items-center gap-2 rounded-xl bg-primary-50 px-3.5 py-2.5 text-sm font-semibold text-primary-700"
-                    >
-                      <Icon.Clock size={16} /> Medical Timeline
-                    </Link>
-                    <Link
-                      to="/hospitals"
-                      className="flex items-center gap-2 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm font-bold text-rose-700"
-                      aria-label="Find emergency hospitals near you"
-                    >
-                      <Icon.Hospital size={16} /> Emergency Hospitals
-                    </Link>
-                  </>
-                )}
-
-                {user.role === 'ADMIN' && (
-                  <>
-                    <Link
-                      to="/admin"
-                      className="block rounded-xl px-3.5 py-2.5 text-sm font-semibold text-ink-900 hover:bg-slate-100"
-                    >
-                      Governance Console
-                    </Link>
-                    <Link
-                      to="/admin/audit-logs"
-                      className="flex items-center gap-2 rounded-xl bg-violet-50 px-3.5 py-2.5 text-sm font-semibold text-audit"
-                    >
-                      <Icon.Shield size={16} /> Audit Trail
-                    </Link>
-                  </>
-                )}
-
-                <Link
-                  to="/account"
-                  className="block rounded-xl px-3.5 py-2.5 text-sm font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
-                >
-                  Account Settings
-                </Link>
-                <Link
-                  to="/"
-                  className="block rounded-xl px-3.5 py-2.5 text-sm font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
-                >
-                  Platform Home
-                </Link>
-              </div>
+                  );
+                })}
+              </nav>
 
               {/* Sign Out Button */}
               <div className="border-t border-hair pt-3">
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-critical hover:bg-rose-100"
+                  className="flex w-full items-center gap-2.5 rounded-lg px-3.5 py-2.5 text-sm font-medium text-critical transition-colors hover:bg-rose-50"
                 >
-                  <Icon.LogOut size={16} /> Sign Out of Platform
+                  <Icon.LogOut size={16} /> {tr("Sign out")}
                 </button>
               </div>
             </div>
@@ -766,9 +675,9 @@ export const Navbar: React.FC = () => {
                     key={label}
                     href={hash}
                     onClick={(e) => handleNavAnchor(e, hash)}
-                    className="block rounded-xl px-3.5 py-2 text-sm font-medium text-ink-600 hover:bg-slate-100 hover:text-ink-900"
+                    className="block rounded-lg px-3.5 py-2.5 text-sm font-medium text-ink-600 transition-colors hover:bg-primary-50 hover:text-ink-900"
                   >
-                    {label}
+                    {tr(label)}
                   </a>
                 ))}
               </div>
@@ -777,15 +686,15 @@ export const Navbar: React.FC = () => {
               <div className="grid grid-cols-2 gap-2.5 border-t border-hair pt-4">
                 <Link
                   to="/login"
-                  className="flex items-center justify-center rounded-xl border border-hair bg-white py-2.5 text-center text-sm font-semibold text-primary-700 hover:bg-slate-50"
+                  className="flex items-center justify-center rounded-lg border border-hair-strong bg-white py-2.5 text-sm font-semibold text-ink-900 hover:bg-primary-50"
                 >
-                  Portal Login
+                  {tr("Sign in")}
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center justify-center rounded-xl bg-primary-700 py-2.5 text-center text-sm font-semibold text-white hover:bg-primary-800"
+                  className="flex items-center justify-center rounded-lg bg-primary-700 py-2.5 text-sm font-semibold text-white hover:bg-primary-800"
                 >
-                  Register Clinic
+                  {tr("Get started")}
                 </Link>
               </div>
             </div>

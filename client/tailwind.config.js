@@ -24,6 +24,7 @@ export default {
         sans: ['Public Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         display: ['Bricolage Grotesque', 'Public Sans', 'ui-sans-serif', 'sans-serif'],
         mono: ['IBM Plex Mono', 'ui-monospace', 'monospace'],
+        bangla: ['Kalpurush', 'Noto Sans Bengali', 'sans-serif'],
       },
       fontSize: {
         '2xs': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em' }], // 12px, nothing smaller

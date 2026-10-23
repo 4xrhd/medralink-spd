@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.js';
+import { LanguageProvider } from './context/LanguageContext.js';
 import { ToastProvider } from './context/ToastContext.js';
 import { NotificationProvider } from './context/NotificationContext.js';
 import { Navbar } from './components/Navbar.js';
@@ -52,6 +53,7 @@ const HospitalSearchPage = lazy(() =>
 export const App: React.FC = () => {
   return (
     <ErrorBoundary>
+      <LanguageProvider>
       <AuthProvider>
         <ToastProvider>
           <NotificationProvider>
@@ -116,6 +118,7 @@ export const App: React.FC = () => {
         </NotificationProvider>
       </ToastProvider>
     </AuthProvider>
+      </LanguageProvider>
   </ErrorBoundary>
   );
 };
