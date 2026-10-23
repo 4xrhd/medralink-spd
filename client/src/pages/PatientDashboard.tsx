@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api from '../services/api.js';
+import { SPECIALTIES } from '../constants/specialties.js';
 import { Card, Icon, Pill, Badge, Button, MetricCard, VitalPill } from '../ui/primitives.js';
 
 export const PatientDashboard: React.FC = () => {
@@ -12,6 +13,7 @@ export const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [hospitalSpecialty, setHospitalSpecialty] = useState('');
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -420,12 +422,25 @@ export const PatientDashboard: React.FC = () => {
                     <Icon.Alert size={13} className="text-rose-600 shrink-0" />
                     <span>Emergency Services</span>
                   </div>
+                  <label htmlFor="dashboard-hospital-specialty" className="mb-1 block font-semibold text-rose-900">
+                    Specialization
+                  </label>
+                  <select
+                    id="dashboard-hospital-specialty"
+                    value={hospitalSpecialty}
+                    onChange={(e) => setHospitalSpecialty(e.target.value)}
+                    className="mb-2 h-9 w-full rounded-lg border border-rose-200 bg-white px-2 text-xs text-ink-900 outline-none focus:ring-2 focus:ring-rose-200"
+                  >
+                    {SPECIALTIES.map((s) => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
                   <Link
-                    to="/hospitals"
-                    className="flex items-center justify-center gap-2 w-full rounded-xl bg-rose-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-rose-700 active:scale-[0.98]"
+                    to={hospitalSpecialty ? `/hospitals?specialty=${hospitalSpecialty}` : '/hospitals'}
+                    className="flex items-center justify-center gap-2 w-full rounded-xl bg-rose-700 px-3 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-rose-800 active:scale-[0.98]"
                   >
                     <Icon.Hospital size={13} />
-                    Find Nearest Hospital
+                    Find Nearby Hospitals on Google Maps
                   </Link>
                   <p className="mt-2.5 font-mono font-bold text-critical text-sm">Call 16263</p>
                   <p className="mt-0.5 text-ink-600">Toll-free 24/7 national health line</p>

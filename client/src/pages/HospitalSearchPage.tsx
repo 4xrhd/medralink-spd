@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Icon } from '../ui/primitives.js';
 import { cn } from '../utils/cn.js';
+import { SPECIALTIES, SpecialtyValue } from '../constants/specialties.js';
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                       */
@@ -88,6 +89,17 @@ export const HospitalSearchPage: React.FC = () => {
   const [searched, setSearched] = useState(false);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialSpecialty = searchParams.get('specialty') ?? '';
+  const [specialty, setSpecialtyState] = useState<SpecialtyValue>(
+    SPECIALTIES.some((s) => s.value === initialSpecialty) ? (initialSpecialty as SpecialtyValue) : ''
+  );
+  // Keep the filter in the URL so a filtered search can be linked and shared
+  const setSpecialty = (value: SpecialtyValue) => {
+    setSpecialtyState(value);
+    setSearchParams(value ? { specialty: value } : {}, { replace: true });
+  };
+  const specialtyLabel = SPECIALTIES.find((s) => s.value === specialty)?.label ?? 'All hospitals';
 
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
 
@@ -213,6 +225,7 @@ export const HospitalSearchPage: React.FC = () => {
   }, []);
 
   /* ---- Core search logic ------------------------------------------------- */
+  const specialtyKeyword = SPECIALTIES.find((s) => s.value === specialty)?.keyword ?? '';
   const doSearch = useCallback(
     (loc: LatLng) => {
       if (!mapsReady || !googleMapRef.current) return;
@@ -227,6 +240,7 @@ export const HospitalSearchPage: React.FC = () => {
           location: loc,
           rankBy: window.google.maps.places.RankBy.DISTANCE,
           type: 'hospital',
+          ...(specialtyKeyword ? { keyword: specialtyKeyword } : {}),
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (results: any[], status: string) => {
@@ -269,7 +283,7 @@ export const HospitalSearchPage: React.FC = () => {
         }
       );
     },
-    [mapsReady, placeMarkers]
+    [mapsReady, placeMarkers, specialtyKeyword]
   );
 
   /* ---- Search whenever location + maps are ready ------------------------- */
@@ -278,7 +292,7 @@ export const HospitalSearchPage: React.FC = () => {
       doSearch(userLocation);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userLocation, mapsReady]);
+  }, [userLocation, mapsReady, specialty]);
 
   /* ---- Manual address geocode -------------------------------------------- */
   const handleManualSearch = () => {
@@ -440,6 +454,24 @@ export const HospitalSearchPage: React.FC = () => {
       {/* Main Content */}
       <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 pt-6 space-y-5">
 
+        {/* Specialization filter */}
+        <div className="flex flex-col gap-2 rounded-2xl border border-hair bg-white p-4 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+          <label htmlFor="hospital-specialty" className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+            <Icon.Stethoscope size={16} className="text-primary-700" />
+            Specialization
+          </label>
+          <select
+            id="hospital-specialty"
+            value={specialty}
+            onChange={(e) => setSpecialty(e.target.value as SpecialtyValue)}
+            className="h-10 w-full rounded-xl border border-hair-strong bg-white px-3 text-sm text-ink-900 outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-100 sm:w-72"
+          >
+            {SPECIALTIES.map((s) => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+        </div>
+
         {/* Embedded Google Map */}
         <div
           ref={mapRef}
@@ -461,8 +493,8 @@ export const HospitalSearchPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-ink-600">
               {hospitals.length > 0
-                ? `Showing ${hospitals.length} hospitals near you, sorted by distance`
-                : 'No hospitals found in this area'}
+                ? `Showing ${hospitals.length} ${specialty ? `${specialtyLabel} ` : ''}hospitals near you, sorted by distance`
+                : `No ${specialty ? `${specialtyLabel} ` : ''}hospitals found in this area`}
             </p>
           </div>
         )}
@@ -602,9 +634,20 @@ export const HospitalSearchPage: React.FC = () => {
                 No hospitals found nearby
               </p>
               <p className="mt-1 text-sm text-ink-600">
-                Try a different location using the address input above.
+                {specialty
+                  ? `No ${specialtyLabel} hospitals were found near this location.`
+                  : 'Try a different location using the address input above.'}
               </p>
             </div>
+            {specialty && (
+              <button
+                type="button"
+                onClick={() => setSpecialty('')}
+                className="rounded-xl border border-hair bg-white px-4 py-2 text-sm font-semibold text-primary-700 hover:bg-slate-50"
+              >
+                Show all hospitals
+              </button>
+            )}
           </div>
         )}
 
