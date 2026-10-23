@@ -85,13 +85,7 @@ export const LandingPage: React.FC = () => {
 
         <div className="mx-auto grid max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 items-center gap-12 2xl:gap-16 px-4 sm:px-6 lg:px-8 2xl:px-12 py-14 sm:py-18 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
           <div className="relative z-10">
-            {/* Plain text eyebrow: NO BADGE */}
-            <p className="text-xs sm:text-sm font-bold text-primary-700 flex items-center gap-2">
-              <Icon.HeartPulse size={16} className="text-primary-700 shrink-0" />
-              <span>Connected Care for Clinicians &amp; Patients</span>
-            </p>
-
-            <h1 className="mt-4 font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-ink-900 leading-[1.12] text-balance">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-ink-900 leading-[1.12] text-balance">
               Your complete health record, in one caring place.
             </h1>
 
