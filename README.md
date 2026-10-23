@@ -35,6 +35,20 @@ The application includes pre-seeded accounts and a sticky **1-Click Role Switche
 
 ---
 
+## 🗄️ Supabase PostgreSQL
+
+The production database is Supabase project `svieyxgbzrriwvxosbdw` (`ap-southeast-2`, PostgreSQL 17).
+
+- Schema: `supabase/migrations/` (also applied idempotently by the server on startup).
+- Server: set `DB_DIALECT=postgres`, `DATABASE_SSL=true` and `DATABASE_URL` to the **IPv4 Session pooler** string
+  (`postgres.svieyxgbzrriwvxosbdw@aws-0-ap-southeast-2.pooler.supabase.com:5432`) in `server/.env`. The direct host is IPv6 only.
+- Seed: `cd server && npm run seed`.
+- Tests always run on in-memory SQLite and never touch Supabase.
+
+See `docs/date-23-oct-26/update-log.md` for the full change history of this setup.
+
+---
+
 ## 🚀 Production Deployment Guides
 
 MedraLink is fully pre-configured for multiple cloud and on-premise deployment environments:
@@ -207,7 +221,8 @@ MedraLink maintains an automated test suite verifying credential validation, rol
 
 ```bash
 cd prototype/server
-npm test
+npm test                # 74 tests, each suite on its own in-memory SQLite database
+npm run test:coverage   # same, with the coverage gate used in CI (80% lines)
 ```
 
 ### Test Coverage Highlights:
@@ -216,6 +231,9 @@ npm test
 - `RBAC Authorization Guards`: Verifies `403 Forbidden` response when Patient roles attempt admin log access.
 - `POST /api/v1/consultations`: Verifies atomic relational transaction spanning vitals, diagnoses, prescriptions, prescription items, and audit logs.
 - `GET /api/v1/prescriptions/:id/pdf`: Validates binary PDF streaming with official medical formatting.
+- `security.test.ts`: input validation, doctor-to-patient assignment, read auditing, append-only audit log.
+- `account.test.ts` / `admin.test.ts`: profile, password change and reset, user suspension, settings, audit filters.
+- `workflows.test.ts`: registration, appointments, dashboards, lab uploads, prescriptions per role.
 
 ---
 
@@ -231,6 +249,10 @@ All endpoints are versioned under `/api/v1`:
 - `POST /api/v1/auth/login`: Authenticate user and issue JWT token.
 - `POST /api/v1/auth/register`: Patient self-registration.
 - `GET /api/v1/auth/me`: Retrieve active user session and profile.
+- `PUT /api/v1/auth/me`: Update own name and phone.
+- `PUT /api/v1/auth/password`: Change password (current password required).
+- `POST /api/v1/auth/forgot-password`: Issue a 30-minute single-use reset token (email simulated).
+- `POST /api/v1/auth/reset-password`: Reset password with the token.
 
 ### Clinical Workflows
 - `GET /api/v1/patients/search?q=:query`: Doctor search for patient by name, phone, or ID.
@@ -243,13 +265,17 @@ All endpoints are versioned under `/api/v1`:
 ### Administration & Governance
 - `GET /api/v1/admin/doctors`: List all registered physicians and verification statuses.
 - `PATCH /api/v1/admin/doctors/:id/verify`: Verify physician BMDC license.
-- `GET /api/v1/admin/audit-logs`: Query immutable SHA-256 cryptographically chained audit trail.
+- `GET /api/v1/admin/audit-logs`: Query the audit trail; filters `from`, `to`, `userId`, `role`, `action`, `search`, `page`, `limit`.
+- `GET /api/v1/admin/users`, `PATCH /api/v1/admin/users/:id`: List users; suspend or reactivate accounts.
+- `GET /api/v1/admin/settings`, `PUT /api/v1/admin/settings`: Read and update system parameters.
 
 ### Client Application Routes
 - `/login`: Public login portal and 1-click interactive demo persona switcher.
 - `/patient`: Patient Longitudinal Medical Timeline, prescription archive, vital telemetry, and lab viewer.
 - `/doctor`: Physician clinical workspace, patient search, consultation notes, ICD-10 diagnosis, and Rx generator.
 - `/admin`: Administrative governance console, BMDC physician verification, and audit trail ledger inspector.
+- `/account`: Profile and password settings for every role.
+- `/forgot-password`, `/reset-password`: Password reset flow.
 - `/hospitals`: Emergency nearby hospital locator with GPS auto-detection, interactive Google Map, facility cards, one-touch dialing, and turn-by-turn navigation.
 
 ---
@@ -260,6 +286,11 @@ All endpoints are versioned under `/api/v1`:
 - **Zero Raw SQL String Concatenation:** Strict parameter binding across all SQLite and PostgreSQL queries to eliminate SQL injection vulnerabilities.
 - **Append-Only Audit Ledger:** Every clinical modification registers Actor ID, Role, IP Address, Timestamp, Action, and SHA-256 integrity checksum.
 - **Strict Content Security Policy (CSP):** Helmet HTTP security headers configured with resource isolation.
+- **Input Validation:** express-validator rules on every write route; HTML tags stripped from free text; 400 responses list each failing field.
+- **Record-Level Access:** doctors read only patients linked to them by an appointment or consultation; refusals are audited as `ACCESS_DENIED`.
+- **Database-Enforced Audit Immutability:** triggers reject UPDATE and DELETE on `audit_logs` in SQLite and PostgreSQL; patient record reads are audited.
+- **Supabase Row Level Security:** RLS on every table with no policies, so the Supabase Data API cannot read medical data.
+- **WCAG 2.1 AA:** axe-core scans report zero violations on all pages.
 - **DDoS & Brute-Force Rate Limiting:** Stricter rate limits on `/api/v1/auth` (50 req/15min) and general API protection (600 req/15min).
 
 
