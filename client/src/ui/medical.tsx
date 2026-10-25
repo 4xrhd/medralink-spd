@@ -113,16 +113,14 @@ export function IconChip({
   );
 }
 
-/** Section header: plain eyebrow text (not a badge), title and subtitle. */
+/** Section header: title and optional subtitle. */
 export function SectionHeading({
-  eyebrow,
   title,
   subtitle,
   align = 'left',
   className = '',
   invert = false,
 }: {
-  eyebrow?: string;
   title: ReactNode;
   subtitle?: ReactNode;
   align?: 'left' | 'center';
@@ -131,19 +129,9 @@ export function SectionHeading({
 }) {
   return (
     <div className={cn(align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl', className)}>
-      {eyebrow && (
-        <p
-          className={cn(
-            'text-xs sm:text-sm font-semibold',
-            invert ? 'text-primary-200' : 'text-primary-700'
-          )}
-        >
-          {eyebrow}
-        </p>
-      )}
       <h2
         className={cn(
-          'mt-2.5 font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-balance leading-tight',
+          'font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-balance leading-tight',
           invert ? 'text-white' : 'text-ink-900'
         )}
       >

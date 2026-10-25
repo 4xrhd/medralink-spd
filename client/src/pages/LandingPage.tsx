@@ -373,10 +373,7 @@ export const LandingPage: React.FC = () => {
         <Card id={`workspace-panel-${tab}`} role="tabpanel" aria-labelledby={`workspace-tab-${tab}`} className="mt-8 p-6 sm:p-8 border-hair">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-hair pb-5">
             <div>
-              <p className="text-xs font-bold text-primary-700">
-                {tr(tabs[tab].label)}
-              </p>
-              <h3 className="mt-1.5 font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-ink-900">
+              <h3 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-ink-900">
                 {tr(content[tab].title)}
               </h3>
               <p className="mt-1.5 text-sm sm:text-base text-ink-600 leading-relaxed">

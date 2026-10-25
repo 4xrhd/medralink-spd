@@ -93,21 +93,13 @@ export const RegisterPage: React.FC = () => {
           <div className="relative z-10">
             <div className="inline-flex items-center gap-3">
               <img src="/logo-mark.png" alt={tr("MedraLink Logo")} className="h-11 w-11 rounded-lg bg-white p-1 object-contain" />
-              <div>
-                <span className="font-display text-xl font-bold tracking-tight">
-                  Medra<span className="text-primary-300">Link</span>
-                </span>
-                <p className="text-[0.6875rem] font-medium text-primary-200">
-                  {tr("Registration Portal")}
-                </p>
-              </div>
+              <span className="font-display text-xl font-bold tracking-tight">
+                Medra<span className="text-primary-300">Link</span>
+              </span>
             </div>
 
             <div className="mt-10">
-              <p className="text-xs font-semibold text-primary-300">
-                {tr("Join the Network")}
-              </p>
-              <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-white leading-snug">
+              <h2 className="font-display text-2xl font-bold tracking-tight text-white leading-snug">
                 {tr("One digital identity for continuous clinical care.")}
               </h2>
               <p className="mt-3 text-sm leading-relaxed text-primary-100/90">
@@ -160,7 +152,6 @@ export const RegisterPage: React.FC = () => {
 
           <div className="relative z-10 pt-8 border-t border-white/10 text-xs text-primary-200/80 flex items-center justify-between">
             <span>{tr("Clinical Standards Compliant")}</span>
-            <span className="font-mono text-[0.6875rem] text-primary-300">{tr("BMDC Guidelines")}</span>
           </div>
         </div>
 
