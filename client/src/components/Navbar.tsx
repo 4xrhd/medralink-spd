@@ -176,7 +176,7 @@ export const Navbar: React.FC = () => {
   return (
     <>
       <header className={`sticky top-0 z-50 border-b bg-white/90 backdrop-blur-md transition-shadow duration-200 supports-[backdrop-filter]:bg-white/80 ${scrolled ? 'border-hair shadow-[0_1px_12px_-4px_rgb(20_33_28/0.12)]' : 'border-hair/70'}`}>
-      <div className="mx-auto flex h-16 max-w-[1720px] items-center justify-between gap-4 px-4 sm:px-6 lg:gap-6 lg:px-8 2xl:px-12">
+      <div className={`mx-auto flex max-w-[1720px] items-center gap-4 px-4 transition-[height] duration-200 ease-out motion-reduce:transition-none sm:px-6 lg:gap-6 lg:px-8 2xl:px-12 ${scrolled ? 'h-14' : 'h-16'}`}>
         {/* Brand Logo & Status */}
         <div className="flex shrink-0 items-center gap-3">
           <Link
@@ -190,9 +190,9 @@ export const Navbar: React.FC = () => {
           {getRoleBadge()}
         </div>
 
-        {/* Center Navigation Links (Desktop) */}
+        {/* Navigation links sit on the right, beside the actions */}
         {user ? (
-          <nav aria-label={tr("Main")} className="hidden md:flex h-16 min-w-0 flex-1 items-stretch gap-5 pl-2 text-sm font-medium lg:gap-7 lg:pl-4">
+          <nav aria-label={tr("Main")} className="ml-auto hidden md:flex h-full min-w-0 items-stretch gap-5 text-sm font-medium lg:gap-7">
             {roleNavItems.map((item) => {
               const active = item.match(location.pathname);
               return (
@@ -210,7 +210,7 @@ export const Navbar: React.FC = () => {
             })}
           </nav>
         ) : isAuthPage ? (
-          <nav className="hidden sm:flex items-center">
+          <nav className="ml-auto hidden sm:flex items-center">
             <Link
               to="/"
               className="inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm font-medium text-ink-600 transition-colors hover:bg-primary-50 hover:text-primary-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2"
@@ -219,7 +219,7 @@ export const Navbar: React.FC = () => {
             </Link>
           </nav>
         ) : (
-          <nav aria-label={tr("Main")} className="hidden lg:flex items-center gap-1">
+          <nav aria-label={tr("Main")} className="ml-auto hidden lg:flex items-center gap-1">
             {publicNavItems.map(([label, hash]) => (
               <a
                 key={label}
@@ -234,7 +234,8 @@ export const Navbar: React.FC = () => {
         )}
 
         {/* Right Section: Actions & Profiles */}
-        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className={`flex shrink-0 items-center gap-2 sm:gap-3 ${isAuthPage ? 'max-sm:ml-auto' : user ? 'max-md:ml-auto' : 'max-lg:ml-auto'}`}>
+          <span aria-hidden="true" className={`h-6 w-px bg-hair ${isAuthPage ? 'hidden sm:block' : user ? 'hidden md:block' : 'hidden lg:block'}`} />
           <LanguageToggle className="hidden sm:inline-flex" />
           {user ? (
             <>
@@ -621,7 +622,7 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile/Tablet Drawer */}
       {mobileMenuOpen && (
-        <div className={`border-t border-hair bg-white px-4 py-4 shadow-elevated ${user ? 'md:hidden' : 'lg:hidden'}`}>
+        <div className={`origin-top animate-drawer-in border-t border-hair bg-white px-4 py-4 shadow-elevated motion-reduce:animate-none ${user ? 'md:hidden' : 'lg:hidden'}`}>
           <LanguageToggle className="mb-4 sm:hidden" />
           {user ? (
             <div className="space-y-4">

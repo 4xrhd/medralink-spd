@@ -97,6 +97,10 @@ export default {
           from: { opacity: '0', transform: 'translateY(-4px) scale(0.98)' },
           to: { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
+        'drawer-in': {
+          from: { opacity: '0', transform: 'translateY(-6px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
         'pulse-ring': {
           '0%': { transform: 'scale(0.9)', opacity: '0.7' },
           '100%': { transform: 'scale(1.6)', opacity: '0' },
@@ -104,6 +108,7 @@ export default {
       },
       animation: {
         'menu-in': 'menu-in 120ms ease-out',
+        'drawer-in': 'drawer-in 180ms ease-out',
         'ecg-draw': 'ecg-draw 2.6s ease-out forwards',
         'fade-up': 'fade-up 0.6s ease-out both',
         'float-soft': 'float-soft 6s ease-in-out infinite',
