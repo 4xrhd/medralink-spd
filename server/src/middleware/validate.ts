@@ -21,6 +21,8 @@ export function validate(chains: ValidationChain[]) {
 }
 
 const APPOINTMENT_STATUSES = ['SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+const DIAGNOSIS_SEVERITIES = ['MILD', 'MODERATE', 'SEVERE', 'CRITICAL'];
+const DIAGNOSIS_STATUSES = ['ACTIVE', 'RESOLVED', 'CHRONIC'];
 // Strips HTML tags instead of entity-escaping, so stored clinical text stays readable in the UI and PDFs.
 const stripTags = (value: unknown) => (typeof value === 'string' ? value.replace(/<[^>]*>/g, '') : value);
 const idParam = (name: string) => param(name).trim().isLength({ min: 1, max: 64 }).matches(/^[A-Za-z0-9_-]+$/);
@@ -56,10 +58,21 @@ export const rules = {
     body('chiefComplaint').isString().trim().notEmpty().withMessage('Chief complaint is required.').isLength({ max: 1000 }).customSanitizer(stripTags),
     freeText('clinicalNotes', 5000),
     body('followUpDate').optional({ values: 'falsy' }).isISO8601(),
-    body('diagnoses').optional().isArray({ max: 50 }),
     body('labOrders').optional().isArray({ max: 50 }),
+    body('appointmentId').optional({ values: 'falsy' }).isString().isLength({ max: 64 }),
+    body('diagnoses').optional().isArray({ max: 50 }),
+    body('diagnoses.*.diagnosisTitle').isString().trim().notEmpty().isLength({ max: 300 }).customSanitizer(stripTags),
+    body('diagnoses.*.icd10Code').optional({ values: 'falsy' }).isString().trim().isLength({ max: 16 }),
+    body('diagnoses.*.severity').optional({ values: 'falsy' }).isIn(DIAGNOSIS_SEVERITIES),
+    body('diagnoses.*.status').optional({ values: 'falsy' }).isIn(DIAGNOSIS_STATUSES),
+    body('labOrders.*.testName').isString().trim().notEmpty().isLength({ max: 200 }).customSanitizer(stripTags),
     body('prescription.items').optional().isArray({ max: 50 }),
+    body('prescription.items.*.medicationName').isString().trim().notEmpty().withMessage('Every medicine needs a name.').isLength({ max: 200 }).customSanitizer(stripTags),
+    body('prescription.items.*.dosage').isString().trim().notEmpty().withMessage('Every medicine needs a dosage.').isLength({ max: 100 }),
+    body('prescription.items.*.frequency').isString().trim().notEmpty().withMessage('Every medicine needs a frequency.').isLength({ max: 100 }),
+    body('prescription.items.*.duration').isString().trim().notEmpty().withMessage('Every medicine needs a duration.').isLength({ max: 100 }),
   ],
+  doctorVerify: [idParam('id'), body('isVerified').isBoolean({ strict: true }).withMessage('isVerified must be true or false.').toBoolean(true)],
   appointment: [
     body('doctorId').isString().trim().notEmpty().isLength({ max: 64 }),
     body('patientId').optional().isString().trim().isLength({ max: 64 }),
@@ -86,6 +99,7 @@ export const rules = {
     query('role').optional().isIn(['PATIENT', 'DOCTOR', 'ADMIN']),
     query('userId').optional().isString().isLength({ max: 64 }),
     query('action').optional().isString().isLength({ max: 64 }),
+    query('search').optional().isString().trim().isLength({ max: 120 }),
     query('page').optional().isInt({ min: 1 }).toInt(),
     query('limit').optional().isInt({ min: 1, max: 200 }).toInt(),
   ],

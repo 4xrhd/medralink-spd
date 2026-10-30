@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import { queryOne } from '../db/database.js';
 import { recordAuditEvent } from './auditService.js';
+import { getBooleanSetting } from './settingsService.js';
 
 /**
  * A doctor is "assigned" to a patient once an appointment or a medical record links them.
@@ -15,6 +16,20 @@ export async function canDoctorAccessPatient(doctorId: string, patientId: string
     [doctorId, patientId, doctorId, patientId]
   );
   return Boolean(link);
+}
+
+/**
+ * Whether a doctor may record consultations and issue prescriptions. When the admin setting
+ * require_doctor_verification is on, the doctor must be accredited and the account active.
+ */
+export async function isDoctorCleared(doctorId: string): Promise<boolean> {
+  const doctor = await queryOne<{ is_verified: number; status: string }>(
+    'SELECT d.is_verified, u.status FROM doctors d JOIN users u ON d.user_id = u.id WHERE d.id = ?',
+    [doctorId]
+  );
+  if (!doctor || doctor.status !== 'ACTIVE') return false;
+  if (!(await getBooleanSetting('require_doctor_verification'))) return true;
+  return Boolean(doctor.is_verified);
 }
 
 /**

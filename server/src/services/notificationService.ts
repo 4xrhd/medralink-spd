@@ -1,4 +1,6 @@
+import crypto from 'crypto';
 import { query, queryOne, execute } from '../db/database.js';
+import { dbTimestamp } from './clock.js';
 import { Notification, NotificationSettings, NotificationType, NotificationCategory } from '../types/index.js';
 
 export interface CreateNotificationParams {
@@ -31,10 +33,12 @@ export async function getUserSettings(userId: string): Promise<NotificationSetti
     email_digest: 0
   };
 
+  // ON CONFLICT makes concurrent first reads (settings page + a new notification) safe
   await execute(
     `INSERT INTO notification_settings 
       (user_id, critical_alerts, prescription_updates, lab_results, security_audits, sound_enabled, email_digest)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(user_id) DO NOTHING`,
     [
       defaultSettings.user_id,
       defaultSettings.critical_alerts,
@@ -46,7 +50,7 @@ export async function getUserSettings(userId: string): Promise<NotificationSetti
     ]
   );
 
-  return defaultSettings;
+  return (await queryOne<NotificationSettings>('SELECT * FROM notification_settings WHERE user_id = ?', [userId])) ?? defaultSettings;
 }
 
 export async function updateUserSettings(
@@ -115,8 +119,8 @@ export async function createNotification(params: CreateNotificationParams): Prom
     return null;
   }
 
-  const id = 'notif-' + Math.random().toString(36).substring(2, 10);
-  const now = new Date().toISOString();
+  const id = `notif-${crypto.randomUUID()}`;
+  const now = dbTimestamp();
 
   await execute(
     `INSERT INTO notifications (id, user_id, title, message, type, category, link, is_read, created_at)

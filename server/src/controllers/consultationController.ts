@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { execute, listAgg, query, queryOne, runTransaction } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
-import { canAccessPatient } from '../services/accessService.js';
+import { canAccessPatient, isDoctorCleared } from '../services/accessService.js';
+import { dbTimestamp } from '../services/clock.js';
 import { createNotification } from '../services/notificationService.js';
 import { generateConsultationSummaryPDF, generatePatientHealthSummaryPDF } from '../services/pdfService.js';
 
@@ -42,10 +43,31 @@ export async function createConsultation(req: Request, res: Response) {
     if (!resolvedDoctorId) {
       return res.status(400).json({ success: false, message: 'Doctor ID is required.' });
     }
+    if (!(await isDoctorCleared(resolvedDoctorId))) {
+      return res.status(403).json({
+        success: false,
+        message: 'This doctor is not accredited to record consultations or issue prescriptions.',
+      });
+    }
+
+    // A linked appointment must be this doctor's, for this patient, and still open
+    if (appointmentId) {
+      const appointment = await queryOne<{ id: string }>(
+        `SELECT id FROM appointments
+         WHERE id = ? AND doctor_id = ? AND patient_id = ? AND status IN ('SCHEDULED', 'IN_PROGRESS')`,
+        [appointmentId, resolvedDoctorId, patient.id]
+      );
+      if (!appointment) {
+        return res.status(409).json({
+          success: false,
+          message: 'That appointment is not an open appointment between this doctor and patient.',
+        });
+      }
+    }
 
     const recordId = 'rec-' + Math.random().toString(36).substring(2, 10);
     const recordUid = 'REC-' + Math.floor(10000 + Math.random() * 90000);
-    const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const now = dbTimestamp();
 
     let prescriptionId: string | null = null;
     let prescriptionUid: string | null = null;
@@ -171,8 +193,8 @@ export async function createConsultation(req: Request, res: Response) {
       // 6. Complete appointment if linked
       if (appointmentId) {
         await execute(
-          'UPDATE appointments SET status = ? WHERE id = ?',
-          ['COMPLETED', appointmentId]
+          'UPDATE appointments SET status = ? WHERE id = ? AND doctor_id = ? AND patient_id = ?',
+          ['COMPLETED', appointmentId, resolvedDoctorId, patient.id]
         );
       }
 

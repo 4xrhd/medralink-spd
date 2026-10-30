@@ -6,13 +6,8 @@ import { requireRole } from '../middleware/rbac.js';
 
 const router = Router();
 
-// Allow token passed via query parameter for direct browser PDF downloads
-router.get('/:id/summary/pdf', (req, res, next) => {
-  if (req.query.token) {
-    req.headers.authorization = `Bearer ${req.query.token}`;
-  }
-  next();
-}, authenticateJWT, downloadPatientSummaryPDF);
+// PDFs are fetched with the Authorization header; tokens are never accepted in the URL
+router.get('/:id/summary/pdf', authenticateJWT, downloadPatientSummaryPDF);
 
 router.use(authenticateJWT);
 

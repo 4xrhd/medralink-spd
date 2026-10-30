@@ -4,7 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api, { getApiErrorMessage } from '../services/api.js';
-import { Button, ButtonLink, buttonClasses, EmptyState, Icon, Skeleton } from '../ui/primitives.js';
+import { PdfDownloadButton } from '../components/PdfDownloadButton.js';
+import { ageFromDob, formatServerDate } from '../utils/dates.js';
+import { Button, ButtonLink, EmptyState, Icon, Skeleton } from '../ui/primitives.js';
 
 function QR() {
   const { t: tr } = useLanguage();
@@ -71,16 +73,7 @@ export const PrescriptionViewPage: React.FC = () => {
     );
   }
 
-  const token = localStorage.getItem('medralink_token');
-  const pdfDownloadUrl = `/api/v1/prescriptions/${data.id}/pdf?token=${token}`;
-
-  const issueDateFormatted = data.issue_date
-    ? new Date(data.issue_date).toLocaleDateString(undefined, {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      })
-    : '-';
+  const issueDateFormatted = formatServerDate(data.issue_date, { day: 'numeric', month: 'long', year: 'numeric' });
 
   const doctorName = data.doctor_name || '-';
   const doctorLicense = data.bmdc_license_number || '-';
@@ -94,9 +87,8 @@ export const PrescriptionViewPage: React.FC = () => {
   const patientUid = data.patient_uid || '-';
   const gender = data.gender || '-';
   const bloodGroup = data.blood_group || '-';
-  const age = data.date_of_birth
-    ? tr('{n} yrs', { n: new Date().getFullYear() - new Date(data.date_of_birth).getFullYear() })
-    : '-';
+  const ageYears = ageFromDob(data.date_of_birth);
+  const age = ageYears !== null ? tr('{n} yrs', { n: ageYears }) : '-';
 
   const items = Array.isArray(data.items) ? data.items : [];
 
@@ -138,10 +130,9 @@ export const PrescriptionViewPage: React.FC = () => {
           <Button variant="secondary" size="sm" onClick={() => window.print()} icon={<Icon.File size={14} />}>
             {tr("Print Document")}
           </Button>
-          <a href={pdfDownloadUrl} target="_blank" rel="noreferrer" className={buttonClasses({ size: 'sm' })}>
-            <Icon.Download size={14} />
-            <span>{tr("Official PDF (℞)")}</span>
-          </a>
+          <PdfDownloadButton path={`/prescriptions/${data.id}/pdf`} filename={`${data.prescription_uid || 'prescription'}.pdf`}>
+            {tr("Official PDF (℞)")}
+          </PdfDownloadButton>
         </div>
       </div>
 
@@ -292,7 +283,7 @@ export const PrescriptionViewPage: React.FC = () => {
                 <p className="mt-2 text-xs">
                   <span className="font-semibold text-primary-700">Follow-up: </span>
                   <span className="text-ink-600">
-                    {tr('Review in chamber on {date}.', { date: new Date(data.follow_up_date).toLocaleDateString() })}
+                    {tr('Review in chamber on {date}.', { date: formatServerDate(data.follow_up_date) })}
                   </span>
                 </p>
               )}

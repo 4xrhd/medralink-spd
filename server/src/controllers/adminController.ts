@@ -1,20 +1,9 @@
 import { Request, Response } from 'express';
-import { execute, query, queryOne } from '../db/database.js';
+import { execute, query, queryOne, runTransaction } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
+import { SETTING_DEFINITIONS } from '../services/settingsService.js';
 
-interface SettingDefinition {
-  defaultValue: string;
-  description: string;
-  numeric: boolean;
-}
-
-/** Only these keys can be configured; values are validated against their definition. */
-export const SETTING_DEFINITIONS: Record<string, SettingDefinition> = {
-  clinic_name: { defaultValue: 'MedraLink Health Network', description: 'Name printed on PDF documents', numeric: false },
-  max_upload_mb: { defaultValue: '10', description: 'Maximum lab report upload size (MB)', numeric: true },
-  session_ttl_hours: { defaultValue: '24', description: 'Login session lifetime (hours)', numeric: true },
-  require_doctor_verification: { defaultValue: 'true', description: 'Doctors need admin verification', numeric: false },
-};
+export { SETTING_DEFINITIONS };
 
 function audit(req: Request, action: string, targetResource: string, targetId: string, details: string) {
   return recordAuditEvent({
@@ -117,13 +106,16 @@ export async function updateSettings(req: Request, res: Response) {
       return res.status(400).json({ success: false, message: invalid });
     }
 
-    for (const [key, value] of Object.entries(settings as Record<string, string>)) {
-      await execute('DELETE FROM system_settings WHERE key = ?', [key]);
-      await execute(
-        'INSERT INTO system_settings (key, value, description, updated_by) VALUES (?, ?, ?, ?)',
-        [key, value, SETTING_DEFINITIONS[key].description, req.user?.id ?? null]
-      );
-    }
+    // Upsert inside one transaction so a failed write never leaves a key deleted or half the batch saved
+    await runTransaction(async () => {
+      for (const [key, value] of Object.entries(settings as Record<string, string>)) {
+        await execute(
+          `INSERT INTO system_settings (key, value, description, updated_by, updated_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+           ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_by = excluded.updated_by, updated_at = excluded.updated_at`,
+          [key, value, SETTING_DEFINITIONS[key].description, req.user?.id ?? null]
+        );
+      }
+    });
     await audit(req, 'SETTINGS_UPDATED', 'system_settings', 'system', JSON.stringify(settings));
     return res.json({ success: true, message: 'Settings saved.' });
   } catch (error: any) {

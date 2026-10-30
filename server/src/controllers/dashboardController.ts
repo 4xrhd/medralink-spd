@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { query, queryOne } from '../db/database.js';
+import { clinicToday } from '../services/clock.js';
 
 export async function getDashboardStats(req: Request, res: Response) {
   try {
@@ -32,23 +33,24 @@ export async function getDashboardStats(req: Request, res: Response) {
       });
     } else if (role === 'DOCTOR') {
       const doctorId = req.user?.doctorId;
-      const today = new Date().toISOString().split('T')[0];
+      const today = clinicToday();
 
       const todayAppointments = await query(
         `SELECT a.*, p.patient_uid, pu.full_name as patient_name, pu.phone as patient_phone
          FROM appointments a
          JOIN patients p ON a.patient_id = p.id
          JOIN users pu ON p.user_id = pu.id
-         WHERE a.doctor_id = ? AND a.appointment_date = ?
+         WHERE a.doctor_id = ? AND a.appointment_date = ? AND a.status IN ('SCHEDULED', 'IN_PROGRESS')
          ORDER BY a.time_slot ASC`,
         [doctorId, today]
       );
 
       const recentConsultations = await query(
-        `SELECT mr.*, p.patient_uid, pu.full_name as patient_name
+        `SELECT mr.*, p.patient_uid, pu.full_name as patient_name, pr.id as prescription_id
          FROM medical_records mr
          JOIN patients p ON mr.patient_id = p.id
          JOIN users pu ON p.user_id = pu.id
+         LEFT JOIN prescriptions pr ON pr.record_id = mr.id
          WHERE mr.doctor_id = ?
          ORDER BY mr.visit_date DESC LIMIT 5`,
         [doctorId]
@@ -86,10 +88,11 @@ export async function getDashboardStats(req: Request, res: Response) {
       );
 
       const activePrescriptions = await query(
-        `SELECT pr.*, du.full_name as doctor_name, d.specialization
+        `SELECT pr.*, du.full_name as doctor_name, d.specialization, d.hospital_affiliation, mr.follow_up_date
          FROM prescriptions pr
          JOIN doctors d ON pr.doctor_id = d.id
          JOIN users du ON d.user_id = du.id
+         LEFT JOIN medical_records mr ON pr.record_id = mr.id
          WHERE pr.patient_id = ?
          ORDER BY pr.issue_date DESC LIMIT 3`,
         [patientId]

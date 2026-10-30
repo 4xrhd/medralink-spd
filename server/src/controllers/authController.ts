@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { execute, queryOne } from '../db/database.js';
 import { generateToken } from '../middleware/auth.js';
+import { getBooleanSetting, getNumberSetting } from '../services/settingsService.js';
 import { recordAuditEvent } from '../services/auditService.js';
 import { User } from '../types/index.js';
 
@@ -67,7 +68,7 @@ export async function login(req: Request, res: Response) {
       doctorUid,
     };
 
-    const token = generateToken(tokenPayload);
+    const token = generateToken(tokenPayload, await getNumberSetting('session_ttl_hours'));
 
     // Record audit event
     await recordAuditEvent({
@@ -154,6 +155,7 @@ export async function register(req: Request, res: Response) {
         ]
       );
     } else if (role === 'DOCTOR') {
+      const requireVerification = await getBooleanSetting('require_doctor_verification');
       doctorId = 'doc-' + Math.random().toString(36).substring(2, 10);
       doctorUid = 'DOC-' + Math.floor(2000 + Math.random() * 8000);
       await execute(
@@ -169,7 +171,7 @@ export async function register(req: Request, res: Response) {
           doctorData?.hospitalAffiliation || '',
           doctorData?.chamberDetails || '',
           doctorData?.consultationFee || 500,
-          1 // auto-verified for prototype simplicity
+          requireVerification ? 0 : 1
         ]
       );
     }
@@ -194,7 +196,7 @@ export async function register(req: Request, res: Response) {
       patientUid,
       doctorId,
       doctorUid
-    });
+    }, await getNumberSetting('session_ttl_hours'));
 
     return res.status(201).json({
       success: true,

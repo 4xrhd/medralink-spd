@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import api from '../services/api.js';
 import { useAuth } from './AuthContext.js';
 
@@ -62,6 +62,8 @@ const NotificationContext = createContext<NotificationContextValue | null>(null)
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const notificationsRef = useRef<NotificationItem[]>([]);
+  notificationsRef.current = notifications;
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
@@ -146,13 +148,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [fetchNotifications]);
 
   const deleteNotification = useCallback(async (id: string) => {
-    // Optimistic update
-    const target = notifications.find((n) => n.id === id);
-    const wasUnread = target ? !target.is_read : false;
-
+    // Optimistic update, judged against the latest list (the ref), not the one this callback captured
+    const target = notificationsRef.current.find((item) => item.id === id);
     setNotifications((prev) => prev.filter((item) => item.id !== id));
-    if (wasUnread) {
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+    if (target && !target.is_read) {
+      setUnreadCount((count) => Math.max(0, count - 1));
     }
 
     try {
@@ -161,7 +161,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       console.error('Failed to delete notification:', err);
       fetchNotifications();
     }
-  }, [notifications, fetchNotifications]);
+  }, [fetchNotifications]);
 
   const updateSettings = useCallback(async (updates: Partial<{
     criticalAlerts: boolean;

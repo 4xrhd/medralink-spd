@@ -67,4 +67,21 @@ export function getApiErrorMessage(err: unknown, fallback: string): string {
   return data?.errors?.[0]?.message || data?.message || fallback;
 }
 
+/** Fetches a protected PDF through the API client and saves it under the given file name. */
+export async function downloadPdf(path: string, filename: string): Promise<void> {
+  const res = await api.get<Blob>(path, { responseType: 'blob' });
+  const url = URL.createObjectURL(res.data);
+  try {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  } finally {
+    // Give the browser a moment to start the download before releasing the blob
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+}
+
 export default api;

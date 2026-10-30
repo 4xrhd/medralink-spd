@@ -3,8 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import api, { getApiErrorMessage } from '../services/api.js';
-import { Badge, Button, ButtonLink, buttonClasses, Card, EmptyState, Icon, Skeleton, VitalPill } from '../ui/primitives.js';
+import api, { getApiErrorMessage, isCancelled } from '../services/api.js';
+import { PdfDownloadButton } from '../components/PdfDownloadButton.js';
+import { ageFromDob, formatServerDate } from '../utils/dates.js';
+import { Badge, Button, ButtonLink, Card, EmptyState, Icon, Skeleton, VitalPill } from '../ui/primitives.js';
 
 function TimelineMarker({ active }: { active?: boolean }) {
   return (
@@ -30,19 +32,27 @@ export const PatientTimelinePage: React.FC = () => {
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    const fetchTimeline = async () => {
-      try {
-        const res = await api.get(`/patients/${id}/timeline`);
-        setData(res.data.data);
-      } catch (err: any) {
-        setError(getApiErrorMessage(err, tr('Failed to load medical timeline.')));
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (id) {
-      fetchTimeline();
+    // Start clean for every patient and drop a slower response for the previous one
+    setData(null);
+    setError('');
+    setExpandedReports({});
+    setExpandedCards({});
+    if (!id) {
+      setLoading(false);
+      return;
     }
+    setLoading(true);
+    const controller = new AbortController();
+    api
+      .get(`/patients/${id}/timeline`, { signal: controller.signal })
+      .then((res) => setData(res.data.data))
+      .catch((err) => {
+        if (!isCancelled(err)) setError(getApiErrorMessage(err, tr('Failed to load medical timeline.')));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, [id]);
 
   if (loading) {
@@ -86,8 +96,9 @@ export const PatientTimelinePage: React.FC = () => {
     setExpandedCards((prev) => ({ ...prev, [recordId]: !prev[recordId] }));
   };
 
-  const token = localStorage.getItem('medralink_token');
-  const summaryPdf = `/api/v1/patients/${patient?.id || id}/summary/pdf?token=${token}`;
+  const patientAge = ageFromDob(patient?.date_of_birth);
+  const summaryPdfPath = `/patients/${patient?.id || id}/summary/pdf`;
+  const summaryPdfName = `${patient?.patient_uid || 'patient'}-health-summary.pdf`;
   const sectionLabel = 'mb-2 text-xs font-semibold text-ink-600';
 
   return (
@@ -103,16 +114,14 @@ export const PatientTimelinePage: React.FC = () => {
           >
             {tr(user?.role === 'DOCTOR' ? 'Back to Doctor Workstation' : user?.role === 'ADMIN' ? 'Back to Governance Console' : 'Back to Patient Health Portal')}
           </Button>
-          <a
-            href={summaryPdf}
-            target="_blank"
-            rel="noreferrer"
+          <PdfDownloadButton
+            path={summaryPdfPath}
+            filename={summaryPdfName}
             title={tr("Download official longitudinal patient health dossier as PDF")}
-            className={buttonClasses({ variant: 'secondary', size: 'sm', className: 'w-full sm:w-auto' })}
+            buttonOptions={{ variant: 'secondary', size: 'sm', className: 'w-full sm:w-auto' }}
           >
-            <Icon.Download size={14} />
-            <span>{tr("Export Health Summary (PDF)")}</span>
-          </a>
+            {tr("Export Health Summary (PDF)")}
+          </PdfDownloadButton>
         </div>
 
         {/* Patient identity and safety strip */}
@@ -128,7 +137,7 @@ export const PatientTimelinePage: React.FC = () => {
                   <span className="rounded-md border border-hair bg-canvas px-2 py-0.5 font-mono text-xs font-semibold text-primary-700">{patientUid}</span>
                   <span>
                     {patient?.gender || '-'} ·{' '}
-                    {patient?.date_of_birth ? tr('{n} yrs', { n: new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear() }) : '-'}
+                    {patientAge !== null ? tr('{n} yrs', { n: patientAge }) : '-'}
                   </span>
                   <Badge tone="crimson" size="sm">
                     {patient?.blood_group ? tr('Blood group {group}', { group: patient.blood_group }) : tr('Blood Group N/A')}
@@ -206,7 +215,7 @@ export const PatientTimelinePage: React.FC = () => {
                 timeline.map((record: any, index: number) => {
                   const isLatest = index === 0;
                   const isOpen = isLatest || expandedCards[record.id];
-                  const visitDateStr = new Date(record.visit_date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+                  const visitDateStr = formatServerDate(record.visit_date, { year: 'numeric', month: 'short', day: 'numeric' });
                   const v = record.vitals;
 
                   return (
@@ -233,16 +242,14 @@ export const PatientTimelinePage: React.FC = () => {
                           </div>
 
                           <div className="flex items-center gap-2">
-                            <a
-                              href={`/api/v1/consultations/${record.id}/pdf?token=${token}`}
-                              target="_blank"
-                              rel="noreferrer"
+                            <PdfDownloadButton
+                              path={`/consultations/${record.id}/pdf`}
+                              filename={`${record.record_uid || 'consultation'}.pdf`}
                               title={tr("Download Clinical Encounter Summary PDF")}
-                              className={buttonClasses({ variant: 'secondary', size: 'sm', className: 'flex-1 sm:flex-none' })}
+                              buttonOptions={{ variant: 'secondary', size: 'sm', className: 'flex-1 sm:flex-none' }}
                             >
-                              <Icon.Download size={14} />
-                              <span>{tr("Encounter PDF")}</span>
-                            </a>
+                              {tr("Encounter PDF")}
+                            </PdfDownloadButton>
                             {!isLatest && (
                               <Button
                                 variant="ghost"
@@ -308,15 +315,13 @@ export const PatientTimelinePage: React.FC = () => {
                                     <ButtonLink size="sm" variant="secondary" to={`/prescription/${record.prescription.id}`}>
                                       {tr("View ℞ Sheet")}
                                     </ButtonLink>
-                                    <a
-                                      href={`/api/v1/prescriptions/${record.prescription.id}/pdf?token=${token}`}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className={buttonClasses({ size: 'sm', variant: 'success-soft' })}
+                                    <PdfDownloadButton
+                                      path={`/prescriptions/${record.prescription.id}/pdf`}
+                                      filename={`${record.prescription.prescription_uid || 'prescription'}.pdf`}
+                                      buttonOptions={{ size: 'sm', variant: 'success-soft' }}
                                     >
-                                      <Icon.Download size={14} />
-                                      <span>{tr("Download Official PDF (℞)")}</span>
-                                    </a>
+                                      {tr("Download Official PDF (℞)")}
+                                    </PdfDownloadButton>
                                   </div>
                                 </div>
                                 {record.prescription.items && record.prescription.items.length > 0 && (
@@ -392,10 +397,11 @@ export const PatientTimelinePage: React.FC = () => {
                   </div>
                 ))}
               </dl>
-              <a href={summaryPdf} target="_blank" rel="noreferrer" className={buttonClasses({ block: true, className: 'mt-3' })}>
-                <Icon.Download size={14} />
-                <span>{tr("Download Full Dossier (PDF)")}</span>
-              </a>
+              <div className="mt-3">
+                <PdfDownloadButton path={summaryPdfPath} filename={summaryPdfName} buttonOptions={{ block: true }}>
+                  {tr("Download Full Dossier (PDF)")}
+                </PdfDownloadButton>
+              </div>
             </Card>
 
             <Card padding="sm" header={{ title: tr("Diagnostic Laboratory Archive"), icon: <Icon.Flask size={15} />, as: 'h3' }}>
@@ -405,7 +411,7 @@ export const PatientTimelinePage: React.FC = () => {
                     <li key={lab.id} className="rounded-md border border-hair bg-canvas/60 px-3 py-2.5 text-sm">
                       <p className="font-semibold text-ink-900">{lab.test_name}</p>
                       <p className="text-xs text-ink-600">
-                        {tr(lab.status || 'Completed')} · {new Date(lab.visit_date).toLocaleDateString()}
+                        {tr(lab.status || 'Completed')} · {formatServerDate(lab.visit_date || lab.test_date)}
                       </p>
                     </li>
                   ))}

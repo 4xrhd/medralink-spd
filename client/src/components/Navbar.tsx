@@ -6,10 +6,13 @@ import { useNotifications } from '../context/NotificationContext.js';
 import { NotificationSettingsModal } from './NotificationSettingsModal.js';
 import { Icon, Badge, buttonClasses } from '../ui/primitives.js';
 import { LanguageToggle } from './LanguageToggle.js';
+import { parseServerDate } from '../utils/dates.js';
 
 function formatRelativeTime(dateStr: string): string {
   try {
-    const diffMs = Date.now() - new Date(dateStr).getTime();
+    const parsed = parseServerDate(dateStr);
+    if (!parsed) return 'Recently';
+    const diffMs = Date.now() - parsed.getTime();
     const diffMins = Math.floor(diffMs / (60 * 1000));
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;

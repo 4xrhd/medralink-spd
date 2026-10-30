@@ -4,9 +4,11 @@ import { Select } from '../ui/forms.js';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import api from '../services/api.js';
+import api, { getApiErrorMessage, isCancelled } from '../services/api.js';
+import { PdfDownloadButton } from '../components/PdfDownloadButton.js';
+import { ageFromDob, formatServerDate, parseServerDate } from '../utils/dates.js';
 import { SPECIALTIES } from '../constants/specialties.js';
-import { Card, Icon, Badge, ButtonLink, buttonClasses, EmptyState, MetricCard, Skeleton, VitalPill } from '../ui/primitives.js';
+import { Button, Card, Icon, Badge, ButtonLink, EmptyState, MetricCard, Skeleton, VitalPill } from '../ui/primitives.js';
 
 export const PatientDashboard: React.FC = () => {
   const { t: tr } = useLanguage();
@@ -15,21 +17,25 @@ export const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
   const [hospitalSpecialty, setHospitalSpecialty] = useState('');
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const res = await api.get('/dashboard');
-        setData(res.data.data);
-      } catch (err) {
-        console.error('Failed to load patient dashboard:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboard();
-  }, []);
+    const controller = new AbortController();
+    setLoading(true);
+    setLoadError('');
+    api
+      .get('/dashboard', { signal: controller.signal })
+      .then((res) => setData(res.data.data))
+      .catch((err) => {
+        if (!isCancelled(err)) setLoadError(getApiErrorMessage(err, tr('Your health record could not be loaded.')));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [reloadKey]);
 
   if (loading) {
     return (
@@ -46,6 +52,24 @@ export const PatientDashboard: React.FC = () => {
     );
   }
 
+  // An empty record and a failed load must never look the same on a clinical screen
+  if (loadError || !data) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16">
+        <EmptyState
+          icon={<Icon.Alert size={22} className="text-critical" />}
+          title={loadError || tr('Your health record could not be loaded.')}
+          description={tr('Check your connection and try again.')}
+          action={
+            <Button variant="secondary" onClick={() => setReloadKey((k) => k + 1)}>
+              {tr('Try again')}
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
   const patientId = user?.patientId || data?.patient?.id;
   const fullName = user?.fullName || data?.patient?.full_name || tr('Patient');
   const patientUid = user?.patientUid || data?.patient?.patient_uid || '-';
@@ -54,7 +78,12 @@ export const PatientDashboard: React.FC = () => {
 
   const allergies = data?.allergies || [];
   const conditions = data?.conditions || [];
-  const lastRx = data?.recentPrescriptions?.[0];
+  const lastRx = data?.activePrescriptions?.[0];
+  const followUp = parseServerDate(lastRx?.follow_up_date);
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  const upcomingFollowUp = followUp && followUp >= startOfToday ? followUp : null;
+  const patientAge = ageFromDob(data?.patient?.date_of_birth);
 
   return (
     <div className="min-h-screen bg-canvas pb-16">
@@ -83,9 +112,7 @@ export const PatientDashboard: React.FC = () => {
                   </button>
                   <span>
                     {data?.patient?.gender || '-'} ·{' '}
-                    {data?.patient?.date_of_birth
-                      ? tr('{n} yrs', { n: new Date().getFullYear() - new Date(data.patient.date_of_birth).getFullYear() })
-                      : '-'}
+                    {patientAge !== null ? tr('{n} yrs', { n: patientAge }) : '-'}
                   </span>
                   <Badge tone="crimson" size="sm">
                     {bloodGroup !== '-' ? tr('Blood group {group}', { group: bloodGroup }) : tr('Blood Group N/A')}
@@ -178,8 +205,8 @@ export const PatientDashboard: React.FC = () => {
           />
           <MetricCard
             title={tr("Next Scheduled Review")}
-            value={lastRx?.follow_up_date ? new Date(lastRx.follow_up_date).toLocaleDateString() : tr('Routine Review')}
-            subtext={lastRx?.follow_up_date ? tr('Follow-up Consultation') : tr('As advised by doctor')}
+            value={upcomingFollowUp ? upcomingFollowUp.toLocaleDateString() : tr('Routine Review')}
+            subtext={upcomingFollowUp ? tr('Follow-up Consultation') : tr('As advised by doctor')}
             icon={<Icon.Calendar size={16} />}
             iconTone="amber"
           />
@@ -205,7 +232,7 @@ export const PatientDashboard: React.FC = () => {
               icon: <Icon.Pulse size={15} />,
               action: data?.latestVitals?.visit_date ? (
                 <span className="font-mono text-xs text-ink-600">
-                  {tr('Captured: {date}', { date: new Date(data.latestVitals.visit_date).toLocaleDateString() })}
+                  {tr('Captured: {date}', { date: formatServerDate(data.latestVitals.visit_date) })}
                 </span>
               ) : undefined,
             }}
@@ -238,7 +265,7 @@ export const PatientDashboard: React.FC = () => {
                         <span className="text-sm font-semibold text-ink-900">{rx.doctor_name}</span>
                       </div>
                       <p className="mt-1 text-xs text-ink-600">
-                        {tr('Issued: {date}', { date: new Date(rx.issue_date).toLocaleDateString() })}
+                        {tr('Issued: {date}', { date: formatServerDate(rx.issue_date) })}
                         {rx.specialization ? ` · ${rx.specialization}` : ''}
                       </p>
                     </div>
@@ -246,15 +273,14 @@ export const PatientDashboard: React.FC = () => {
                       <ButtonLink size="sm" variant="secondary" to={`/prescription/${rx.id}`} icon={<Icon.ExternalLink size={13} />}>
                         {tr('View ℞')}
                       </ButtonLink>
-                      <a
-                        href={`/api/v1/prescriptions/${rx.id}/pdf?token=${localStorage.getItem('medralink_token')}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className={buttonClasses({ size: 'sm', variant: 'success-soft' })}
+                      <PdfDownloadButton
+                        path={`/prescriptions/${rx.id}/pdf`}
+                        filename={`${rx.prescription_uid || 'prescription'}.pdf`}
+                        iconSize={13}
+                        buttonOptions={{ size: 'sm', variant: 'success-soft' }}
                       >
-                        <Icon.Download size={13} />
-                        <span>{tr("PDF")}</span>
-                      </a>
+                        {tr("PDF")}
+                      </PdfDownloadButton>
                     </div>
                   </div>
                 ))

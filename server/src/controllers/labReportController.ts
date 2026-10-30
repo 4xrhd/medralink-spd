@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import multer from 'multer';
+import { getNumberSetting } from '../services/settingsService.js';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -56,7 +57,7 @@ export const labFileUrl = (labId: string) => `/api/v1/lab-reports/${labId}/file`
 
 export const uploadMiddleware = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // hard ceiling; the admin setting max_upload_mb is enforced per request
   fileFilter: (_req, file, cb) => {
     // Both the extension and the declared MIME type must be on the allow-list
     const allowedExts = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
@@ -74,6 +75,10 @@ export async function uploadLabReport(req: Request, res: Response) {
   const file = req.file;
   let stored = false;
   try {
+    const maxUploadMb = await getNumberSetting('max_upload_mb');
+    if (file && file.size > maxUploadMb * 1024 * 1024) {
+      return res.status(413).json({ success: false, message: `Files must be ${maxUploadMb} MB or smaller.` });
+    }
     if (file && !hasExpectedSignature(file.path, file.mimetype)) {
       return res.status(400).json({ success: false, message: 'The file content does not match its type.' });
     }

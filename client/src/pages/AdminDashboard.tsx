@@ -1,13 +1,16 @@
 import { useLanguage } from '../context/LanguageContext.js';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ConfirmModal } from '../components/ConfirmModal.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import api from '../services/api.js';
+import api, { getApiErrorMessage } from '../services/api.js';
+import { formatServerDateTime } from '../utils/dates.js';
 import { useDebounce } from '../hooks/useDebounce.js';
 import { AdminUsersPanel, AdminSettingsPanel } from '../components/AdminPanels.js';
 import { Badge, Button, Card, Icon, Input, MetricCard, PageHeader, Skeleton } from '../ui/primitives.js';
 import { DataTable, TBody, THead, Td, Th, Tr } from '../ui/table.js';
+
+const AUDIT_PAGE_SIZE = 50;
 
 export const AdminDashboard: React.FC = () => {
   const { t: tr } = useLanguage();
@@ -22,6 +25,7 @@ export const AdminDashboard: React.FC = () => {
   // Doctor Accreditation Confirmation State
   const [revokeTarget, setRevokeTarget] = useState<{ id: string; name: string } | null>(null);
   const [isRevoking, setIsRevoking] = useState(false);
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   // Audit filter state
   const [auditFilterRole, setAuditFilterRole] = useState<'All' | 'DOCTOR' | 'PATIENT' | 'ADMIN'>('All');
@@ -30,26 +34,60 @@ export const AdminDashboard: React.FC = () => {
   const [auditFrom, setAuditFrom] = useState('');
   const [auditTo, setAuditTo] = useState('');
   const [auditTotal, setAuditTotal] = useState(0);
+  const [auditPage, setAuditPage] = useState(1);
+  const [auditLoading, setAuditLoading] = useState(true);
+  const [auditError, setAuditError] = useState('');
+  const [ledger, setLedger] = useState<{ valid: boolean; checked: number; brokenAt?: { seq: number; reason: string } } | null>(null);
+  const [checkingLedger, setCheckingLedger] = useState(false);
+  const auditRequest = useRef(0);
   const [copiedHash, setCopiedHash] = useState<string | null>(null);
   const debouncedAuditSearch = useDebounce(auditSearch, 300);
 
   // Filtering runs on the server (GET /admin/audit-logs) so it covers the whole ledger, not one page
   const fetchAuditLogs = useCallback(async () => {
-    const params: Record<string, string> = { limit: '100' };
+    const requestId = ++auditRequest.current;
+    const params: Record<string, string> = { limit: String(AUDIT_PAGE_SIZE), page: String(auditPage) };
     if (auditFilterRole !== 'All') params.role = auditFilterRole;
     if (debouncedAuditSearch.trim()) params.search = debouncedAuditSearch.trim();
     if (last24Hours) params.from = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     else if (auditFrom) params.from = new Date(auditFrom).toISOString();
     if (auditTo) params.to = new Date(`${auditTo}T23:59:59`).toISOString();
+    setAuditLoading(true);
+    setAuditError('');
     try {
       const res = await api.get('/admin/audit-logs', { params });
+      if (requestId !== auditRequest.current) return; // a newer filter or page already replaced this one
       setAuditLogs(res.data.data?.logs || []);
       setAuditTotal(res.data.data?.total ?? 0);
     } catch (err) {
-      console.error('Error fetching audit logs:', err);
-      toast.error(tr('Failed to load audit logs'));
+      if (requestId !== auditRequest.current) return;
+      // Never leave the previous results on screen labelled as matches for the new filters
+      setAuditLogs([]);
+      setAuditTotal(0);
+      setAuditError(getApiErrorMessage(err, tr('Failed to load audit logs')));
+    } finally {
+      if (requestId === auditRequest.current) setAuditLoading(false);
     }
-  }, [auditFilterRole, debouncedAuditSearch, last24Hours, auditFrom, auditTo, toast]);
+  }, [auditFilterRole, debouncedAuditSearch, last24Hours, auditFrom, auditTo, auditPage]);
+
+  // A filter change starts again from the first page
+  useEffect(() => {
+    setAuditPage(1);
+  }, [auditFilterRole, debouncedAuditSearch, last24Hours, auditFrom, auditTo]);
+
+  const auditPageCount = Math.max(1, Math.ceil(auditTotal / AUDIT_PAGE_SIZE));
+
+  const checkLedger = async () => {
+    setCheckingLedger(true);
+    try {
+      const res = await api.get('/admin/audit-logs/verify');
+      setLedger(res.data.data);
+    } catch (err) {
+      toast.error(getApiErrorMessage(err, tr('The audit ledger could not be checked.')));
+    } finally {
+      setCheckingLedger(false);
+    }
+  };
 
   useEffect(() => {
     fetchAuditLogs();
@@ -73,13 +111,17 @@ export const AdminDashboard: React.FC = () => {
   }, []);
 
   const handleApproveDoctor = async (doctorId: string, doctorName: string) => {
+    if (approvingId) return; // one request at a time; a double click must not approve twice
+    setApprovingId(doctorId);
     try {
       await api.patch(`/doctors/${doctorId}/verify`, { isVerified: true });
       toast.success(tr('Accreditation approved for {name}', { name: doctorName }));
-      await fetchStats();
     } catch (err) {
-      console.error('Failed to approve doctor verification:', err);
-      toast.error(tr('Failed to approve doctor accreditation.'));
+      toast.error(getApiErrorMessage(err, tr('Failed to approve doctor accreditation.')));
+    } finally {
+      setApprovingId(null);
+      // Refresh either way: a 409 means the list on screen was out of date
+      await Promise.all([fetchStats(), fetchAuditLogs()]);
     }
   };
 
@@ -89,13 +131,12 @@ export const AdminDashboard: React.FC = () => {
     try {
       await api.patch(`/doctors/${revokeTarget.id}/verify`, { isVerified: false });
       toast.warning(tr('Accreditation revoked for {name}', { name: revokeTarget.name }));
-      setRevokeTarget(null);
-      await fetchStats();
     } catch (err) {
-      console.error('Failed to update doctor verification:', err);
-      toast.error(tr('Failed to revoke doctor accreditation.'));
+      toast.error(getApiErrorMessage(err, tr('Failed to revoke doctor accreditation.')));
     } finally {
+      setRevokeTarget(null);
       setIsRevoking(false);
+      await Promise.all([fetchStats(), fetchAuditLogs()]);
     }
   };
 
@@ -199,6 +240,8 @@ export const AdminDashboard: React.FC = () => {
                             <Button
                               size="sm"
                               variant="clinical"
+                              disabled={approvingId !== null}
+                              isLoading={approvingId === doc.id}
                               onClick={() => handleApproveDoctor(doc.id, doc.full_name)}
                             >
                               {tr("Approve")}
@@ -290,8 +333,25 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             <span className="text-xs text-ink-600 xl:ml-auto" aria-live="polite">
-              {tr(auditTotal === 1 ? '{n} matching entry' : '{n} matching entries', { n: auditTotal })}
+              {auditLoading ? tr('Loading entries...') : tr(auditTotal === 1 ? '{n} matching entry' : '{n} matching entries', { n: auditTotal })}
             </span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 border-b border-hair px-4 py-2.5 text-xs sm:px-5" aria-live="polite">
+            <Button size="sm" variant="secondary" onClick={checkLedger} isLoading={checkingLedger} icon={<Icon.Lock size={14} />}>
+              {tr('Verify ledger integrity')}
+            </Button>
+            {ledger && (ledger.valid ? (
+              <span className="inline-flex items-center gap-1.5 font-medium text-success">
+                <Icon.Check size={14} />
+                {tr('All {n} chained entries verified. No tampering found.', { n: ledger.checked })}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 font-medium text-critical">
+                <Icon.Alert size={14} />
+                {tr('Chain broken at entry {seq}: {reason}', { seq: ledger.brokenAt?.seq ?? '-', reason: ledger.brokenAt?.reason ?? '' })}
+              </span>
+            ))}
           </div>
 
           <DataTable minWidth="min-w-[960px]" caption={tr("Audit entries")}>
@@ -312,7 +372,7 @@ export const AdminDashboard: React.FC = () => {
                 return (
                   <Tr key={l.id || i}>
                     <Td className="tabular whitespace-nowrap text-xs text-ink-600">
-                      {l.timestamp ? new Date(l.timestamp).toLocaleString() : '-'}
+                      {formatServerDateTime(l.timestamp)}
                     </Td>
                     <Td>
                       <Badge tone={roleTone(l.actor_role)} size="sm">{tr(l.actor_role === 'DOCTOR' ? 'Doctor' : l.actor_role === 'PATIENT' ? 'Patient' : l.actor_role === 'ADMIN' ? 'Admin' : l.actor_role)}</Badge>
@@ -348,13 +408,27 @@ export const AdminDashboard: React.FC = () => {
               })}
               {filteredAuditLogs.length === 0 && (
                 <tr>
-                  <Td colSpan={6} className="py-12 text-center text-sm text-ink-600">
-                    {tr("No audit entries match these filters.")}
+                  <Td colSpan={6} className={`py-12 text-center text-sm ${auditError ? 'text-critical' : 'text-ink-600'}`}>
+                    {auditLoading ? tr('Loading entries...') : auditError || tr("No audit entries match these filters.")}
                   </Td>
                 </tr>
               )}
             </TBody>
           </DataTable>
+
+          {auditPageCount > 1 && (
+            <nav aria-label={tr('Audit pages')} className="flex items-center justify-between gap-3 border-t border-hair px-4 py-3 text-xs text-ink-600 sm:px-5">
+              <span>{tr('Page {page} of {count}', { page: auditPage, count: auditPageCount })}</span>
+              <div className="flex gap-2">
+                <Button size="sm" variant="secondary" disabled={auditPage <= 1 || auditLoading} onClick={() => setAuditPage((p) => p - 1)}>
+                  {tr('Previous')}
+                </Button>
+                <Button size="sm" variant="secondary" disabled={auditPage >= auditPageCount || auditLoading} onClick={() => setAuditPage((p) => p + 1)}>
+                  {tr('Next')}
+                </Button>
+              </div>
+            </nav>
+          )}
         </Card>
 
         {/* Destructive Action Confirmation Dialog */}

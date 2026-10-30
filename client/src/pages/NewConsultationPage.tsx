@@ -5,7 +5,8 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import api, { getApiErrorMessage } from '../services/api.js';
+import api, { getApiErrorMessage, isCancelled } from '../services/api.js';
+import { ageFromDob } from '../utils/dates.js';
 import { Badge, Button, ButtonLink, Card, Icon, Input, PageHeader } from '../ui/primitives.js';
 
 const COMMON_ICD10 = [
@@ -37,6 +38,8 @@ export const NewConsultationPage: React.FC = () => {
   const [patients, setPatients] = useState<any[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState(preselectedPatientId);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  // 'restricted' is a walk-in: the doctor may record this first visit but cannot read the history yet
+  const [profileStatus, setProfileStatus] = useState<'idle' | 'loading' | 'ready' | 'restricted' | 'error'>('idle');
 
   // Clinical Consultation Inputs
   const [chiefComplaint, setChiefComplaint] = useState('');
@@ -108,35 +111,39 @@ export const NewConsultationPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch patient list
+  // Patient directory, loaded once. No patient is picked for the doctor: a wrong default is a clinical risk.
   useEffect(() => {
-    const loadPatients = async () => {
-      try {
-        const res = await api.get('/patients');
-        const list = res.data.data || [];
-        setPatients(list);
-        if (!selectedPatientId && list.length > 0) {
-          setSelectedPatientId(list[0].id);
-        }
-      } catch (err) {
-        console.error('Error fetching patients:', err);
-      }
-    };
-    loadPatients();
-  }, [selectedPatientId]);
+    const controller = new AbortController();
+    api
+      .get('/patients', { signal: controller.signal })
+      .then((res) => setPatients(res.data.data || []))
+      .catch((err) => {
+        if (!isCancelled(err)) toast.error(getApiErrorMessage(err, tr('The patient list could not be loaded.')));
+      });
+    return () => controller.abort();
+  }, []);
 
-  // Fetch selected patient details
+  // Selected patient's profile. The previous patient's allergies are cleared first and a slower
+  // response for an earlier selection is discarded, so the screen can never mix two patients.
   useEffect(() => {
-    const fetchPatient = async () => {
-      if (!selectedPatientId) return;
-      try {
-        const res = await api.get(`/patients/${selectedPatientId}`);
+    setSelectedPatient(null);
+    if (!selectedPatientId) {
+      setProfileStatus('idle');
+      return;
+    }
+    setProfileStatus('loading');
+    const controller = new AbortController();
+    api
+      .get(`/patients/${selectedPatientId}`, { signal: controller.signal })
+      .then((res) => {
         setSelectedPatient(res.data.data);
-      } catch (err) {
-        console.error('Error fetching patient profile:', err);
-      }
-    };
-    fetchPatient();
+        setProfileStatus('ready');
+      })
+      .catch((err) => {
+        if (isCancelled(err)) return;
+        setProfileStatus(err?.response?.status === 403 ? 'restricted' : 'error');
+      });
+    return () => controller.abort();
   }, [selectedPatientId]);
 
   const toggleDiagnosis = (code: string, title: string) => {
@@ -152,7 +159,7 @@ export const NewConsultationPage: React.FC = () => {
     if (!customIcd.trim()) return;
     setDiagnoses([
       ...diagnoses,
-      { icd10Code: tr('CUSTOM'), diagnosisTitle: customIcd.trim(), severity: tr('MODERATE') }
+      { icd10Code: 'CUSTOM', diagnosisTitle: customIcd.trim(), severity: 'MODERATE' }
     ]);
     setCustomIcd('');
   };
@@ -194,6 +201,11 @@ export const NewConsultationPage: React.FC = () => {
   // Submit consultation
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (!selectedPatientId) {
+      setError(tr('Select the patient for this consultation.'));
+      return;
+    }
+    if (profileStatus === 'loading') return;
     if (!chiefComplaint.trim()) {
       setError(tr('Please provide the Chief Complaint.'));
       return;
@@ -244,7 +256,7 @@ export const NewConsultationPage: React.FC = () => {
       const res = await api.post('/consultations', payload);
       const { prescriptionId } = res.data.data || {};
 
-      toast.success(tr('Consultation finalized & cryptographic prescription issued!'));
+      toast.success(prescriptionId ? tr('Consultation saved and prescription issued.') : tr('Consultation saved.'));
 
       if (prescriptionId) {
         navigate(`/prescription/${prescriptionId}`);
@@ -264,6 +276,9 @@ export const NewConsultationPage: React.FC = () => {
   const doctorLicense = user?.doctorProfile?.bmdcLicenseNumber || '-';
   const hospitalAffiliation = user?.doctorProfile?.hospitalAffiliation || '';
   const patientAllergies: any[] = selectedPatient?.allergies || [];
+  // Before the full profile loads (or for a walk-in), show the directory entry so the doctor can confirm identity
+  const shownPatient = selectedPatient ?? patients.find((p) => p.id === selectedPatientId) ?? null;
+  const shownAge = ageFromDob(shownPatient?.date_of_birth);
   const fieldLabel = 'block text-xs font-semibold text-ink-900';
   const fieldHint = 'text-xs text-ink-400';
   const mobileLabel = 'mb-1 block text-xs font-medium text-ink-600 md:hidden';
@@ -296,25 +311,25 @@ export const NewConsultationPage: React.FC = () => {
           <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-3">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-700 text-sm font-semibold text-white" aria-hidden="true">
-                {selectedPatient?.full_name ? selectedPatient.full_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() : '-'}
+                {shownPatient?.full_name ? shownPatient.full_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() : '-'}
               </div>
               <div className="min-w-0">
                 <p className="flex flex-wrap items-center gap-2">
-                  <span className="font-display text-lg font-semibold tracking-tight text-ink-900">{selectedPatient?.full_name || tr('Select Patient')}</span>
-                  {selectedPatient?.patient_uid && <span className="font-mono text-xs text-ink-600">{selectedPatient.patient_uid}</span>}
+                  <span className="font-display text-lg font-semibold tracking-tight text-ink-900">{shownPatient?.full_name || tr('Select Patient')}</span>
+                  {shownPatient?.patient_uid && <span className="font-mono text-xs text-ink-600">{shownPatient.patient_uid}</span>}
                 </p>
-                {selectedPatient && (
+                {shownPatient && (
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-600">
-                    {selectedPatient.blood_group && <Badge tone="crimson" size="sm">{selectedPatient.blood_group}</Badge>}
+                    {shownPatient.blood_group && <Badge tone="crimson" size="sm">{shownPatient.blood_group}</Badge>}
                     <span>
-                      {selectedPatient.gender || '-'}
-                      {selectedPatient.date_of_birth && <> · {tr('{n} yrs', { n: new Date().getFullYear() - new Date(selectedPatient.date_of_birth).getFullYear() })}</>}
+                      {shownPatient.gender || '-'}
+                      {shownAge !== null && <> · {tr('{n} yrs', { n: shownAge })}</>}
                     </span>
-                    {selectedPatient.phone && <span className="font-mono">{selectedPatient.phone}</span>}
-                    {selectedPatient.emergency_contact_name && (
+                    {shownPatient.phone && <span className="font-mono">{shownPatient.phone}</span>}
+                    {shownPatient.emergency_contact_name && (
                       <span>
-                        {tr('Emergency')}: <span className="font-medium text-ink-900">{selectedPatient.emergency_contact_name}</span>
-                        {selectedPatient.emergency_contact_relation && <> ({selectedPatient.emergency_contact_relation})</>}
+                        {tr('Emergency')}: <span className="font-medium text-ink-900">{shownPatient.emergency_contact_name}</span>
+                        {shownPatient.emergency_contact_relation && <> ({shownPatient.emergency_contact_relation})</>}
                       </span>
                     )}
                   </div>
@@ -330,6 +345,14 @@ export const NewConsultationPage: React.FC = () => {
                 selectSize="sm"
                 className="sm:w-64"
               >
+                <option value="" disabled>
+                  {tr('Select a patient')}
+                </option>
+                {selectedPatient && !patients.some((p) => p.id === selectedPatient.id) && (
+                  <option value={selectedPatient.id}>
+                    {selectedPatient.full_name} ({selectedPatient.patient_uid})
+                  </option>
+                )}
                 {patients.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.full_name} ({p.patient_uid})
@@ -345,11 +368,21 @@ export const NewConsultationPage: React.FC = () => {
           </div>
 
           {/* The patient's real allergies, always in view while prescribing */}
-          {selectedPatient && (
-            <div className="flex flex-wrap items-center gap-2 border-t border-hair bg-canvas/60 px-4 py-2.5 text-xs sm:px-5">
-              <Icon.Alert size={14} className={patientAllergies.length ? 'text-critical' : 'text-ink-400'} />
+          {selectedPatientId && (
+            <div className="flex flex-wrap items-center gap-2 border-t border-hair bg-canvas/60 px-4 py-2.5 text-xs sm:px-5" aria-live="polite">
+              <Icon.Alert size={14} className={patientAllergies.length || profileStatus === 'restricted' || profileStatus === 'error' ? 'text-critical' : 'text-ink-400'} />
               <span className="font-semibold text-ink-900">{tr('Allergy Alert')}:</span>
-              {patientAllergies.length > 0 ? (
+              {profileStatus === 'loading' ? (
+                <span className="text-ink-600">{tr('Loading allergy history...')}</span>
+              ) : profileStatus === 'restricted' ? (
+                <span className="font-medium text-critical">
+                  {tr('First visit with you: allergy history is not shared yet. Ask the patient about drug allergies before prescribing.')}
+                </span>
+              ) : profileStatus === 'error' ? (
+                <span className="font-medium text-critical">
+                  {tr('Allergy history could not be loaded. Confirm allergies with the patient before prescribing.')}
+                </span>
+              ) : patientAllergies.length > 0 ? (
                 patientAllergies.map((a, i) => (
                   <Badge key={i} tone="crimson" size="sm" dot>
                     {a.allergen}{a.severity ? ` (${a.severity})` : ''}
@@ -653,7 +686,7 @@ export const NewConsultationPage: React.FC = () => {
             <Button variant="secondary" onClick={() => navigate('/doctor')}>
               {tr("Cancel")}
             </Button>
-            <Button disabled={isSubmitting} isLoading={isSubmitting} onClick={() => handleSubmit()} icon={<Icon.Lock size={15} />} className="h-auto min-h-[2.375rem] min-w-0 whitespace-normal py-2 text-left leading-snug">
+            <Button disabled={isSubmitting || !selectedPatientId || profileStatus === 'loading'} isLoading={isSubmitting} onClick={() => handleSubmit()} icon={<Icon.Lock size={15} />} className="h-auto min-h-[2.375rem] min-w-0 whitespace-normal py-2 text-left leading-snug">
               {isSubmitting ? tr('Digitally Signing & Issuing...') : tr('Finalize, Digitally Sign & Issue Prescription')}
             </Button>
           </div>

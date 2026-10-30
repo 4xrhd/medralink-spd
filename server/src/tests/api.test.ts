@@ -151,9 +151,9 @@ describe('MedraLink EMR Backend API Test Suite', () => {
       expect(pdfRes.body.length).toBeGreaterThan(1000);
     });
 
-    it('should stream a prescription PDF using direct query token parameter', async () => {
+    it('should stream a prescription PDF with the Authorization header', async () => {
       const pdfRes = await request(app)
-        .get(`/api/v1/prescriptions/${createdRxId}/pdf?token=${patientToken}`);
+        .get(`/api/v1/prescriptions/${createdRxId}/pdf`).set('Authorization', `Bearer ${patientToken}`);
 
       expect(pdfRes.status).toBe(200);
       expect(pdfRes.headers['content-type']).toBe('application/pdf');
@@ -171,9 +171,9 @@ describe('MedraLink EMR Backend API Test Suite', () => {
       expect(pdfRes.body.length).toBeGreaterThan(1000);
     });
 
-    it('should stream a consultation summary PDF using direct query token parameter', async () => {
+    it('should stream a consultation summary PDF with the Authorization header', async () => {
       const pdfRes = await request(app)
-        .get(`/api/v1/consultations/${createdRecordId}/pdf?token=${patientToken}`);
+        .get(`/api/v1/consultations/${createdRecordId}/pdf`).set('Authorization', `Bearer ${patientToken}`);
 
       expect(pdfRes.status).toBe(200);
       expect(pdfRes.headers['content-type']).toBe('application/pdf');
@@ -191,9 +191,9 @@ describe('MedraLink EMR Backend API Test Suite', () => {
       expect(pdfRes.body.length).toBeGreaterThan(1000);
     });
 
-    it('should stream a patient health dossier PDF using direct query token parameter', async () => {
+    it('should stream a patient health dossier PDF with the Authorization header', async () => {
       const pdfRes = await request(app)
-        .get(`/api/v1/patients/${testPatientId}/summary/pdf?token=${patientToken}`);
+        .get(`/api/v1/patients/${testPatientId}/summary/pdf`).set('Authorization', `Bearer ${patientToken}`);
 
       expect(pdfRes.status).toBe(200);
       expect(pdfRes.headers['content-type']).toBe('application/pdf');

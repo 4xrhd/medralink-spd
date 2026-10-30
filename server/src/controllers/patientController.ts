@@ -147,7 +147,8 @@ export async function getPatientTimeline(req: Request, res: Response) {
           ? { ...prescription, items: prescriptionItems.filter((i: any) => i.prescription_id === prescription.id) }
           : null,
         // Reports attached to this visit, or taken on the same day
-        labReports: labReports.filter((l: any) => l.record_id === record.id || l.test_date === visitDay),
+        // Reports tied to a visit stay with it; only unlinked uploads fall back to the visit day
+        labReports: labReports.filter((l: any) => (l.record_id ? l.record_id === record.id : l.test_date === visitDay)),
       };
     });
 

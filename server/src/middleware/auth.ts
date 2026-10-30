@@ -28,8 +28,8 @@ declare global {
   }
 }
 
-export function generateToken(payload: AuthUser): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '24h' });
+export function generateToken(payload: AuthUser, ttlHours = 24): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: `${ttlHours}h` });
 }
 
 /**

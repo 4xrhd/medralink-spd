@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 import { execute, initDb, queryOne } from './database.js';
+import { recordAuditEvent } from '../services/auditService.js';
 
 export async function seedDatabase() {
   console.log('[SEED] Initializing tables...');
@@ -214,13 +214,18 @@ export async function seedDatabase() {
     { actor: 'usr-doc-2', role: 'DOCTOR', action: 'CONSULTATION_CREATED', resource: 'medical_records', id: 'rec-2', details: 'Recorded consultation and issued RX-4030 for patient Sara Akter (P-1002)' },
   ];
 
+  // Seeded through the same writer as live events so the hash chain verifies from the first entry
   for (const a of auditEntries) {
-    const hash = crypto.createHash('sha256').update(JSON.stringify(a) + Date.now()).digest('hex');
-    await execute(
-      `INSERT INTO audit_logs (id, actor_id, actor_role, action, target_resource, target_id, ip_address, user_agent, details, sha256_hash)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      ['aud-' + Math.random().toString(36).substring(2, 9), a.actor, a.role, a.action, a.resource, a.id, '127.0.0.1', 'MedraLink-CLI/1.0', a.details, hash]
-    );
+    await recordAuditEvent({
+      actorId: a.actor,
+      actorRole: a.role,
+      action: a.action,
+      targetResource: a.resource,
+      targetId: a.id,
+      ipAddress: '127.0.0.1',
+      userAgent: 'MedraLink-CLI/1.0',
+      details: a.details,
+    });
   }
 
   // 8. Notifications & Notification Preferences

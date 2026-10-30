@@ -12,7 +12,7 @@ export async function getPrescriptionById(req: Request, res: Response) {
       `SELECT pr.*, 
               d.doctor_uid, du.full_name as doctor_name, d.bmdc_license_number, d.specialization, d.qualifications, d.hospital_affiliation, d.chamber_details, du.phone as doctor_phone,
               p.patient_uid, pu.full_name as patient_name, p.gender, p.date_of_birth, p.blood_group, pu.phone as patient_phone,
-              mr.record_uid, mr.visit_date
+              mr.record_uid, mr.visit_date, mr.follow_up_date
        FROM prescriptions pr
        JOIN doctors d ON pr.doctor_id = d.id
        JOIN users du ON d.user_id = du.id
@@ -90,7 +90,7 @@ export async function downloadPrescriptionPDF(req: Request, res: Response) {
       `SELECT pr.*, 
               d.doctor_uid, du.full_name as doctor_name, d.bmdc_license_number, d.specialization, d.qualifications, d.hospital_affiliation, d.chamber_details, du.phone as doctor_phone,
               p.patient_uid, pu.full_name as patient_name, p.gender, p.date_of_birth, p.blood_group, pu.phone as patient_phone,
-              mr.record_uid, mr.visit_date
+              mr.record_uid, mr.visit_date, mr.follow_up_date
        FROM prescriptions pr
        JOIN doctors d ON pr.doctor_id = d.id
        JOIN users du ON d.user_id = du.id

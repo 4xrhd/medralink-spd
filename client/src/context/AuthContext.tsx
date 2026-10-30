@@ -18,6 +18,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterPayload) => Promise<void>;
   logout: () => void;
+  /** Applies profile edits to the signed-in user so the navbar and dashboards update at once. */
+  updateUser: (changes: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,6 +55,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem(USER_KEY, JSON.stringify(receivedUser));
     setToken(receivedToken);
     setUser(receivedUser);
+  }, []);
+
+  const updateUser = useCallback((changes: Partial<User>) => {
+    setUser((current) => {
+      if (!current) return current;
+      const next = { ...current, ...changes };
+      localStorage.setItem(USER_KEY, JSON.stringify(next));
+      return next;
+    });
   }, []);
 
   // Any 401 from the API ends the session; ProtectedRoute then sends the user to /login
@@ -102,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

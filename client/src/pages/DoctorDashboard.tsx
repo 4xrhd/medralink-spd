@@ -5,7 +5,8 @@ import { useAuth } from '../context/AuthContext.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDebounce } from '../hooks/useDebounce.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
-import api from '../services/api.js';
+import api, { getApiErrorMessage, isCancelled } from '../services/api.js';
+import { ageFromDob, formatServerDate } from '../utils/dates.js';
 import { Button, ButtonLink, Card, Icon, Pill, MetricCard, EmptyState, PageHeader, Skeleton } from '../ui/primitives.js';
 
 export const DoctorDashboard: React.FC = () => {
@@ -16,6 +17,8 @@ export const DoctorDashboard: React.FC = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Patient Search State with useDebounce
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,18 +48,29 @@ export const DoctorDashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const res = await api.get('/dashboard');
-        setData(res.data.data);
-      } catch (err) {
-        console.error('Failed to load doctor dashboard:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchDashboard();
-  }, []);
+    const controller = new AbortController();
+    setLoading(true);
+    setLoadError('');
+    api
+      .get('/dashboard', { signal: controller.signal })
+      .then((res) => setData(res.data.data))
+      .catch((err) => {
+        if (!isCancelled(err)) setLoadError(getApiErrorMessage(err, tr('Today\'s clinic data could not be loaded.')));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [reloadKey]);
+
+  // Lists show skeletons while loading and a neutral note after a failure, never a false "nothing today"
+  const listPlaceholder = loading ? (
+    <div className="space-y-2.5" role="status" aria-label={tr('Loading clinical portal module...')}>
+      {[0, 1, 2].map((i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
+    </div>
+  ) : loadError ? (
+    <p className="px-1 py-6 text-center text-sm text-ink-600">{tr('Not available until the dashboard loads.')}</p>
+  ) : null;
 
   // Debounced search effect: eliminates high-frequency keystroke API requests
   useEffect(() => {
@@ -204,7 +218,7 @@ export const DoctorDashboard: React.FC = () => {
                             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-600">
                               <Pill tone="crimson">{pt.blood_group || tr('Blood N/A')}</Pill>
                               <span>
-                                {pt.gender} · {pt.date_of_birth ? tr('{n} yrs', { n: new Date().getFullYear() - new Date(pt.date_of_birth).getFullYear() }) : tr('Adult')}
+                                {pt.gender} · {ageFromDob(pt.date_of_birth) !== null ? tr('{n} yrs', { n: ageFromDob(pt.date_of_birth) as number }) : tr('Adult')}
                               </span>
                               {pt.phone && <span className="font-mono">{pt.phone}</span>}
                             </div>
@@ -237,7 +251,18 @@ export const DoctorDashboard: React.FC = () => {
         </div>
 
         {/* Key figures */}
-        {loading ? (
+        {loadError ? (
+          <EmptyState
+            icon={<Icon.Alert size={22} className="text-critical" />}
+            title={loadError}
+            description={tr('Check your connection and try again.')}
+            action={
+              <Button variant="secondary" onClick={() => setReloadKey((k) => k + 1)}>
+                {tr('Try again')}
+              </Button>
+            }
+          />
+        ) : loading ? (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
             {[0, 1, 2].map((i) => (
               <Skeleton key={i} className={`h-[6.5rem] rounded-xl ${i === 0 ? 'col-span-2 lg:col-span-1' : ''}`} />
@@ -272,7 +297,7 @@ export const DoctorDashboard: React.FC = () => {
         <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-[1fr_1fr_360px]">
           <Card padding="sm" header={{ title: tr("Today's Scheduled Consultations"), icon: <Icon.Clock size={15} /> }}>
             <div className="space-y-2.5">
-              {data?.todayAppointments && data.todayAppointments.length > 0 ? (
+              {listPlaceholder ?? (data?.todayAppointments && data.todayAppointments.length > 0 ? (
                 data.todayAppointments.map((apt: any) => (
                   <div key={apt.id} className={listRow}>
                     <div className="min-w-0">
@@ -294,13 +319,13 @@ export const DoctorDashboard: React.FC = () => {
                   title={tr("No appointments pending in queue")}
                   description={tr("All patient consultations for this clinical shift are completed or ready for check-in.")}
                 />
-              )}
+              ))}
             </div>
           </Card>
 
           <Card padding="sm" header={{ title: tr("Recent Clinical Records Logged"), icon: <Icon.Stethoscope size={15} /> }}>
             <div className="space-y-2.5">
-              {data?.recentConsultations && data.recentConsultations.length > 0 ? (
+              {listPlaceholder ?? (data?.recentConsultations && data.recentConsultations.length > 0 ? (
                 data.recentConsultations.map((c: any) => (
                   <div key={c.id} className={listRow}>
                     <div className="min-w-0">
@@ -309,7 +334,7 @@ export const DoctorDashboard: React.FC = () => {
                         <span className="font-mono text-xs text-ink-400">{c.record_uid}</span>
                       </div>
                       <p className="mt-1 line-clamp-1 text-xs text-ink-600">{c.chief_complaint}</p>
-                      <p className="mt-0.5 font-mono text-xs text-ink-400">{new Date(c.visit_date).toLocaleDateString()}</p>
+                      <p className="mt-0.5 font-mono text-xs text-ink-400">{formatServerDate(c.visit_date)}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-2 sm:flex sm:shrink-0">
                       <ButtonLink size="sm" variant="secondary" to={`/patient/timeline/${c.patient_id}`}>
@@ -329,7 +354,7 @@ export const DoctorDashboard: React.FC = () => {
                   title={tr("No consultations logged yet")}
                   description={tr("New consultations completed in this session will appear here in real-time.")}
                 />
-              )}
+              ))}
             </div>
           </Card>
 

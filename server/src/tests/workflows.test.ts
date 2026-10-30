@@ -117,6 +117,7 @@ describe('Clinical workflows across roles', () => {
 
     it('allows only admins to verify doctors', async () => {
       expect((await request(app).patch('/api/v1/doctors/doc-2/verify').set(auth(doctorToken)).send({ isVerified: false })).status).toBe(403);
+      expect((await request(app).patch('/api/v1/doctors/doc-2/verify').set(auth(adminToken)).send({ isVerified: false })).status).toBe(200);
       expect((await request(app).patch('/api/v1/doctors/doc-2/verify').set(auth(adminToken)).send({ isVerified: true })).status).toBe(200);
       expect((await request(app).patch('/api/v1/doctors/doc-missing/verify').set(auth(adminToken)).send({ isVerified: true })).status).toBe(404);
     });

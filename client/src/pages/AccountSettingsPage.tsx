@@ -2,12 +2,14 @@ import { useLanguage } from '../context/LanguageContext.js';
 import React, { useEffect, useState } from 'react';
 import api, { getApiErrorMessage } from '../services/api.js';
 import { useToast } from '../context/ToastContext.js';
+import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Icon, Button, Card, FormField, Input } from '../ui/primitives.js';
 
 export const AccountSettingsPage: React.FC = () => {
   const { t: tr } = useLanguage();
   useDocumentTitle(tr('Account Settings'));
+  const { updateUser } = useAuth();
   const toast = useToast();
 
   const [email, setEmail] = useState('');
@@ -37,6 +39,7 @@ export const AccountSettingsPage: React.FC = () => {
     setSavingProfile(true);
     try {
       await api.put('/auth/me', { fullName, phone });
+      updateUser({ fullName: fullName.trim() });
       toast.success(tr('Profile updated.'));
     } catch (err) {
       toast.error(getApiErrorMessage(err, tr('Failed to update profile.')));
