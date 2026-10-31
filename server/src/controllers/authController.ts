@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { execute, queryOne } from '../db/database.js';
+import { execute, queryOne, runTransaction } from '../db/database.js';
+import { uniqueCode } from '../services/uidService.js';
 import { generateToken } from '../middleware/auth.js';
 import { getBooleanSetting, getNumberSetting } from '../services/settingsService.js';
 import { recordAuditEvent } from '../services/auditService.js';
@@ -20,6 +21,9 @@ export async function login(req: Request, res: Response) {
 
     if (user.status === 'SUSPENDED') {
       return res.status(403).json({ success: false, message: 'Account is suspended. Contact administrator.' });
+    }
+    if (user.status !== 'ACTIVE') {
+      return res.status(403).json({ success: false, message: 'Account is awaiting administrator approval.' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
@@ -66,6 +70,7 @@ export async function login(req: Request, res: Response) {
       patientUid,
       doctorId,
       doctorUid,
+      tv: Number((user as User & { token_version?: number }).token_version ?? 0),
     };
 
     const token = generateToken(tokenPayload, await getNumberSetting('session_ttl_hours'));
@@ -123,58 +128,68 @@ export async function register(req: Request, res: Response) {
     const passwordHash = await bcrypt.hash(password, salt);
     const userId = 'usr-' + Math.random().toString(36).substring(2, 10);
 
-    await execute(
-      'INSERT INTO users (id, email, password_hash, role, full_name, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [userId, email.toLowerCase().trim(), passwordHash, role, fullName, phone, 'ACTIVE']
-    );
-
     let patientId: string | undefined;
     let patientUid: string | undefined;
     let doctorId: string | undefined;
     let doctorUid: string | undefined;
 
-    if (role === 'PATIENT') {
-      patientId = 'pat-' + Math.random().toString(36).substring(2, 10);
-      patientUid = 'P-' + Math.floor(1000 + Math.random() * 9000);
-      await execute(
-        `INSERT INTO patients (id, user_id, patient_uid, date_of_birth, gender, blood_group, address, city, district, nid_or_bid, emergency_contact_name, emergency_contact_phone)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          patientId,
-          userId,
-          patientUid,
-          patientData?.dateOfBirth || '1990-01-01',
-          patientData?.gender || 'MALE',
-          patientData?.bloodGroup || 'O+',
-          patientData?.address || '',
-          patientData?.city || 'Dhaka',
-          patientData?.district || 'Dhaka',
-          patientData?.nidOrBid || '',
-          patientData?.emergencyContactName || '',
-          patientData?.emergencyContactPhone || '',
-        ]
-      );
-    } else if (role === 'DOCTOR') {
-      const requireVerification = await getBooleanSetting('require_doctor_verification');
-      doctorId = 'doc-' + Math.random().toString(36).substring(2, 10);
-      doctorUid = 'DOC-' + Math.floor(2000 + Math.random() * 8000);
-      await execute(
-        `INSERT INTO doctors (id, user_id, doctor_uid, bmdc_license_number, specialization, qualifications, hospital_affiliation, chamber_details, consultation_fee, is_verified)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          doctorId,
-          userId,
-          doctorUid,
-          doctorData?.bmdcLicenseNumber || `BMDC-A-${Math.floor(10000 + Math.random() * 90000)}`,
-          doctorData?.specialization || 'General Medicine',
-          doctorData?.qualifications || 'MBBS',
-          doctorData?.hospitalAffiliation || '',
-          doctorData?.chamberDetails || '',
-          doctorData?.consultationFee || 500,
-          requireVerification ? 0 : 1
-        ]
-      );
+    if (role === 'DOCTOR' && doctorData?.bmdcLicenseNumber) {
+      const taken = await queryOne('SELECT id FROM doctors WHERE bmdc_license_number = ?', [doctorData.bmdcLicenseNumber]);
+      if (taken) {
+        return res.status(409).json({ success: false, message: 'A doctor with this BMDC licence number is already registered.' });
+      }
     }
+
+    // User and profile rows are written together so a failed profile insert leaves no orphan account
+    await runTransaction(async () => {
+      await execute(
+        'INSERT INTO users (id, email, password_hash, role, full_name, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [userId, email.toLowerCase().trim(), passwordHash, role, fullName, phone, 'ACTIVE']
+      );
+
+      if (role === 'PATIENT') {
+        patientId = 'pat-' + Math.random().toString(36).substring(2, 10);
+        patientUid = await uniqueCode('patient');
+        await execute(
+          `INSERT INTO patients (id, user_id, patient_uid, date_of_birth, gender, blood_group, address, city, district, nid_or_bid, emergency_contact_name, emergency_contact_phone)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            patientId,
+            userId,
+            patientUid,
+            patientData?.dateOfBirth || '1990-01-01',
+            patientData?.gender || 'MALE',
+            patientData?.bloodGroup || 'O+',
+            patientData?.address || '',
+            patientData?.city || 'Dhaka',
+            patientData?.district || 'Dhaka',
+            patientData?.nidOrBid || '',
+            patientData?.emergencyContactName || '',
+            patientData?.emergencyContactPhone || '',
+          ]
+        );
+      } else if (role === 'DOCTOR') {
+        const requireVerification = await getBooleanSetting('require_doctor_verification');
+        doctorId = 'doc-' + Math.random().toString(36).substring(2, 10);
+        doctorUid = await uniqueCode('doctor');
+        await execute(
+          `INSERT INTO doctors (id, user_id, doctor_uid, bmdc_license_number, specialization, qualifications, hospital_affiliation, chamber_details, consultation_fee, is_verified)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            doctorId,
+            userId,
+            doctorUid,
+            doctorData.bmdcLicenseNumber,
+            doctorData?.specialization || 'General Medicine',
+            doctorData?.qualifications || 'MBBS',
+            doctorData?.hospitalAffiliation || '',
+            doctorData?.chamberDetails || '',
+            doctorData?.consultationFee || 500,
+            requireVerification ? 0 : 1
+          ]
+        );
+      }
+    });
 
     await recordAuditEvent({
       actorId: userId,
@@ -195,15 +210,32 @@ export async function register(req: Request, res: Response) {
       patientId,
       patientUid,
       doctorId,
-      doctorUid
+      doctorUid,
+      tv: 0,
     }, await getNumberSetting('session_ttl_hours'));
+
+    // Same profile shape as login, so a new doctor's header is filled in straight away
+    const doctorRow = doctorId
+      ? await queryOne<{ bmdc_license_number: string; hospital_affiliation: string; specialization: string; qualifications: string }>(
+          'SELECT bmdc_license_number, hospital_affiliation, specialization, qualifications FROM doctors WHERE id = ?',
+          [doctorId]
+        )
+      : undefined;
+    const doctorProfile = doctorRow
+      ? {
+          bmdcLicenseNumber: doctorRow.bmdc_license_number,
+          hospitalAffiliation: doctorRow.hospital_affiliation,
+          specialization: doctorRow.specialization,
+          qualifications: doctorRow.qualifications,
+        }
+      : undefined;
 
     return res.status(201).json({
       success: true,
       message: 'Account created successfully.',
       data: {
         token,
-        user: { id: userId, email, role, fullName, phone, patientId, patientUid, doctorId, doctorUid }
+        user: { id: userId, email, role, fullName, phone, patientId, patientUid, doctorId, doctorUid, doctorProfile }
       }
     });
   } catch (error: any) {

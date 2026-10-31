@@ -26,6 +26,8 @@ const DIAGNOSIS_STATUSES = ['ACTIVE', 'RESOLVED', 'CHRONIC'];
 // Strips HTML tags instead of entity-escaping, so stored clinical text stays readable in the UI and PDFs.
 const stripTags = (value: unknown) => (typeof value === 'string' ? value.replace(/<[^>]*>/g, '') : value);
 const idParam = (name: string) => param(name).trim().isLength({ min: 1, max: 64 }).matches(/^[A-Za-z0-9_-]+$/);
+const vital = (field: string, min: number, max: number) =>
+  body(field).optional({ values: 'falsy' }).isFloat({ min, max }).withMessage(`${field.split('.').pop()} must be between ${min} and ${max}.`).toFloat();
 const freeText = (field: string, max: number) => body(field).optional({ values: 'falsy' }).isString().trim().isLength({ max }).customSanitizer(stripTags);
 
 export const rules = {
@@ -39,10 +41,27 @@ export const rules = {
     body('fullName').isString().trim().isLength({ min: 2, max: 120 }).customSanitizer(stripTags),
     body('phone').isString().trim().matches(/^\+?[0-9 -]{7,20}$/).withMessage('A valid phone number is required.'),
     body('role').isIn(['PATIENT', 'DOCTOR']).withMessage('Role must be PATIENT or DOCTOR.'),
+    // A doctor must give a real licence number; the server never makes one up
+    body('doctorData.bmdcLicenseNumber')
+      .if(body('role').equals('DOCTOR'))
+      .isString().trim().isLength({ min: 3, max: 40 }).withMessage('BMDC licence number is required for doctors.')
+      .matches(/^[A-Za-z0-9-]+$/).withMessage('BMDC licence number may only contain letters, digits and hyphens.'),
+    freeText('doctorData.specialization', 120),
+    freeText('doctorData.qualifications', 200),
+    freeText('doctorData.hospitalAffiliation', 200),
+    freeText('doctorData.chamberDetails', 300),
+    body('doctorData.consultationFee').optional({ values: 'falsy' }).isFloat({ min: 0, max: 100000 }).toFloat(),
+    body('patientData.dateOfBirth').optional({ values: 'falsy' }).isISO8601({ strict: true }),
+    body('patientData.gender').optional({ values: 'falsy' }).isIn(['MALE', 'FEMALE', 'OTHER']),
+    body('patientData.bloodGroup').optional({ values: 'falsy' }).isIn(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
   ],
   updateProfile: [
     body('fullName').optional().isString().trim().isLength({ min: 2, max: 120 }).customSanitizer(stripTags),
     body('phone').optional().isString().trim().matches(/^\+?[0-9 -]{7,20}$/),
+  ],
+  changeEmail: [
+    body('newEmail').isEmail().withMessage('A valid email is required.').isLength({ max: 254 }).normalizeEmail({ gmail_remove_dots: false }),
+    body('currentPassword').isString().notEmpty().withMessage('Enter your current password.'),
   ],
   changePassword: [
     body('currentPassword').isString().notEmpty(),
@@ -71,12 +90,29 @@ export const rules = {
     body('prescription.items.*.dosage').isString().trim().notEmpty().withMessage('Every medicine needs a dosage.').isLength({ max: 100 }),
     body('prescription.items.*.frequency').isString().trim().notEmpty().withMessage('Every medicine needs a frequency.').isLength({ max: 100 }),
     body('prescription.items.*.duration').isString().trim().notEmpty().withMessage('Every medicine needs a duration.').isLength({ max: 100 }),
+    freeText('prescription.items.*.genericName', 200),
+    freeText('prescription.items.*.route', 50),
+    freeText('prescription.items.*.instructions', 500),
+    freeText('prescription.instructions', 2000),
+    body('prescription.validityDays').optional({ values: 'falsy' }).isInt({ min: 1, max: 365 }).toInt(),
+    freeText('diagnoses.*.description', 1000),
+    freeText('labOrders.*.category', 100),
+    freeText('labOrders.*.instructions', 500),
+    // Vitals: numbers within a range a living patient can have, so typos are caught before they are stored
+    vital('vitals.systolicBp', 40, 300),
+    vital('vitals.diastolicBp', 20, 200),
+    vital('vitals.heartRate', 20, 300),
+    vital('vitals.temperature', 25, 45),
+    vital('vitals.respiratoryRate', 4, 80),
+    vital('vitals.spo2', 30, 100),
+    vital('vitals.weightKg', 0.5, 400),
+    vital('vitals.heightCm', 30, 260),
   ],
   doctorVerify: [idParam('id'), body('isVerified').isBoolean({ strict: true }).withMessage('isVerified must be true or false.').toBoolean(true)],
   appointment: [
-    body('doctorId').isString().trim().notEmpty().isLength({ max: 64 }),
+    body('doctorId').optional({ values: 'falsy' }).isString().trim().isLength({ max: 64 }),
     body('patientId').optional().isString().trim().isLength({ max: 64 }),
-    body('appointmentDate').isISO8601().withMessage('appointmentDate must be an ISO 8601 date.'),
+    body('appointmentDate').matches(/^\d{4}-\d{2}-\d{2}$/).isISO8601({ strict: true }).withMessage('appointmentDate must be a date like 2026-12-01.'),
     body('timeSlot').isString().trim().notEmpty().isLength({ max: 32 }),
     freeText('reason', 500),
   ],

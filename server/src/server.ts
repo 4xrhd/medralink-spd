@@ -83,14 +83,29 @@ const apiLimiter = rateLimit({
 });
 
 // Stricter Rate Limiter for Authentication routes
-const authLimiter = rateLimit({
+// Guessing passwords: only failed attempts count, so ordinary sign-ins and page loads never lock anyone out
+const credentialLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: Number(process.env.AUTH_RATE_LIMIT_MAX || 20),
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Too many failed attempts. Please try again after 15 minutes.',
+  },
+  skip: () => process.env.NODE_ENV === 'test',
+});
+
+// Creating accounts and requesting reset links: every request counts, to stop spam
+const accountLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: Number(process.env.AUTH_RATE_LIMIT_MAX || 20),
   standardHeaders: true,
   legacyHeaders: false,
   message: {
     success: false,
-    message: 'Too many login attempts. Please try again after 15 minutes.',
+    message: 'Too many requests. Please try again after 15 minutes.',
   },
   skip: () => process.env.NODE_ENV === 'test',
 });
@@ -122,7 +137,12 @@ app.get(['/health', '/api/health'], async (_req: Request, res: Response) => {
 });
 
 // Apply rate limiters
-app.use('/api/v1/auth', authLimiter);
+app.post('/api/v1/auth/login', credentialLimiter);
+app.put('/api/v1/auth/password', credentialLimiter);
+app.put('/api/v1/auth/email', credentialLimiter);
+app.post('/api/v1/auth/register', accountLimiter);
+app.post('/api/v1/auth/forgot-password', accountLimiter);
+app.post('/api/v1/auth/reset-password', accountLimiter);
 app.use('/api/v1', apiLimiter);
 
 // Mount Versioned REST API Router

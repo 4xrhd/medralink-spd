@@ -39,7 +39,7 @@ describe('Account self-service: profile, password change and reset', () => {
       .put('/api/v1/auth/password')
       .set('Authorization', `Bearer ${patientToken}`)
       .send({ currentPassword: 'wrong-password', newPassword: 'newpassword123' });
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(400);
   });
 
   it('changes the password and allows login with the new one', async () => {

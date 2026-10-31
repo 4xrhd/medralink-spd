@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS users (
     full_name TEXT NOT NULL,
     phone TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'PENDING', 'SUSPENDED')),
+    -- Raised on password or email change; sign-ins issued before that stop working
+    token_version INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

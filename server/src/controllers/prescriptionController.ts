@@ -178,6 +178,8 @@ export async function downloadPrescriptionPDF(req: Request, res: Response) {
     await generatePrescriptionPDF(pdfData, res);
   } catch (error: any) {
     console.error('PDF generation error:', error);
+    // Once streaming has started the headers are gone; end the broken download instead of replying twice
+    if (res.headersSent) return res.destroy();
     return res.status(500).json({ success: false, message: 'Failed to generate prescription PDF.' });
   }
 }

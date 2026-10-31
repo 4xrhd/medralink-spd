@@ -23,12 +23,12 @@ export async function seedDatabase() {
   // 1. Users
   console.log('[SEED] Inserting users...');
   const users = [
-    { id: 'usr-admin-1', email: 'admin@medralink.com', hash: adminHash, role: 'ADMIN', name: 'System Administrator', phone: '+8801711000001' },
-    { id: 'usr-doc-1', email: 'dr.ahmed@medralink.com', hash: doctorHash, role: 'DOCTOR', name: 'Dr. Ahmed Tariq', phone: '+8801711000002' },
-    { id: 'usr-doc-2', email: 'dr.farzana@medralink.com', hash: doctorHash, role: 'DOCTOR', name: 'Dr. Farzana Rahman', phone: '+8801711000003' },
-    { id: 'usr-pat-1', email: 'rahim@gmail.com', hash: patientHash, role: 'PATIENT', name: 'Rahim Ahmed', phone: '+8801811000001' },
-    { id: 'usr-pat-2', email: 'sara@gmail.com', hash: patientHash, role: 'PATIENT', name: 'Sara Akter', phone: '+8801811000002' },
-    { id: 'usr-pat-3', email: 'karim@gmail.com', hash: patientHash, role: 'PATIENT', name: 'Karim Hasan', phone: '+8801811000003' },
+    { id: 'usr-admin-1', email: 'admin@medralink.com', hash: adminHash, role: 'ADMIN', name: 'System Administrator', phone: '+8801713482906' },
+    { id: 'usr-doc-1', email: 'dr.ahmed@medralink.com', hash: doctorHash, role: 'DOCTOR', name: 'Dr. Ahmed Tariq', phone: '+8801819274551' },
+    { id: 'usr-doc-2', email: 'dr.farzana@medralink.com', hash: doctorHash, role: 'DOCTOR', name: 'Dr. Farzana Rahman', phone: '+8801715630284' },
+    { id: 'usr-pat-1', email: 'rahim@gmail.com', hash: patientHash, role: 'PATIENT', name: 'Rahim Ahmed', phone: '+8801917348260' },
+    { id: 'usr-pat-2', email: 'sara@gmail.com', hash: patientHash, role: 'PATIENT', name: 'Sara Akter', phone: '+8801552086473' },
+    { id: 'usr-pat-3', email: 'karim@gmail.com', hash: patientHash, role: 'PATIENT', name: 'Karim Hasan', phone: '+8801673915842' },
   ];
 
   for (const u of users) {
@@ -57,19 +57,19 @@ export async function seedDatabase() {
   await execute(
     `INSERT INTO patients (id, user_id, patient_uid, date_of_birth, gender, blood_group, address, city, district, nid_or_bid, emergency_contact_name, emergency_contact_phone, emergency_contact_relation)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ['pat-1', 'usr-pat-1', 'P-1001', '1981-05-14', 'MALE', 'O+', 'House 42, Road 11, Banani', 'Dhaka', 'Dhaka', '19812691234567890', 'Nasreen Ahmed', '+8801712345678', 'Spouse']
+    ['pat-1', 'usr-pat-1', 'P-1001', '1981-05-14', 'MALE', 'O+', 'House 42, Road 11, Banani', 'Dhaka', 'Dhaka', '19812694738201563', 'Nasreen Ahmed', '+8801711596342', 'Spouse']
   );
 
   await execute(
     `INSERT INTO patients (id, user_id, patient_uid, date_of_birth, gender, blood_group, address, city, district, nid_or_bid, emergency_contact_name, emergency_contact_phone, emergency_contact_relation)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ['pat-2', 'usr-pat-2', 'P-1002', '1994-09-22', 'FEMALE', 'B+', 'Plot 18, Block D, Mirpur-12', 'Dhaka', 'Dhaka', '19942699876543210', 'Rafiqul Islam', '+8801912345678', 'Brother']
+    ['pat-2', 'usr-pat-2', 'P-1002', '1994-09-22', 'FEMALE', 'B+', 'Plot 18, Block D, Mirpur-12', 'Dhaka', 'Dhaka', '19942695106387429', 'Rafiqul Islam', '+8801946208735', 'Brother']
   );
 
   await execute(
     `INSERT INTO patients (id, user_id, patient_uid, date_of_birth, gender, blood_group, address, city, district, nid_or_bid, emergency_contact_name, emergency_contact_phone, emergency_contact_relation)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ['pat-3', 'usr-pat-3', 'P-1003', '1968-12-03', 'MALE', 'A+', 'Sector 7, Road 4, Uttara', 'Dhaka', 'Dhaka', '19682691122334455', 'Farhana Hasan', '+8801612345678', 'Daughter']
+    ['pat-3', 'usr-pat-3', 'P-1003', '1968-12-03', 'MALE', 'A+', 'Sector 7, Road 4, Uttara', 'Dhaka', 'Dhaka', '19682693850472916', 'Farhana Hasan', '+8801628490517', 'Daughter']
   );
 
   // 4. Allergies & Medical Conditions

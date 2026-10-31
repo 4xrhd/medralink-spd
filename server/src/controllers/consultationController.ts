@@ -3,6 +3,7 @@ import { execute, listAgg, query, queryOne, runTransaction } from '../db/databas
 import { recordAuditEvent } from '../services/auditService.js';
 import { canAccessPatient, isDoctorCleared } from '../services/accessService.js';
 import { dbTimestamp } from '../services/clock.js';
+import { uniqueCode } from '../services/uidService.js';
 import { createNotification } from '../services/notificationService.js';
 import { generateConsultationSummaryPDF, generatePatientHealthSummaryPDF } from '../services/pdfService.js';
 
@@ -66,7 +67,7 @@ export async function createConsultation(req: Request, res: Response) {
     }
 
     const recordId = 'rec-' + Math.random().toString(36).substring(2, 10);
-    const recordUid = 'REC-' + Math.floor(10000 + Math.random() * 90000);
+    const recordUid = await uniqueCode('record');
     const now = dbTimestamp();
 
     let prescriptionId: string | null = null;
@@ -132,7 +133,7 @@ export async function createConsultation(req: Request, res: Response) {
       // 4. Insert Prescription & Items
       if (prescription && prescription.items && prescription.items.length > 0) {
         prescriptionId = 'rx-' + Math.random().toString(36).substring(2, 10);
-        prescriptionUid = 'RX-' + Math.floor(1000 + Math.random() * 9000);
+        prescriptionUid = await uniqueCode('prescription');
 
         await execute(
           `INSERT INTO prescriptions (id, prescription_uid, record_id, patient_id, doctor_id, issue_date, instructions, validity_days)
@@ -425,6 +426,8 @@ export async function downloadConsultationPDF(req: Request, res: Response) {
     await generateConsultationSummaryPDF(pdfData, res);
   } catch (error: any) {
     console.error('Error generating consultation PDF:', error);
+    // Once streaming has started the headers are gone; end the broken download instead of replying twice
+    if (res.headersSent) return res.destroy();
     return res.status(500).json({ success: false, message: 'Failed to generate consultation PDF.' });
   }
 }
@@ -549,6 +552,8 @@ export async function downloadPatientSummaryPDF(req: Request, res: Response) {
     await generatePatientHealthSummaryPDF(pdfData, res);
   } catch (error: any) {
     console.error('Error generating patient health summary PDF:', error);
+    // Once streaming has started the headers are gone; end the broken download instead of replying twice
+    if (res.headersSent) return res.destroy();
     return res.status(500).json({ success: false, message: 'Failed to generate patient health summary PDF.' });
   }
 }

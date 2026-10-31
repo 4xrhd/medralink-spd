@@ -36,8 +36,10 @@ export async function listDoctors(req: Request, res: Response) {
 export async function getDoctorById(req: Request, res: Response) {
   try {
     const { id } = req.params;
+    // Contact details stay admin-only, as in listDoctors
+    const columns = req.user?.role === 'ADMIN' ? 'd.*, u.full_name, u.email, u.phone' : PUBLIC_DOCTOR_COLUMNS;
     const doctor = await queryOne<Doctor>(
-      `SELECT d.*, u.full_name, u.email, u.phone
+      `SELECT ${columns}
        FROM doctors d
        JOIN users u ON d.user_id = u.id
        WHERE d.id = ? OR d.doctor_uid = ?`,

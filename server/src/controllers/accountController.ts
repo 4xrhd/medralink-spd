@@ -4,8 +4,26 @@ import crypto from 'crypto';
 import { execute, queryOne } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
 import { createNotification } from '../services/notificationService.js';
+import { AuthUser, generateToken } from '../middleware/auth.js';
+import { getNumberSetting } from '../services/settingsService.js';
 
 const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
+/** Ends every other sign-in for this user and returns the new version for the current one. */
+async function bumpTokenVersion(userId: string): Promise<number> {
+  await execute('UPDATE users SET token_version = token_version + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [userId]);
+  const row = await queryOne<{ token_version: number }>('SELECT token_version FROM users WHERE id = ?', [userId]);
+  return Number(row?.token_version ?? 0);
+}
+
+/** A fresh token for the device that made the change, so it stays signed in. */
+async function reissueToken(user: AuthUser, changes: Partial<AuthUser>): Promise<string> {
+  const { id, email, role, fullName, patientId, patientUid, doctorId, doctorUid } = user;
+  return generateToken(
+    { id, email, role, fullName, patientId, patientUid, doctorId, doctorUid, ...changes },
+    await getNumberSetting('session_ttl_hours')
+  );
+}
+
 const sha256 = (value: string) => crypto.createHash('sha256').update(value).digest('hex');
 
 function auditFromRequest(req: Request, actorId: string, actorRole: string, action: string, details: string) {
@@ -48,16 +66,65 @@ export async function changePassword(req: Request, res: Response) {
     const { currentPassword, newPassword } = req.body;
     const row = await queryOne<{ password_hash: string }>('SELECT password_hash FROM users WHERE id = ?', [user.id]);
     if (!row || !(await bcrypt.compare(currentPassword, row.password_hash))) {
-      return res.status(401).json({ success: false, message: 'Current password is incorrect.' });
+      return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+    }
+
+    if (await bcrypt.compare(newPassword, row.password_hash)) {
+      return res.status(400).json({ success: false, message: 'The new password must be different from the current one.' });
     }
 
     const hash = await bcrypt.hash(newPassword, 10);
     await execute('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [hash, user.id]);
-    await auditFromRequest(req, user.id, user.role, 'PASSWORD_CHANGED', 'User changed own password');
-    return res.json({ success: true, message: 'Password changed.' });
+    const tv = await bumpTokenVersion(user.id);
+    await auditFromRequest(req, user.id, user.role, 'PASSWORD_CHANGED', 'User changed own password; other sessions signed out');
+    await createNotification({
+      userId: user.id,
+      title: 'Password changed',
+      message: 'Your password was changed and other devices were signed out. If this was not you, contact the administrator.',
+      type: 'WARNING',
+      category: 'SECURITY_AUDIT',
+    });
+    return res.json({ success: true, message: 'Password changed.', data: { token: await reissueToken(user, { tv }) } });
   } catch (error: any) {
     console.error('Password change error:', error);
     return res.status(500).json({ success: false, message: 'Failed to change password.' });
+  }
+}
+
+export async function changeEmail(req: Request, res: Response) {
+  try {
+    const user = req.user!;
+    const { newEmail, currentPassword } = req.body as { newEmail: string; currentPassword: string };
+    const row = await queryOne<{ password_hash: string; email: string }>('SELECT password_hash, email FROM users WHERE id = ?', [user.id]);
+    if (!row || !(await bcrypt.compare(currentPassword, row.password_hash))) {
+      return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+    }
+    if (newEmail === row.email) {
+      return res.status(400).json({ success: false, message: 'That is already your email address.' });
+    }
+    const taken = await queryOne('SELECT id FROM users WHERE email = ? AND id <> ?', [newEmail, user.id]);
+    if (taken) {
+      return res.status(409).json({ success: false, message: 'Another account already uses this email.' });
+    }
+
+    await execute('UPDATE users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newEmail, user.id]);
+    const tv = await bumpTokenVersion(user.id);
+    await auditFromRequest(req, user.id, user.role, 'EMAIL_CHANGED', `Sign-in email changed from ${row.email} to ${newEmail}`);
+    await createNotification({
+      userId: user.id,
+      title: 'Email changed',
+      message: `Your sign-in email is now ${newEmail}. Other devices were signed out. If this was not you, contact the administrator.`,
+      type: 'WARNING',
+      category: 'SECURITY_AUDIT',
+    });
+    return res.json({
+      success: true,
+      message: 'Email changed.',
+      data: { email: newEmail, token: await reissueToken(user, { email: newEmail, tv }) },
+    });
+  } catch (error: any) {
+    console.error('Email change error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to change email.' });
   }
 }
 
@@ -116,6 +183,8 @@ export async function resetPassword(req: Request, res: Response) {
     }
     const hash = await bcrypt.hash(newPassword, 10);
     await execute('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [hash, reset.user_id]);
+    // Whoever had the old password is signed out everywhere
+    await bumpTokenVersion(reset.user_id);
     const user = await queryOne<{ role: string }>('SELECT role FROM users WHERE id = ?', [reset.user_id]);
     await auditFromRequest(req, reset.user_id, user?.role || 'UNKNOWN', 'PASSWORD_RESET', 'Password reset with token');
     return res.json({ success: true, message: 'Password has been reset. You can now sign in.' });

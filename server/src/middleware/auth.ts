@@ -18,6 +18,8 @@ export interface AuthUser {
   patientUid?: string;
   doctorId?: string;
   doctorUid?: string;
+  /** users.token_version when the token was issued; older tokens are refused. */
+  tv?: number;
 }
 
 declare global {
@@ -48,9 +50,16 @@ export async function authenticateJWT(req: Request, res: Response, next: NextFun
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as AuthUser;
-    const account = await queryOne<{ status: string }>('SELECT status FROM users WHERE id = ?', [decoded.id]);
-    if (!account || account.status === 'SUSPENDED') {
-      return res.status(403).json({ success: false, message: 'Account is suspended or no longer exists.' });
+    const account = await queryOne<{ status: string; token_version: number }>(
+      'SELECT status, token_version FROM users WHERE id = ?',
+      [decoded.id]
+    );
+    if (!account || account.status !== 'ACTIVE') {
+      return res.status(403).json({ success: false, message: 'Account is suspended, awaiting approval or no longer exists.' });
+    }
+    // Tokens from before this feature carry no version and count as version 0
+    if ((decoded.tv ?? 0) !== Number(account.token_version ?? 0)) {
+      return res.status(401).json({ success: false, message: 'Your password or email was changed. Please sign in again.' });
     }
     req.user = decoded;
     return next();

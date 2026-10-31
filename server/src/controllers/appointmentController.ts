@@ -1,19 +1,30 @@
 import { Request, Response } from 'express';
 import { execute, query, queryOne } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
+import { canAccessPatient } from '../services/accessService.js';
+import { uniqueCode } from '../services/uidService.js';
+import { clinicToday } from '../services/clock.js';
 
 export async function createAppointment(req: Request, res: Response) {
   try {
-    const { doctorId, appointmentDate, timeSlot, reason } = req.body;
-    // Patients can only book for themselves
+    const { appointmentDate, timeSlot, reason } = req.body;
+    // Patients book only for themselves; doctors book only on their own calendar
     const patientId = req.user?.role === 'PATIENT' ? req.user.patientId : req.body.patientId;
+    const doctorId = req.user?.role === 'DOCTOR' ? req.user.doctorId : req.body.doctorId;
     if (!patientId || !doctorId || !appointmentDate || !timeSlot) {
       return res.status(400).json({ success: false, message: 'Missing required appointment booking fields.' });
+    }
+    if (String(appointmentDate) < clinicToday()) {
+      return res.status(400).json({ success: false, message: 'Appointments cannot be booked in the past.' });
     }
 
     const patient = await queryOne('SELECT id, patient_uid FROM patients WHERE id = ? OR patient_uid = ?', [patientId, patientId]);
     if (!patient) {
       return res.status(404).json({ success: false, message: 'Patient not found.' });
+    }
+    // A booking creates a doctor-patient link, so a doctor may only book patients they already treat
+    if (req.user?.role === 'DOCTOR' && !(await canAccessPatient(req, patient.id))) {
+      return res.status(403).json({ success: false, message: 'You can only book follow-ups for your own patients.' });
     }
 
     const doctor = await queryOne('SELECT id, doctor_uid FROM doctors WHERE id = ? OR doctor_uid = ?', [doctorId, doctorId]);
@@ -22,7 +33,7 @@ export async function createAppointment(req: Request, res: Response) {
     }
 
     const aptId = 'apt-' + Math.random().toString(36).substring(2, 10);
-    const aptUid = 'APT-' + Math.floor(100 + Math.random() * 900);
+    const aptUid = await uniqueCode('appointment');
 
     await execute(
       `INSERT INTO appointments (id, appointment_uid, patient_id, doctor_id, appointment_date, time_slot, status, reason)
@@ -91,8 +102,8 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       return res.status(400).json({ success: false, message: 'Status is required.' });
     }
 
-    const appointment = await queryOne<{ patient_id: string; doctor_id: string }>(
-      'SELECT patient_id, doctor_id FROM appointments WHERE id = ?',
+    const appointment = await queryOne<{ patient_id: string; doctor_id: string; status: string }>(
+      'SELECT patient_id, doctor_id, status FROM appointments WHERE id = ?',
       [id]
     );
     if (!appointment) {
@@ -105,6 +116,10 @@ export async function updateAppointmentStatus(req: Request, res: Response) {
       (user?.role === 'PATIENT' && user.patientId === appointment.patient_id && status === 'CANCELLED');
     if (!ownsAppointment) {
       return res.status(403).json({ success: false, message: 'You cannot change this appointment.' });
+    }
+    // Finished visits stay finished; reopening one would let it be linked to a new consultation
+    if (appointment.status === 'COMPLETED' || appointment.status === 'CANCELLED') {
+      return res.status(409).json({ success: false, message: `This appointment is already ${appointment.status.toLowerCase()}.` });
     }
 
     await execute('UPDATE appointments SET status = ? WHERE id = ?', [status, id]);

@@ -125,6 +125,7 @@ const POSTGRES_COLUMN_MIGRATIONS = `
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'GENERAL';
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS link TEXT;
 ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS seq BIGINT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
 CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_seq ON audit_logs(seq);
 `;
 
@@ -159,6 +160,10 @@ export async function initDb(): Promise<void> {
         sqliteDb.exec('ALTER TABLE audit_logs ADD COLUMN seq INTEGER');
       }
       sqliteDb.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_seq ON audit_logs(seq)');
+      const userCols = (sqliteDb.prepare('PRAGMA table_info(users)').all() as Array<{ name: string }>).map((c) => c.name);
+      if (!userCols.includes('token_version')) {
+        sqliteDb.exec('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0');
+      }
     } catch (migErr) {
       console.warn('[DB] Migration notice:', migErr);
     }

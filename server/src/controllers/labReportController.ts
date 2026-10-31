@@ -97,6 +97,14 @@ export async function uploadLabReport(req: Request, res: Response) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
 
+    // A linked visit must belong to the same patient, or the report would show in someone else's record
+    if (recordId) {
+      const visit = await queryOne('SELECT id FROM medical_records WHERE id = ? AND patient_id = ?', [recordId, patient.id]);
+      if (!visit) {
+        return res.status(400).json({ success: false, message: 'That visit does not belong to this patient.' });
+      }
+    }
+
     const labId = `lab-${crypto.randomUUID()}`;
     const now = new Date().toISOString().split('T')[0];
 
@@ -114,7 +122,7 @@ export async function uploadLabReport(req: Request, res: Response) {
         file ? file.originalname : null,
         file ? file.size : null,
         file ? file.mimetype : null,
-        testDate || now,
+        testDate ? String(testDate).slice(0, 10) : now,
         resultsSummary || '',
         'COMPLETED'
       ]
@@ -201,7 +209,12 @@ export async function listLabReports(req: Request, res: Response) {
       sql += ` WHERE lr.patient_id = ?`;
       params.push(req.user.patientId);
     } else if (req.query.patientId) {
-      const patientId = String(req.query.patientId);
+      const requested = String(req.query.patientId);
+      const match = await queryOne<{ id: string }>('SELECT id FROM patients WHERE id = ? OR patient_uid = ?', [requested, requested]);
+      if (!match) {
+        return res.status(404).json({ success: false, message: 'Patient not found.' });
+      }
+      const patientId = match.id;
       if (!(await canAccessPatient(req, patientId))) {
         return res.status(403).json({ success: false, message: 'Access denied.' });
       }

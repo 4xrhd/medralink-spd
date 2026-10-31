@@ -9,6 +9,7 @@ export async function getDashboardStats(req: Request, res: Response) {
     if (role === 'ADMIN') {
       const totalPatients = await queryOne<{ count: number }>('SELECT COUNT(*) as count FROM patients');
       const totalDoctors = await queryOne<{ count: number }>('SELECT COUNT(*) as count FROM doctors');
+      const accreditedDoctors = await queryOne<{ count: number }>('SELECT COUNT(*) as count FROM doctors WHERE is_verified = ?', [1]);
       const totalRecords = await queryOne<{ count: number }>('SELECT COUNT(*) as count FROM medical_records');
       const totalAudits = await queryOne<{ count: number }>('SELECT COUNT(*) as count FROM audit_logs');
       const recentAudits = await query(
@@ -25,6 +26,7 @@ export async function getDashboardStats(req: Request, res: Response) {
           stats: {
             totalPatients: totalPatients?.count || 0,
             totalDoctors: totalDoctors?.count || 0,
+            accreditedDoctors: accreditedDoctors?.count || 0,
             totalRecords: totalRecords?.count || 0,
             totalAuditLogs: totalAudits?.count || 0,
           },
@@ -98,6 +100,18 @@ export async function getDashboardStats(req: Request, res: Response) {
         [patientId]
       );
 
+      // Active = still within its validity window today, counted over all prescriptions, not the 3 shown
+      const validity = await query<{ issue_date: string; validity_days: number }>(
+        'SELECT issue_date, validity_days FROM prescriptions WHERE patient_id = ?',
+        [patientId]
+      );
+      const today = clinicToday();
+      const activePrescriptionsCount = validity.filter((p) => {
+        const expires = new Date(String(p.issue_date).slice(0, 10) + 'T00:00:00Z');
+        expires.setUTCDate(expires.getUTCDate() + Number(p.validity_days || 0));
+        return expires.toISOString().slice(0, 10) >= today;
+      }).length;
+
       const labReportsCount = await queryOne<{ count: number }>(
         'SELECT COUNT(*) as count FROM lab_reports WHERE patient_id = ?',
         [patientId]
@@ -128,7 +142,7 @@ export async function getDashboardStats(req: Request, res: Response) {
           role: 'PATIENT',
           stats: {
             totalVisits: totalVisits?.count || 0,
-            activePrescriptionsCount: activePrescriptions.length,
+            activePrescriptionsCount,
             labReportsCount: labReportsCount?.count || 0,
           },
           patient,

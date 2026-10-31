@@ -8,15 +8,20 @@ export async function searchPatients(req: Request, res: Response) {
   try {
     const q = (req.query.q as string || '').trim();
     // Doctors need the directory to start a first consultation, but not national IDs or addresses
-    const columns = req.user?.role === 'DOCTOR'
-      ? 'p.id, p.patient_uid, p.date_of_birth, p.gender, p.blood_group, p.created_at, u.full_name, u.phone'
+    const isDoctor = req.user?.role === 'DOCTOR';
+    // is_assigned tells the doctor UI whether this patient's record can be opened yet
+    const columns = isDoctor
+      ? `p.id, p.patient_uid, p.date_of_birth, p.gender, p.blood_group, p.created_at, u.full_name, u.phone,
+         CASE WHEN EXISTS (SELECT 1 FROM appointments a WHERE a.patient_id = p.id AND a.doctor_id = ?)
+                OR EXISTS (SELECT 1 FROM medical_records m WHERE m.patient_id = p.id AND m.doctor_id = ?)
+              THEN 1 ELSE 0 END AS is_assigned`
       : 'p.*, u.full_name, u.email, u.phone';
     let sql = `
       SELECT ${columns}
       FROM patients p
       JOIN users u ON p.user_id = u.id
     `;
-    const params: any[] = [];
+    const params: any[] = isDoctor ? [req.user?.doctorId, req.user?.doctorId] : [];
 
     if (q) {
       sql += ` WHERE LOWER(p.patient_uid) LIKE LOWER(?) OR LOWER(u.full_name) LIKE LOWER(?) OR u.phone LIKE ? OR p.nid_or_bid LIKE ?`;
