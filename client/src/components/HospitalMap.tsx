@@ -39,7 +39,7 @@ export const HospitalMap: React.FC<HospitalMapProps> = ({ center, hospitals, sel
     const map = L.map(containerRef.current, { zoomControl: true }).setView([DHAKA.lat, DHAKA.lng], 12);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">{tr("OpenStreetMap")}</a> contributors',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
     layerRef.current = L.layerGroup().addTo(map);
     mapRef.current = map;

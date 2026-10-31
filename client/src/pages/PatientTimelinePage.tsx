@@ -126,11 +126,29 @@ export const PatientTimelinePage: React.FC = () => {
 
         {/* Patient identity and safety strip */}
         <Card className="overflow-hidden">
-          <div className="grid gap-5 p-4 sm:p-5 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="grid gap-5 p-4 sm:p-5 lg:grid-cols-[minmax(17rem,2fr)_minmax(0,3fr)] lg:items-center">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-primary-700 font-display text-lg font-semibold text-white" aria-hidden="true">
-                {initials}
-              </div>
+              {patient?.patient_uid === 'P-1001' || patientUid === 'P-1001' ? (
+                <img
+                  src="/images/patients/patient-rahim.webp"
+                  alt=""
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-primary-300 shadow-sm"
+                />
+              ) : patient?.patient_uid === 'P-1002' || patientUid === 'P-1002' ? (
+                <img
+                  src="/images/patients/patient-sara.webp"
+                  alt=""
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-primary-300 shadow-sm"
+                />
+              ) : (
+                <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-primary-700 font-display text-lg font-semibold text-white" aria-hidden="true">
+                  {initials}
+                </div>
+              )}
               <div className="min-w-0">
                 <h1 className="font-display text-xl font-semibold tracking-tight text-ink-900 sm:text-2xl">{fullName}</h1>
                 <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm text-ink-600">
@@ -146,22 +164,22 @@ export const PatientTimelinePage: React.FC = () => {
               </div>
             </div>
 
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-t border-hair pt-4 text-sm sm:grid-cols-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+            <dl className="grid grid-cols-1 gap-x-6 gap-y-3 border-t border-hair pt-4 text-sm min-[400px]:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
               <div className="min-w-0">
                 <dt className="text-xs text-ink-600">{tr("National ID (NID)")}</dt>
-                <dd className="truncate font-mono font-semibold text-ink-900">{patient?.nid_or_bid || '-'}</dd>
+                <dd className="break-all font-mono font-semibold text-ink-900">{patient?.nid_or_bid || '-'}</dd>
               </div>
               <div className="min-w-0">
                 <dt className="text-xs text-ink-600">{tr("Attending Physician")}</dt>
-                <dd className="truncate font-semibold text-ink-900">{timeline?.[0]?.doctor_name || '-'}</dd>
+                <dd className="break-words font-semibold text-ink-900">{timeline?.[0]?.doctor_name || '-'}</dd>
               </div>
               <div className="min-w-0">
                 <dt className="text-xs text-ink-600">{tr("Primary Facility")}</dt>
-                <dd className="truncate font-semibold text-ink-900">{timeline?.[0]?.doctor_hospital || timeline?.[0]?.hospital_affiliation || '-'}</dd>
+                <dd className="break-words font-semibold text-ink-900">{timeline?.[0]?.doctor_hospital || timeline?.[0]?.hospital_affiliation || '-'}</dd>
               </div>
               <div className="min-w-0">
                 <dt className="text-xs text-ink-600">{tr("Emergency Contact")}</dt>
-                <dd className="truncate font-semibold text-ink-900">
+                <dd className="break-words font-semibold text-ink-900">
                   {patient?.emergency_contact_name || tr('Not provided')}
                   {patient?.emergency_contact_relation && <span className="font-normal text-ink-600"> ({patient.emergency_contact_relation})</span>}
                 </dd>

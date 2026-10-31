@@ -67,6 +67,9 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [settings, setSettings] = useState<NotificationSettings>(defaultSettings);
+  // Who is signed in right now; answers to requests made for an earlier user are dropped
+  const currentUserId = useRef<string | undefined>(user?.id);
+  currentUserId.current = user?.id;
 
   const fetchNotifications = useCallback(async () => {
     if (!user) {
@@ -74,8 +77,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setUnreadCount(0);
       return;
     }
+    const requestedFor = user.id;
     try {
       const res = await api.get('/notifications');
+      if (currentUserId.current !== requestedFor) return;
       if (res.data?.success && res.data?.data) {
         setNotifications(res.data.data.notifications || []);
         setUnreadCount(res.data.data.unreadCount ?? 0);
@@ -90,8 +95,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       setSettings(defaultSettings);
       return;
     }
+    const requestedFor = user.id;
     try {
       const res = await api.get('/notifications/settings');
+      if (currentUserId.current !== requestedFor) return;
       if (res.data?.success && res.data?.data) {
         setSettings(res.data.data);
       }

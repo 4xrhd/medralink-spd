@@ -1,5 +1,5 @@
 import { useLanguage } from '../context/LanguageContext.js';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Select } from '../ui/forms.js';
 import { useSearchParams } from 'react-router-dom';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
@@ -21,6 +21,17 @@ function fmtDist(km: number): string {
 /** Plain Google Maps link: opening it needs no API key. */
 function googleMapsDirectionsUrl(lat: number, lng: number): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+}
+
+function getHospitalThumbnail(h: HospitalResult): string {
+  const text = (h.name + ' ' + h.specialities.join(' ')).toLowerCase();
+  if (text.includes('cardiac') || text.includes('heart') || text.includes('cardio')) {
+    return '/images/hospitals/cardiac-center.webp';
+  }
+  if (text.includes('trauma') || text.includes('emergency') || text.includes('ortho') || text.includes('diagnostic')) {
+    return '/images/hospitals/trauma-center.webp';
+  }
+  return '/images/hospitals/general-hospital.webp';
 }
 
 /* -------------------------------------------------------------------------- */
@@ -53,8 +64,13 @@ export const HospitalSearchPage: React.FC = () => {
   };
   const specialtyLabel = SPECIALTIES.find((s) => s.value === specialty)?.label ?? 'All hospitals';
 
+  // Each location request takes a number; only the newest one may move the search
+  const locationRequest = useRef(0);
+  const [geocoding, setGeocoding] = useState(false);
+
   /* ---- GPS auto-detect on mount ------------------------------------------ */
   const detectLocation = useCallback(() => {
+    const requestId = ++locationRequest.current;
     if (!navigator.geolocation) {
       setLocationError(true);
       return;
@@ -63,12 +79,14 @@ export const HospitalSearchPage: React.FC = () => {
     setLocationError(false);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setGpsLoading(false);
+        // A place typed after the GPS prompt opened wins over a late GPS answer
+        if (requestId !== locationRequest.current) return;
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
       },
       () => {
-        setLocationError(true);
         setGpsLoading(false);
+        if (requestId === locationRequest.current) setLocationError(true);
       },
       { timeout: 8000 }
     );
@@ -110,10 +128,13 @@ export const HospitalSearchPage: React.FC = () => {
 
   /* ---- Typed address (OpenStreetMap Nominatim) --------------------------- */
   const handleManualSearch = async () => {
-    if (!manualAddress.trim()) return;
-    setAddressError(tr(''));
+    if (!manualAddress.trim() || geocoding) return;
+    const requestId = ++locationRequest.current;
+    setAddressError('');
+    setGeocoding(true);
     try {
       const loc = await geocodeAddress(manualAddress.trim());
+      if (requestId !== locationRequest.current) return;
       if (!loc) {
         setAddressError(tr('We could not find that place. Try a city or area name.'));
         return;
@@ -121,7 +142,9 @@ export const HospitalSearchPage: React.FC = () => {
       setUserLocation(loc);
       setLocationError(false);
     } catch (err) {
-      setAddressError((err as Error).message);
+      if (requestId === locationRequest.current) setAddressError((err as Error).message);
+    } finally {
+      setGeocoding(false);
     }
   };
 
@@ -171,7 +194,7 @@ export const HospitalSearchPage: React.FC = () => {
                   error={Boolean(addressError)}
                   leftIcon={<Icon.MapPin size={15} />}
                 />
-                <Button type="submit" id="hospital-manual-search-btn" disabled={!manualAddress.trim()} className="h-10 shrink-0">
+                <Button type="submit" id="hospital-manual-search-btn" disabled={!manualAddress.trim() || geocoding} isLoading={geocoding} className="h-10 shrink-0">
                   {tr("Search")}
                 </Button>
               </div>
@@ -251,6 +274,17 @@ export const HospitalSearchPage: React.FC = () => {
                     <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-ink-900 text-xs font-semibold text-white tabular" aria-hidden="true">
                       {idx + 1}
                     </span>
+                    <div className="hidden sm:block h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-slate-100 border border-hair">
+                      <img
+                        src={getHospitalThumbnail(h)}
+                        alt=""
+                        width={96}
+                        height={80}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h2 className="font-display text-sm font-semibold leading-snug text-ink-900 sm:text-base">{h.name}</h2>

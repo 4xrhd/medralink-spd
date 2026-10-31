@@ -192,7 +192,7 @@ export const RegisterPage: React.FC = () => {
                 <div
                   className={`grid h-10 w-10 shrink-0 place-items-center rounded-md ${
                     role === 'PATIENT'
-                      ? 'bg-primary-700 text-white shadow-xs'
+                      ? 'bg-primary-700 text-white shadow-subtle'
                       : 'bg-primary-50 text-primary-700'
                   }`}
                 >
@@ -228,7 +228,7 @@ export const RegisterPage: React.FC = () => {
                 <div
                   className={`grid h-10 w-10 shrink-0 place-items-center rounded-md ${
                     role === 'DOCTOR'
-                      ? 'bg-primary-700 text-white shadow-xs'
+                      ? 'bg-primary-700 text-white shadow-subtle'
                       : 'bg-primary-50 text-primary-700'
                   }`}
                 >

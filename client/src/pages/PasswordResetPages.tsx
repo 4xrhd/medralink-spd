@@ -50,12 +50,12 @@ export const ForgotPasswordPage: React.FC = () => {
     <Shell title={tr("Forgot your password?")} subtitle={tr("Enter your account email and we will send reset instructions.")}>
       {sent ? (
         <div role="status" className="space-y-3 text-sm text-ink-700">
-          <p>{tr("If an account exists for")} <strong>{email}</strong>, reset instructions have been sent. The link is valid for 30 minutes.</p>
+          <p>{tr("If an account exists for")} <strong>{email}</strong>{tr(", reset instructions have been sent. The link is valid for 30 minutes.")}</p>
           {demoToken && (
             <p className="rounded-xl border border-hair bg-primary-50/40 p-3 text-xs">
-              Demo mode (email simulated):{' '}
+              {tr("Demo mode (email simulated):")}{' '}
               <Link to={`/reset-password?token=${demoToken}`} className="font-semibold text-primary-700 underline">
-                open the reset link
+                {tr("open the reset link")}
               </Link>
             </p>
           )}

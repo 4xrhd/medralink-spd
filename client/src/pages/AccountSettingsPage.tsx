@@ -9,13 +9,18 @@ import { Icon, Button, Card, FormField, Input } from '../ui/primitives.js';
 export const AccountSettingsPage: React.FC = () => {
   const { t: tr } = useLanguage();
   useDocumentTitle(tr('Account Settings'));
-  const { updateUser } = useAuth();
+  const { updateUser, replaceToken } = useAuth();
   const toast = useToast();
 
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
+
+  const [newEmail, setNewEmail] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [savingEmail, setSavingEmail] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -24,14 +29,19 @@ export const AccountSettingsPage: React.FC = () => {
   const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
     api
-      .get('/auth/me')
+      .get('/auth/me', { signal: controller.signal })
       .then((res) => {
         setEmail(res.data.data.email);
-        setFullName(res.data.data.full_name || '');
-        setPhone(res.data.data.phone || '');
+        // Keep anything the user typed while the profile was still loading
+        setFullName((typed) => typed || res.data.data.full_name || '');
+        setPhone((typed) => typed || res.data.data.phone || '');
       })
-      .catch((err) => toast.error(getApiErrorMessage(err, tr('Failed to load your profile.'))));
+      .catch((err) => {
+        if (!controller.signal.aborted) toast.error(getApiErrorMessage(err, tr('Failed to load your profile.')));
+      });
+    return () => controller.abort();
   }, [toast]);
 
   const saveProfile = async (e: React.FormEvent) => {
@@ -48,17 +58,42 @@ export const AccountSettingsPage: React.FC = () => {
     }
   };
 
+  const changeEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newEmail.trim().toLowerCase() === email.toLowerCase()) {
+      setEmailError(tr('That is already your email address.'));
+      return;
+    }
+    setEmailError('');
+    setSavingEmail(true);
+    try {
+      const res = await api.put('/auth/email', { newEmail: newEmail.trim(), currentPassword: emailPassword });
+      replaceToken(res.data.data.token);
+      updateUser({ email: res.data.data.email });
+      setEmail(res.data.data.email);
+      setNewEmail('');
+      setEmailPassword('');
+      toast.success(tr('Email changed. Sign in with the new address from now on.'));
+    } catch (err) {
+      setEmailError(getApiErrorMessage(err, tr('Failed to change email.')));
+    } finally {
+      setSavingEmail(false);
+    }
+  };
+
   const changePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
       setPasswordError(tr('New passwords do not match.'));
       return;
     }
-    setPasswordError(tr(''));
+    setPasswordError('');
     setSavingPassword(true);
     try {
-      await api.put('/auth/password', { currentPassword, newPassword });
-      toast.success(tr('Password changed.'));
+      const res = await api.put('/auth/password', { currentPassword, newPassword });
+      // The server signs out other devices and hands this one a new token
+      if (res.data?.data?.token) replaceToken(res.data.data.token);
+      toast.success(tr('Password changed. Other devices were signed out.'));
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -73,13 +108,13 @@ export const AccountSettingsPage: React.FC = () => {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 space-y-6">
       <div>
         <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900">{tr("Account settings")}</h1>
-        <p className="mt-1 text-sm text-ink-600">{tr("Manage your profile details and sign-in password.")}</p>
+        <p className="mt-1 text-sm text-ink-600">{tr("Manage your profile details, sign-in email and password.")}</p>
       </div>
 
       <Card padding="lg">
         <form onSubmit={saveProfile} className="space-y-4" aria-labelledby="profile-heading">
           <h2 id="profile-heading" className="text-base font-semibold text-ink-900">{tr("Profile")}</h2>
-          <FormField label={tr("Email address")} htmlFor="acct-email" hint={tr("Contact an administrator to change your email.")}>
+          <FormField label={tr("Email address")} htmlFor="acct-email" hint={tr("Used to sign in. Change it below.")}>
             <Input id="acct-email" type="email" value={email} disabled leftIcon={<Icon.Mail size={16} />} />
           </FormField>
           <FormField label={tr("Full name")} htmlFor="acct-name" required>
@@ -89,6 +124,22 @@ export const AccountSettingsPage: React.FC = () => {
             <Input id="acct-phone" type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} leftIcon={<Icon.Phone size={16} />} />
           </FormField>
           <Button type="submit" isLoading={savingProfile}>{tr("Save profile")}</Button>
+        </form>
+      </Card>
+
+      <Card padding="lg">
+        <form onSubmit={changeEmail} className="space-y-4" aria-labelledby="email-heading">
+          <div>
+            <h2 id="email-heading" className="text-base font-semibold text-ink-900">{tr("Change email")}</h2>
+            <p className="mt-1 text-sm text-ink-600">{tr("You will sign in with the new address. Other devices are signed out.")}</p>
+          </div>
+          <FormField label={tr("New email address")} htmlFor="acct-new-email" required>
+            <Input id="acct-new-email" type="email" autoComplete="email" required maxLength={254} value={newEmail} onChange={(e) => setNewEmail(e.target.value)} leftIcon={<Icon.Mail size={16} />} />
+          </FormField>
+          <FormField label={tr("Current password")} htmlFor="acct-email-password" required error={emailError || undefined}>
+            <Input id="acct-email-password" type="password" autoComplete="current-password" required value={emailPassword} onChange={(e) => setEmailPassword(e.target.value)} error={Boolean(emailError)} aria-invalid={Boolean(emailError)} leftIcon={<Icon.Lock size={16} />} />
+          </FormField>
+          <Button type="submit" isLoading={savingEmail} disabled={savingEmail}>{tr("Change email")}</Button>
         </form>
       </Card>
 

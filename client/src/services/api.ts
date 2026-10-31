@@ -69,7 +69,21 @@ export function getApiErrorMessage(err: unknown, fallback: string): string {
 
 /** Fetches a protected PDF through the API client and saves it under the given file name. */
 export async function downloadPdf(path: string, filename: string): Promise<void> {
-  const res = await api.get<Blob>(path, { responseType: 'blob' });
+  let res;
+  try {
+    res = await api.get<Blob>(path, { responseType: 'blob' });
+  } catch (err) {
+    // Error bodies arrive as a Blob here; turn them back into JSON so the real reason is shown
+    const response = (err as { response?: { data?: unknown } })?.response;
+    if (response?.data instanceof Blob) {
+      try {
+        response.data = JSON.parse(await response.data.text());
+      } catch {
+        response.data = undefined;
+      }
+    }
+    throw err;
+  }
   const url = URL.createObjectURL(res.data);
   try {
     const link = document.createElement('a');

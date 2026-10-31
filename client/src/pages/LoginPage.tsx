@@ -20,7 +20,7 @@ const DEMO_ACCOUNTS: Record<string, { email: string; password: string }> = DEMO_
 
 export const LoginPage: React.FC = () => {
   const { t: tr } = useLanguage();
-  useDocumentTitle('Sign In');
+  useDocumentTitle(tr('Sign In'));
   const toast = useToast();
   const [searchParams] = useSearchParams();
   const roleParam = searchParams.get('role');
@@ -42,14 +42,19 @@ export const LoginPage: React.FC = () => {
     }
   }, [roleParam]);
 
-  // If already logged in, navigate based on role
+  // Only same-site paths are followed, so ?next= cannot send people to another website
+  const nextParam = searchParams.get('next');
+  const nextPath = nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : null;
+
+  // If already logged in, go back to the requested page or to the role's home
   useEffect(() => {
     if (user) {
-      if (user.role === 'DOCTOR') navigate('/doctor');
+      if (nextPath) navigate(nextPath, { replace: true });
+      else if (user.role === 'DOCTOR') navigate('/doctor');
       else if (user.role === 'PATIENT') navigate('/patient');
       else if (user.role === 'ADMIN') navigate('/admin');
     }
-  }, [user, navigate]);
+  }, [user, navigate, nextPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,13 +185,36 @@ export const LoginPage: React.FC = () => {
                           setEmail(account.email);
                           setPassword(account.password);
                         }}
-                        className={`min-h-[44px] rounded-lg border px-2 text-sm font-medium capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1 ${
+                        className={`min-h-[50px] flex items-center justify-center gap-2 rounded-xl border p-2 text-xs font-semibold capitalize transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-1 ${
                           selected
-                            ? 'border-primary-700 bg-primary-700 text-white'
-                            : 'border-hair-strong bg-white text-ink-900 hover:border-primary-600'
+                            ? 'border-primary-700 bg-primary-700 text-white shadow-subtle'
+                            : 'border-hair-strong bg-white text-ink-900 hover:border-primary-600 hover:bg-slate-50'
                         }`}
                       >
-                        {role}
+                        {role === 'doctor' && (
+                          <img
+                            src="/images/doctors/dr-ahmed.webp"
+                            alt=""
+                            className="h-6 w-6 rounded-full object-cover shrink-0 ring-1 ring-white/50"
+                          />
+                        )}
+                        {role === 'patient' && (
+                          <img
+                            src="/images/patients/patient-rahim.webp"
+                            alt=""
+                            className="h-6 w-6 rounded-full object-cover shrink-0 ring-1 ring-white/50"
+                          />
+                        )}
+                        {role === 'admin' && (
+                          <div
+                            className={`grid h-6 w-6 place-items-center rounded-full text-xs shrink-0 ${
+                              selected ? 'bg-white/20 text-white' : 'bg-primary-100 text-primary-800'
+                            }`}
+                          >
+                            <Icon.Shield size={13} />
+                          </div>
+                        )}
+                        <span>{tr(role)}</span>
                       </button>
                     );
                   })}

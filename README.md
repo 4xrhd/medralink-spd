@@ -23,12 +23,24 @@
 
 ---
 
-## 🔑 Pre-Configured Demo Credentials (1-Click Switcher)
+## 🔑 Demo Accounts and Passwords
 
-The application includes pre-seeded accounts and a sticky **1-Click Role Switcher** at the top of the interface:
+Every account below is created by the seed script (`server/src/db/seed.ts`). The **1-Click Role Switcher** on `/login` fills in the Doctor, Patient and Admin accounts; sign in to the others with their email and password.
 
-| Role | Name & Identifier | Demo Email | Password | Primary Capabilities |
-| :--- | :--- | :--- | :--- | :--- |
+| Role | Name | ID | Email | Password | What you can try |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Admin** | System Administrator | `ADMIN` | `admin@medralink.com` | `admin123` | Verify doctor BMDC licences, suspend or reactivate users, system settings, tamper-evident audit trail. |
+| **Doctor** | Dr. Ahmed Tariq (Cardiology, NICVD) | `DOC-2001` | `dr.ahmed@medralink.com` | `doctor123` | Patient search, consultations, ICD-10 diagnoses, e-prescriptions, PDF export. Treats Rahim Ahmed. |
+| **Doctor** | Dr. Farzana Rahman (General Medicine, DMCH) | `DOC-2002` | `dr.farzana@medralink.com` | `doctor123` | Same as above. Treats Sara Akter. |
+| **Patient** | Rahim Ahmed | `P-1001` | `rahim@gmail.com` | `patient123` | Health timeline, prescriptions, vitals, lab reports, nearby hospital search. Has a penicillin allergy and hypertension on record. |
+| **Patient** | Sara Akter | `P-1002` | `sara@gmail.com` | `patient123` | Same as above. Has type 2 diabetes on record. |
+| **Patient** | Karim Hasan | `P-1003` | `karim@gmail.com` | `patient123` | A patient with no visits yet; useful for testing a first consultation. |
+
+Each role can change its own name, phone, email and password under **Account settings** (`/account`). A forgotten password can be reset from `/forgot-password`; in demo mode the reset link is shown on screen instead of being emailed.
+
+> These are public demo passwords. Change them, or reseed with your own, before using MedraLink with real patient data.
+
+--- | :--- | :--- | :--- | :--- |
 | **Doctor** | Dr. Ahmed Tariq (`DOC-2001`) | `dr.ahmed@medralink.com` | `doctor123` | Patient lookup, clinical consultation workspace, ICD-10 codification, digital prescription generator, PDF export. |
 | **Patient** | Rahim Ahmed (`P-1001`) | `rahim@gmail.com` | `patient123` | Interactive Longitudinal Medical Timeline, prescription history, vital sign telemetry, lab report viewer, emergency nearby hospital search. |
 | **Administrator** | System Administrator (`ADMIN`) | `admin@medralink.com` | `admin123` | Doctor BMDC license verification, patient registry overview, tamper-evident audit ledger inspection. |

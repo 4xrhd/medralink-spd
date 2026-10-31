@@ -217,7 +217,8 @@ export const NewConsultationPage: React.FC = () => {
     try {
       const payload = {
         patientId: selectedPatientId,
-        appointmentId: appointmentId || undefined,
+        // The booked appointment only applies to the patient it was opened for
+        appointmentId: appointmentId && selectedPatientId === preselectedPatientId ? appointmentId : undefined,
         chiefComplaint,
         clinicalNotes,
         followUpDate: followUpDate || undefined,
@@ -311,7 +312,7 @@ export const NewConsultationPage: React.FC = () => {
           <div className="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex min-w-0 items-center gap-3">
               <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-700 text-sm font-semibold text-white" aria-hidden="true">
-                {shownPatient?.full_name ? shownPatient.full_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() : '-'}
+                {shownPatient?.full_name ? shownPatient.full_name.split(' ').map((n: string) => n[0]).slice(0, 2).join('').toUpperCase() : <Icon.User size={18} />}
               </div>
               <div className="min-w-0">
                 <p className="flex flex-wrap items-center gap-2">
@@ -668,8 +669,8 @@ export const NewConsultationPage: React.FC = () => {
 
       {/* Sticky action bar: real readiness state on the left, actions on the right */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-hair bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
-        <div className="mx-auto flex max-w-[1720px] flex-col gap-2.5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8 2xl:px-12">
-          <p className="flex items-center gap-2 text-sm text-ink-600" aria-live="polite">
+        <div className="mx-auto flex max-w-[1720px] flex-col gap-2 px-4 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] sm:flex-row sm:gap-2.5 sm:py-3 sm:items-center sm:justify-between sm:px-6 lg:px-8 2xl:px-12">
+          <p className="flex items-center gap-2 text-xs text-ink-600 sm:text-sm" aria-live="polite">
             {chiefComplaint.trim() ? (
               <>
                 <Icon.Check size={16} className="shrink-0 text-success" />
@@ -687,7 +688,12 @@ export const NewConsultationPage: React.FC = () => {
               {tr("Cancel")}
             </Button>
             <Button disabled={isSubmitting || !selectedPatientId || profileStatus === 'loading'} isLoading={isSubmitting} onClick={() => handleSubmit()} icon={<Icon.Lock size={15} />} className="h-auto min-h-[2.375rem] min-w-0 whitespace-normal py-2 text-left leading-snug">
-              {isSubmitting ? tr('Digitally Signing & Issuing...') : tr('Finalize, Digitally Sign & Issue Prescription')}
+              {isSubmitting ? tr('Digitally Signing & Issuing...') : (
+                <>
+                  <span className="sm:hidden">{tr('Sign & issue')}</span>
+                  <span className="hidden sm:inline">{tr('Finalize, Digitally Sign & Issue Prescription')}</span>
+                </>
+              )}
             </Button>
           </div>
         </div>

@@ -36,17 +36,22 @@ export const PrescriptionViewPage: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchPrescription = async () => {
-      try {
-        const res = await api.get(`/prescriptions/${id}`);
-        setData(res.data.data);
-      } catch (err: any) {
-        setError(getApiErrorMessage(err, tr('Failed to load prescription.')));
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (id) fetchPrescription();
+    if (!id) return;
+    // Start clean for every prescription and ignore answers for one the user has already left
+    const controller = new AbortController();
+    setData(null);
+    setError('');
+    setLoading(true);
+    api
+      .get(`/prescriptions/${id}`, { signal: controller.signal })
+      .then((res) => setData(res.data.data))
+      .catch((err: any) => {
+        if (!controller.signal.aborted) setError(getApiErrorMessage(err, tr('Failed to load prescription.')));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, [id]);
 
   if (loading) {

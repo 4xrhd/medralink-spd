@@ -84,8 +84,10 @@ export const App: React.FC = () => {
                     {/* Public Emergency Hospital Search - No Auth Required */}
                     <Route path="/hospitals" element={<HospitalSearchPage />} />
 
-                    {/* Shared Official Digital Prescription Sheet */}
-                    <Route path="/prescription/:id" element={<PrescriptionViewPage />} />
+                    {/* Prescription sheet: the API needs a signed-in user, so the page does too */}
+                    <Route element={<ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN']} />}>
+                      <Route path="/prescription/:id" element={<PrescriptionViewPage />} />
+                    </Route>
 
                     {/* Patient Role Routes */}
                     <Route element={<ProtectedRoute allowedRoles={['PATIENT', 'DOCTOR', 'ADMIN']} />}>

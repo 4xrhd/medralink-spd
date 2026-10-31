@@ -1,5 +1,6 @@
 import { useLanguage } from '../context/LanguageContext.js';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ConfirmModal } from '../components/ConfirmModal.js';
 import { useToast } from '../context/ToastContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
@@ -14,6 +15,7 @@ const AUDIT_PAGE_SIZE = 50;
 
 export const AdminDashboard: React.FC = () => {
   const { t: tr } = useLanguage();
+  const { pathname } = useLocation();
   useDocumentTitle(tr('Enterprise Governance & Audit Ledger'));
   const toast = useToast();
 
@@ -50,7 +52,8 @@ export const AdminDashboard: React.FC = () => {
     if (auditFilterRole !== 'All') params.role = auditFilterRole;
     if (debouncedAuditSearch.trim()) params.search = debouncedAuditSearch.trim();
     if (last24Hours) params.from = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-    else if (auditFrom) params.from = new Date(auditFrom).toISOString();
+    // Local midnight, matching how "To" is built; new Date('YYYY-MM-DD') would mean UTC midnight
+    else if (auditFrom) params.from = new Date(`${auditFrom}T00:00:00`).toISOString();
     if (auditTo) params.to = new Date(`${auditTo}T23:59:59`).toISOString();
     setAuditLoading(true);
     setAuditError('');
@@ -71,6 +74,22 @@ export const AdminDashboard: React.FC = () => {
   }, [auditFilterRole, debouncedAuditSearch, last24Hours, auditFrom, auditTo, auditPage]);
 
   // A filter change starts again from the first page
+  // /admin/users, /admin/settings and /admin/audit-logs share this page; jump to the named section
+  useEffect(() => {
+    const section = pathname.split('/')[2];
+    if (!section) return;
+    // The sections render after their data loads, so wait briefly for the target to appear
+    let tries = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const scrollWhenReady = () => {
+      const target = document.getElementById(section);
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else if (++tries < 40) timer = setTimeout(scrollWhenReady, 100);
+    };
+    scrollWhenReady();
+    return () => clearTimeout(timer);
+  }, [pathname]);
+
   useEffect(() => {
     setAuditPage(1);
   }, [auditFilterRole, debouncedAuditSearch, last24Hours, auditFrom, auditTo]);
@@ -163,7 +182,7 @@ export const AdminDashboard: React.FC = () => {
     return (
       <div className="mx-auto max-w-[1720px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 2xl:px-12" role="status" aria-label={tr('Loading clinical portal module...')}>
         <Skeleton className="h-16 w-72" />
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-[6.5rem] rounded-xl" />)}
         </div>
         <Skeleton className="h-72 rounded-xl" />
@@ -186,9 +205,9 @@ export const AdminDashboard: React.FC = () => {
       />
 
       <main className="mx-auto max-w-[1720px] space-y-6 px-4 py-6 sm:px-6 lg:px-8 2xl:px-12">
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           <MetricCard title={tr("Registered Patient Records")} value={stats?.totalPatients ?? 0} subtext={tr("National health registry index")} icon={<Icon.User size={16} />} iconTone="blue" />
-          <MetricCard title={tr("Accredited Physicians")} value={stats?.totalDoctors ?? 0} subtext={tr("BMDC Form-C certified")} icon={<Icon.Stethoscope size={16} />} iconTone="emerald" />
+          <MetricCard title={tr("Accredited Physicians")} value={stats?.accreditedDoctors ?? 0} subtext={tr("{n} registered in total", { n: stats?.totalDoctors ?? 0 })} icon={<Icon.Stethoscope size={16} />} iconTone="emerald" />
           <MetricCard title={tr("Consultations Processed")} value={stats?.totalRecords ?? 0} subtext={tr("Unified clinical records")} icon={<Icon.File size={16} />} iconTone="navy" />
           <MetricCard title={tr("Cryptographic Audit Entries")} value={stats?.totalAuditLogs ?? 0} subtext={tr("SHA-256 validated ledger")} icon={<Icon.Lock size={16} />} iconTone="navy" />
         </div>
@@ -206,7 +225,7 @@ export const AdminDashboard: React.FC = () => {
             ),
           }}
         >
-          <DataTable minWidth="min-w-[900px]" caption={tr("Physician credentials")}>
+          <DataTable stack minWidth="min-w-[900px]" caption={tr("Physician credentials")}>
               <THead>
                 <tr>
                   <Th>{tr("Doctor Name & UID")}</Th>
@@ -222,14 +241,14 @@ export const AdminDashboard: React.FC = () => {
                   const isAccredited = Boolean(doc.is_verified);
                   return (
                     <Tr key={doc.id}>
-                      <Td>
+                      <Td wide>
                         <p className="font-semibold text-ink-900">{doc.full_name}</p>
                         <p className="font-mono text-xs text-ink-500">{doc.doctor_uid || doc.id}</p>
                       </Td>
-                      <Td className="whitespace-nowrap font-mono text-xs font-medium text-ink-600">{doc.bmdc_license_number}</Td>
-                      <Td className="text-ink-600">{doc.specialization}</Td>
-                      <Td className="text-ink-600">{doc.hospital_affiliation}</Td>
-                      <Td>
+                      <Td label={tr("BMDC License")} className="whitespace-nowrap font-mono text-xs font-medium text-ink-600">{doc.bmdc_license_number}</Td>
+                      <Td label={tr("Specialization")} className="text-ink-600">{doc.specialization}</Td>
+                      <Td label={tr("Hospital Affiliation")} className="text-ink-600">{doc.hospital_affiliation}</Td>
+                      <Td label={tr("Status")}>
                         <Badge tone={isAccredited ? 'emerald' : 'amber'} dot>
                           {isAccredited ? tr('Accredited') : tr('Pending')}
                         </Badge>
@@ -268,6 +287,7 @@ export const AdminDashboard: React.FC = () => {
         <AdminSettingsPanel />
 
         <Card
+          id="audit-logs"
           className="overflow-hidden"
           header={{
             title: tr("Cryptographic Audit Trail Inspector"),
@@ -295,14 +315,14 @@ export const AdminDashboard: React.FC = () => {
               />
             </div>
 
-            <div role="group" aria-label={tr('Role')} className="flex h-8 overflow-hidden rounded-md border border-hair-strong bg-white [@media(pointer:coarse)]:h-10">
+            <div role="group" aria-label={tr('Role')} className="flex h-8 shrink-0 overflow-hidden rounded-md border border-hair-strong bg-white [@media(pointer:coarse)]:h-10">
               {(['All', 'DOCTOR', 'PATIENT', 'ADMIN'] as const).map((r) => (
                 <button
                   key={r}
                   type="button"
                   aria-pressed={auditFilterRole === r}
                   onClick={() => setAuditFilterRole(r)}
-                  className={`flex-1 border-r border-hair px-3 text-xs font-semibold transition-colors last:border-r-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-600 ${
+                  className={`flex-1 whitespace-nowrap border-r border-hair px-3 text-xs font-semibold transition-colors last:border-r-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-600 ${
                     auditFilterRole === r ? 'bg-primary-700 text-white' : 'text-ink-600 hover:bg-canvas hover:text-ink-900'
                   }`}
                 >
@@ -354,7 +374,7 @@ export const AdminDashboard: React.FC = () => {
             ))}
           </div>
 
-          <DataTable minWidth="min-w-[960px]" caption={tr("Audit entries")}>
+          <DataTable stack minWidth="min-w-[960px]" caption={tr("Audit entries")}>
             <THead>
               <tr>
                 <Th>{tr("Time")}</Th>
@@ -371,17 +391,17 @@ export const AdminDashboard: React.FC = () => {
                 const isCopied = copiedHash === hash && hash !== '-';
                 return (
                   <Tr key={l.id || i}>
-                    <Td className="tabular whitespace-nowrap text-xs text-ink-600">
+                    <Td label={tr("Time")} className="tabular whitespace-nowrap text-xs text-ink-600">
                       {formatServerDateTime(l.timestamp)}
                     </Td>
-                    <Td>
+                    <Td label={tr("Actor")}>
                       <Badge tone={roleTone(l.actor_role)} size="sm">{tr(l.actor_role === 'DOCTOR' ? 'Doctor' : l.actor_role === 'PATIENT' ? 'Patient' : l.actor_role === 'ADMIN' ? 'Admin' : l.actor_role)}</Badge>
                       <span className="mt-1 block text-xs text-ink-600">{l.actor_name || tr('System')}</span>
                     </Td>
-                    <Td className="whitespace-nowrap font-mono text-xs font-semibold text-primary-700">{l.action}</Td>
-                    <Td className="font-mono text-xs text-ink-600">{l.target_resource}</Td>
-                    <Td className="max-w-xs text-xs text-ink-600">{l.details || '-'}</Td>
-                    <Td>
+                    <Td label={tr("Action")} className="whitespace-nowrap font-mono text-xs font-semibold text-primary-700">{l.action}</Td>
+                    <Td label={tr("Resource")} className="font-mono text-xs text-ink-600">{l.target_resource}</Td>
+                    <Td label={tr("Details")} wide className="max-w-xs text-xs text-ink-600">{l.details || '-'}</Td>
+                    <Td label={tr("SHA-256 hash")} wide>
                       <div className="flex items-center gap-2">
                         {/* Short form keeps the table readable; the full hash is in the tooltip and the copy */}
                         <span className="font-mono text-xs text-ink-900" title={hash}>
@@ -393,7 +413,7 @@ export const AdminDashboard: React.FC = () => {
                             type="button"
                             aria-label={tr('Copy integrity hash for {action}', { action: l.action })}
                             title={isCopied ? tr('Copied') : tr('Copy full hash')}
-                            className={`grid h-7 w-7 place-items-center rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
+                            className={`grid h-9 w-9 shrink-0 place-items-center [@media(pointer:fine)]:h-7 [@media(pointer:fine)]:w-7 rounded-md border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
                               isCopied ? 'border-emerald-200 bg-emerald-50 text-success' : 'border-hair text-ink-600 hover:bg-slate-100 hover:text-primary-700'
                             }`}
                           >

@@ -114,10 +114,10 @@ export const DoctorDashboard: React.FC = () => {
     }
   };
 
-  const doctorName = user?.fullName || 'Physician';
+  const doctorName = user?.fullName || tr('Physician');
   const doctorLicense = user?.doctorProfile?.bmdcLicenseNumber || '-';
-  const hospitalName = user?.doctorProfile?.hospitalAffiliation || 'MedraLink Clinical Network';
-  const departmentName = user?.doctorProfile?.specialization || 'Clinical Medicine';
+  const hospitalName = user?.doctorProfile?.hospitalAffiliation || tr('MedraLink Clinical Network');
+  const departmentName = user?.doctorProfile?.specialization || tr('Clinical Medicine');
 
   const currentHour = new Date().getHours();
   const greeting = currentHour < 12 ? 'Good morning' : currentHour < 17 ? 'Good afternoon' : 'Good evening';
@@ -133,7 +133,19 @@ export const DoctorDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-canvas pb-16">
       <PageHeader
-        icon={<Icon.Stethoscope size={20} />}
+        icon={
+          user?.email === 'dr.ahmed@medralink.com' ? (
+            <img
+              src="/images/doctors/dr-ahmed.webp"
+              alt=""
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-xl object-cover ring-1 ring-primary-300"
+            />
+          ) : (
+            <Icon.Stethoscope size={20} />
+          )
+        }
         overline={<>{tr(greeting)} · {currentDateStr}</>}
         title={doctorName}
         meta={
@@ -226,9 +238,12 @@ export const DoctorDashboard: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-2 sm:flex">
-                          <ButtonLink size="sm" variant="secondary" to={`/patient/timeline/${pt.id}`}>
-                            {tr("Review Timeline")}
-                          </ButtonLink>
+                          {/* A patient's record opens only after this doctor has seen or booked them */}
+                          {pt.is_assigned !== 0 && pt.is_assigned !== false && (
+                            <ButtonLink size="sm" variant="secondary" to={`/patient/timeline/${pt.id}`}>
+                              {tr("Review Timeline")}
+                            </ButtonLink>
+                          )}
                           <ButtonLink size="sm" to={`/doctor/new-consultation?patientId=${pt.id}`}>
                             {tr("Open Consultation")}
                           </ButtonLink>
@@ -263,13 +278,13 @@ export const DoctorDashboard: React.FC = () => {
             }
           />
         ) : loading ? (
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {[0, 1, 2].map((i) => (
-              <Skeleton key={i} className={`h-[6.5rem] rounded-xl ${i === 0 ? 'col-span-2 lg:col-span-1' : ''}`} />
+              <Skeleton key={i} className={`h-[6.5rem] rounded-xl ${i === 0 ? 'min-[400px]:col-span-2 lg:col-span-1' : ''}`} />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 [&>*:first-child]:col-span-2 lg:[&>*:first-child]:col-span-1">
+          <div className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 sm:gap-4 lg:grid-cols-3 min-[400px]:[&>*:first-child]:col-span-2 lg:[&>*:first-child]:col-span-1">
             <MetricCard
               title={tr("Today's Appointment Queue")}
               value={data?.stats?.todayAppointmentsCount || 0}

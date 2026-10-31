@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Card, Icon, Button, VitalPill } from '../ui/primitives.js';
 import { EcgLine, SectionHeading, StepCard } from '../ui/medical.js';
+import { PaperVsRecord } from '../components/PaperVsRecord.js';
 
 const FAQ: [string, string][] = [
   ['Is MedraLink free for patients?', 'Yes. Patients can create an account, view their timeline and download prescriptions at no cost.'],
@@ -12,6 +13,13 @@ const FAQ: [string, string][] = [
   ['How are doctors verified?', 'Doctors register with their BMDC registration number. An administrator checks it before the account can write prescriptions.'],
   ['Can a pharmacy check that a prescription is real?', 'Each prescription PDF has a QR code that links to the issued prescription, so it can be compared with the paper copy.'],
   ['What happens to my old paper reports?', 'You can upload lab reports as PDF or image files. They are attached to your record and served only to you and your doctors.'],
+];
+
+/** Illustrative screens for each workspace tab; sample names only, no real patient data. */
+const WORKSPACE_MOCKUPS = [
+  { src: '/mockups/doctor-workspace.webp', alt: 'Doctor workspace: patient allergy alert, vitals and a prescription table ready to sign' },
+  { src: '/mockups/patient-timeline.webp', alt: 'Patient timeline: past visits with prescriptions, latest vitals and lab reports' },
+  { src: '/mockups/admin-audit.webp', alt: 'Admin console: doctor accreditation list and a verified audit trail' },
 ];
 
 export const LandingPage: React.FC = () => {
@@ -173,29 +181,74 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* Floating Live Consultation Workstation Preview */}
-          <div className="relative z-10" aria-label={tr("Example consultation screen")} role="img">
-            <div className="absolute -inset-4 sm:-inset-6 rounded-xl bg-primary-50" aria-hidden="true" />
-            <Card className="relative p-5 sm:p-6 shadow-card hover:shadow-card-hover border-hair bg-surface">
-              <div className="flex items-center justify-between border-b border-hair pb-3.5">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-700 text-white shadow-sm">
-                    <Icon.Stethoscope size={18} />
+          <div className="relative z-10 space-y-4" aria-label={tr("Example consultation screen")} role="img">
+            {/* Real Photographic Clinical Chamber Preview */}
+            <div className="overflow-hidden rounded-2xl border border-hair bg-surface shadow-card group">
+              <div className="relative aspect-[3/2] w-full overflow-hidden bg-slate-100">
+                <img
+                  src="/images/hero/hero-consultation.webp"
+                  alt={tr("Dr. Ahmed Tariq consulting with patient in modern clinical chamber")}
+                  width={1200}
+                  height={805}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+                  loading="eager"
+                  fetchPriority="high"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink-900/80 via-ink-900/10 to-transparent" aria-hidden="true" />
+                <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between gap-2 text-white">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <img
+                      src="/images/doctors/dr-ahmed.webp"
+                      alt=""
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 shrink-0 rounded-full border-2 border-white object-cover shadow-sm"
+                    />
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-bold leading-tight">{tr("Dr. Ahmed Tariq, MBBS, FCPS")}</p>
+                      <p className="hidden truncate text-[0.6875rem] text-slate-200 min-[400px]:block">{tr("Chief Cardiologist | Consultation Chamber")}</p>
+                    </div>
                   </div>
-                  <div>
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-950/70 px-2 py-0.5 text-[0.6875rem] font-semibold text-emerald-300 backdrop-blur-sm shrink-0 whitespace-nowrap">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse motion-reduce:animate-none" aria-hidden="true" /> {tr("Live Session")}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Live Telemetry & Digital Prescription Card */}
+            <Card className="relative p-5 shadow-card hover:shadow-card-hover border-hair bg-surface">
+              <div className="flex items-center justify-between gap-3 border-b border-hair pb-3.5">
+                <div className="flex min-w-0 items-center gap-3">
+                  <img
+                    src="/images/doctors/dr-ahmed.webp"
+                    alt=""
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-primary-200"
+                  />
+                  <div className="min-w-0">
                     <p className="text-sm font-bold text-ink-900">{tr("Dr. Ahmed Tariq, MBBS")}</p>
-                    <p className="text-xs text-ink-400">Patient: Rahim Ahmed, P-1001</p>
+                    <div className="flex items-center gap-1.5 text-xs text-ink-600">
+                      <img
+                        src="/images/patients/patient-rahim.webp"
+                        alt=""
+                        className="h-3.5 w-3.5 shrink-0 rounded-full object-cover"
+                      />
+                      <span>Patient: Rahim Ahmed, P-1001</span>
+                    </div>
                   </div>
                 </div>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
+                <span className="inline-flex items-center gap-1.5 shrink-0 whitespace-nowrap rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-800">
                   <span className="h-1.5 w-1.5 rounded-full bg-success" /> {tr("In progress")}
                 </span>
               </div>
 
               {/* Vitals Telemetry Row */}
               <div className="mt-4 grid grid-cols-3 gap-2">
-                <VitalPill label={tr("Blood Pressure")} value="120/80" tone="slate" />
-                <VitalPill label={tr("Pulse")} value="74 bpm" tone="slate" />
-                <VitalPill label={tr("SpO₂")} value="99%" tone="emerald" />
+                <VitalPill label={tr("Blood Pressure")} value="145/92" tone="amber" />
+                <VitalPill label={tr("Pulse")} value="78 bpm" tone="slate" />
+                <VitalPill label={tr("SpO₂")} value="98%" tone="emerald" />
               </div>
 
               {/* Diagnosis Row */}
@@ -207,8 +260,8 @@ export const LandingPage: React.FC = () => {
                   <span className="inline-flex items-center rounded-lg border border-primary-200 bg-primary-50 px-2.5 py-1 text-xs font-semibold text-primary-700">
                     [I10] Essential Hypertension
                   </span>
-                  <span className="inline-flex items-center rounded-lg border border-hair bg-canvas px-2.5 py-1 text-xs font-medium text-ink-600">
-                    [E11] Type 2 Diabetes
+                  <span className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-critical">
+                    <Icon.Alert size={12} /> {tr("Penicillin allergy")}
                   </span>
                 </div>
               </div>
@@ -228,7 +281,7 @@ export const LandingPage: React.FC = () => {
                   </div>
                   <div className="flex flex-wrap justify-between gap-x-3 tabular">
                     <span>{tr("Tab. Napa Extra (Paracetamol/Caffeine)")}</span>
-                    <span className="font-mono text-ink-600">1+0+1, as needed</span>
+                    <span className="font-mono text-ink-600">1+0+1, 5 days if headache</span>
                   </div>
                 </div>
               </div>
@@ -244,59 +297,7 @@ export const LandingPage: React.FC = () => {
           subtitle={tr("Most patients carry their medical history in a bag of loose prescriptions. MedraLink replaces that with one record every doctor you visit can read.")}
         />
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {[
-            {
-              image: "/assets/data_fragmentation.png",
-              imageAlt: "Fragmented physical medical records and prescriptions",
-              accent: "#E11D48",
-              headerBg: "bg-rose-50/70 border-b border-rose-100",
-              title: "Lost between visits",
-              body: "Old prescriptions and test results go missing, so tests get repeated and the next doctor starts from scratch.",
-              tag: "The problem",
-            },
-            {
-              image: "/assets/drug_interaction.png",
-              imageAlt: "Pharmaceutical bottles with alert badge illustrating contraindications",
-              accent: "#B45309",
-              headerBg: "bg-amber-50/70 border-b border-amber-100",
-              title: "Allergies nobody saw",
-              body: "Without past records, a doctor can prescribe something the patient has already reacted to.",
-              tag: "The risk",
-            },
-            {
-              image: "/assets/unified_timeline.png",
-              imageAlt: "Connected digital medical timeline ribbon with diagnostic nodes",
-              accent: "#0F766E",
-              headerBg: "bg-primary-50/80 border-b border-primary-100",
-              title: "One record that follows you",
-              body: "Every consultation, prescription and lab report in one timeline, visible only to you and the doctors treating you.",
-              tag: "With MedraLink",
-            },
-          ].map((c) => (
-            <Card
-              key={c.title}
-              className="flex flex-col overflow-hidden p-0 border-hair"
-              style={{ borderTopWidth: 3, borderTopColor: c.accent }}
-            >
-              <div className={`flex h-44 w-full items-center justify-center p-4 ${c.headerBg}`}>
-                <img
-                  src={c.image}
-                  alt={tr(c.imageAlt)}
-                  className="max-h-32 w-auto object-contain"
-                  loading="lazy"
-                />
-              </div>
-              <div className="flex flex-1 flex-col p-6">
-                <span className="text-xs font-bold" style={{ color: c.accent }}>
-                  {tr(c.tag)}
-                </span>
-                <h3 className="mt-2 font-display text-xl font-bold text-ink-900">{tr(c.title)}</h3>
-                <p className="mt-3 text-base leading-relaxed text-ink-600">{tr(c.body)}</p>
-              </div>
-            </Card>
-          ))}
-        </div>
+        <PaperVsRecord />
       </section>
 
       {/* How It Works - The Care Journey */}
@@ -391,7 +392,20 @@ export const LandingPage: React.FC = () => {
               {tr(['Open doctor workspace', 'Open my health record', 'Open admin console'][tab])}
             </Button>
           </div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-start">
+            <figure className="overflow-hidden rounded-xl border border-hair bg-canvas">
+              <img
+                key={WORKSPACE_MOCKUPS[tab].src}
+                src={WORKSPACE_MOCKUPS[tab].src}
+                alt={tr(WORKSPACE_MOCKUPS[tab].alt)}
+                width={1200}
+                height={896}
+                loading="lazy"
+                decoding="async"
+                className="block h-auto w-full animate-menu-in motion-reduce:animate-none"
+              />
+            </figure>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
             {content[tab].features.map(([t, b]) => (
               <div
                 key={t}
@@ -406,6 +420,7 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
           </div>
         </Card>
       </section>
@@ -432,6 +447,87 @@ export const LandingPage: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Featured Connected Healthcare Facilities & Emergency Network */}
+      <section id="hospitals-network" className="mx-auto max-w-[1200px] 2xl:max-w-[1680px] scroll-mt-24 px-4 sm:px-6 lg:px-8 2xl:px-12 py-14 sm:py-20 border-t border-hair">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <SectionHeading
+            title={tr("Hospitals near you")}
+            subtitle={tr("Find the nearest government and private hospitals across Bangladesh, with directions, from OpenStreetMap data.")}
+          />
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => navigate('/hospitals')}
+            icon={<Icon.Arrow size={14} />}
+            iconPosition="right"
+            className="shrink-0 self-start sm:self-auto"
+          >
+            {tr("Search 2,100+ hospitals")}
+          </Button>
+        </div>
+
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            {
+              name: "Dhaka Medical College Hospital",
+              category: "Government general hospital",
+              image: "/images/hospitals/general-hospital.webp",
+              location: "Secretariat Road, Dhaka",
+              tag: "24/7 emergency",
+            },
+            {
+              name: "National Institute of Cardiovascular Diseases (NICVD)",
+              category: "Government heart hospital",
+              image: "/images/hospitals/cardiac-center.webp",
+              location: "Sher-e-Bangla Nagar, Dhaka",
+              tag: "Cardiology",
+            },
+            {
+              name: "National Institute of Traumatology & Orthopaedic Rehabilitation (NITOR)",
+              category: "Government trauma and orthopaedic hospital",
+              image: "/images/hospitals/trauma-center.webp",
+              location: "Agargaon Road, Dhaka",
+              tag: "Trauma & orthopaedics",
+            },
+          ].map((h) => (
+            <Card key={h.name} className="flex flex-col overflow-hidden p-0 border-hair group">
+              <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+                <img
+                  src={h.image}
+                  alt=""
+                  width={960}
+                  height={536}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span className="absolute top-3 left-3 rounded-md bg-ink-900/80 backdrop-blur-sm px-2.5 py-1 text-xs font-semibold text-white">
+                  {tr(h.tag)}
+                </span>
+              </div>
+              <div className="flex flex-1 flex-col p-5">
+                <span className="text-xs font-semibold text-primary-700">{tr(h.category)}</span>
+                <h3 className="mt-1 font-display text-lg font-bold text-ink-900">{tr(h.name)}</h3>
+                <p className="mt-1 mb-4 text-xs text-ink-600 flex items-center gap-1.5">
+                  <Icon.Cross size={13} className="text-primary-600 shrink-0" />
+                  <span>{tr(h.location)}</span>
+                </p>
+                <div className="mt-auto pt-4 border-t border-hair flex items-center justify-end text-xs">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/hospitals')}
+                    className="-mr-2 inline-flex min-h-[44px] items-center gap-1 rounded-lg px-2 font-semibold text-primary-700 transition-colors hover:text-primary-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600"
+                  >
+                    <span>{tr("Show on map")}</span>
+                    <Icon.Arrow size={12} />
+                  </button>
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
       </section>
 

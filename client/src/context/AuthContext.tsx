@@ -20,6 +20,8 @@ interface AuthContextType {
   logout: () => void;
   /** Applies profile edits to the signed-in user so the navbar and dashboards update at once. */
   updateUser: (changes: Partial<User>) => void;
+  /** Stores the token the server issues after a password or email change. */
+  replaceToken: (nextToken: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,6 +57,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem(USER_KEY, JSON.stringify(receivedUser));
     setToken(receivedToken);
     setUser(receivedUser);
+  }, []);
+
+  const replaceToken = useCallback((nextToken: string) => {
+    localStorage.setItem(TOKEN_KEY, nextToken);
+    setToken(nextToken);
   }, []);
 
   const updateUser = useCallback((changes: Partial<User>) => {
@@ -113,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateUser, replaceToken }}>
       {children}
     </AuthContext.Provider>
   );

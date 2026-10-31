@@ -9,12 +9,14 @@ export interface DataTableProps {
   minWidth?: string;
   caption?: string;
   className?: string;
+  /** Below 1024px, show each row as a labelled card instead of scrolling sideways. Label cells with Td's `label`. */
+  stack?: boolean;
 }
 
-export function DataTable({ children, minWidth = "min-w-[640px]", caption, className }: DataTableProps) {
+export function DataTable({ children, minWidth = "min-w-[640px]", caption, className, stack = false }: DataTableProps) {
   return (
     // Focusable so keyboard users can scroll it; the edge shadows show there is more to the side
-    <div className="scroll-shadow-x relative overflow-x-auto" tabIndex={0} role="region" aria-label={caption}>
+    <div className={cn("scroll-shadow-x relative overflow-x-auto", stack && "table-stack")} tabIndex={0} role="region" aria-label={caption}>
       <table className={cn("w-full text-sm", minWidth, className)}>
         {caption && <caption className="sr-only">{caption}</caption>}
         {children}
@@ -39,9 +41,21 @@ export function Th({ className, children, ...props }: ThHTMLAttributes<HTMLTable
   );
 }
 
-export function Td({ className, children, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
+export interface TdProps extends TdHTMLAttributes<HTMLTableCellElement> {
+  /** Column name shown above the value when a stacked table renders rows as cards. */
+  label?: string;
+  /** In stacked mode, let this cell take the full card width. */
+  wide?: boolean;
+}
+
+export function Td({ className, children, label, wide, ...props }: TdProps) {
   return (
-    <td className={cn("px-6 py-3.5 align-middle text-ink-900", className)} {...props}>
+    <td
+      className={cn("px-6 py-3.5 align-middle text-ink-900", className)}
+      data-label={label}
+      data-wide={wide || undefined}
+      {...props}
+    >
       {children}
     </td>
   );

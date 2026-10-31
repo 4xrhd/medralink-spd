@@ -55,7 +55,7 @@ export const AdminUsersPanel: React.FC = () => {
     setSaving(true);
     try {
       await api.patch(`/admin/users/${target.id}`, { status });
-      toast.success(`${target.full_name} is now ${status.toLowerCase()}.`);
+      toast.success(tr('{name} is now {status}.', { name: target.full_name, status: tr(status === 'ACTIVE' ? 'active' : status === 'SUSPENDED' ? 'suspended' : 'pending') }));
       setTarget(null);
       await load();
     } catch (err) {
@@ -90,7 +90,7 @@ export const AdminUsersPanel: React.FC = () => {
         ),
       }}
     >
-      <DataTable caption={tr("User accounts")}>
+      <DataTable stack caption={tr("User accounts")}>
         <THead>
           <tr>
             <Th>{tr("Name")}</Th>
@@ -103,10 +103,10 @@ export const AdminUsersPanel: React.FC = () => {
         <TBody>
           {users.map((u) => (
             <Tr key={u.id}>
-              <Td className="font-semibold">{u.full_name}</Td>
-              <Td className="text-ink-600">{u.email}</Td>
-              <Td><Pill tone="slate">{tr(u.role === 'DOCTOR' ? 'Doctor' : u.role === 'PATIENT' ? 'Patient' : 'Admin')}</Pill></Td>
-              <Td><Pill tone={statusTone(u.status)}>{tr(u.status === 'ACTIVE' ? 'Active' : u.status === 'SUSPENDED' ? 'Suspended' : 'Pending')}</Pill></Td>
+              <Td wide className="font-semibold">{u.full_name}</Td>
+              <Td label={tr("Email")} wide className="text-ink-600">{u.email}</Td>
+              <Td label={tr("Role")}><Pill tone="slate">{tr(u.role === 'DOCTOR' ? 'Doctor' : u.role === 'PATIENT' ? 'Patient' : 'Admin')}</Pill></Td>
+              <Td label={tr("Status")}><Pill tone={statusTone(u.status)}>{tr(u.status === 'ACTIVE' ? 'Active' : u.status === 'SUSPENDED' ? 'Suspended' : 'Pending')}</Pill></Td>
               <Td className="text-right">
                 {u.id !== me?.id && (
                   <Button

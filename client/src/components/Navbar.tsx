@@ -43,6 +43,14 @@ export const Navbar: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  const openNotification = (id: string, isUnread: boolean, link?: string | null) => {
+    if (isUnread) markAsRead(id);
+    if (link) {
+      setShowNotifications(false);
+      navigate(link);
+    }
+  };
   const [activeFilter, setActiveFilter] = useState<'all' | 'unread'>('all');
   const [scrolled, setScrolled] = useState(false);
 
@@ -312,7 +320,7 @@ export const Navbar: React.FC = () => {
                         onClick={() => setActiveFilter('all')}
                         className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
                           activeFilter === 'all'
-                            ? 'bg-primary-700 text-white shadow-xs'
+                            ? 'bg-primary-700 text-white shadow-subtle'
                             : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                         }`}
                       >
@@ -323,7 +331,7 @@ export const Navbar: React.FC = () => {
                         onClick={() => setActiveFilter('unread')}
                         className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                           activeFilter === 'unread'
-                            ? 'bg-primary-700 text-white shadow-xs'
+                            ? 'bg-primary-700 text-white shadow-subtle'
                             : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'
                         }`}
                       >
@@ -388,16 +396,18 @@ export const Navbar: React.FC = () => {
                           return (
                             <div
                               key={item.id}
-                              onClick={() => {
-                                if (isUnread) {
-                                  markAsRead(item.id);
-                                }
-                                if (item.link) {
-                                  setShowNotifications(false);
-                                  navigate(item.link);
+                              // A div with button semantics: a real <button> cannot hold the dismiss button inside it
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => openNotification(item.id, isUnread, item.link)}
+                              onKeyDown={(e) => {
+                                if (e.target !== e.currentTarget) return;
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  openNotification(item.id, isUnread, item.link);
                                 }
                               }}
-                              className={`group relative p-2.5 rounded-lg transition-colors hover:bg-primary-50/60 cursor-pointer flex items-start gap-2.5 ${
+                              className={`group relative p-2.5 rounded-lg transition-colors hover:bg-primary-50/60 cursor-pointer flex items-start gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 ${
                                 isUnread ? 'bg-primary-50/60' : ''
                               }`}
                             >
@@ -423,7 +433,7 @@ export const Navbar: React.FC = () => {
 
                               {/* Unread dot indicator */}
                               {isUnread && (
-                                <span className="absolute top-3 right-2 h-2 w-2 rounded-full bg-primary-600 group-hover:hidden" />
+                                <span className="absolute top-3 right-2 h-2 w-2 rounded-full bg-primary-600 group-hover:hidden group-focus-within:hidden [@media(hover:none)]:hidden" />
                               )}
 
                               {/* Dismiss action button */}
@@ -435,7 +445,7 @@ export const Navbar: React.FC = () => {
                                 }}
                                 title={tr("Dismiss notification")}
                                 aria-label={tr("Dismiss notification")}
-                                className="absolute top-2 right-1.5 hidden group-hover:grid h-5 w-5 place-items-center rounded-md text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
+                                className="absolute top-1 right-0.5 grid h-8 w-8 place-items-center rounded-md [@media(hover:hover)]:hidden [@media(hover:hover)]:group-hover:grid group-focus-within:grid focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors cursor-pointer"
                               >
                                 <Icon.X size={12} />
                               </button>
