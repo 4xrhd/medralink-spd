@@ -4,7 +4,13 @@ All notable changes to MedraLink. Detailed notes per date live in `docs/date-*/u
 
 ## 2026-10-31
 
+### Added
+- Every role can change its sign-in email under Account settings (current password required).
+- Changing a password or email, or resetting a password, signs out every other device; the device that made the change stays signed in.
+- Vercel configuration (`client/vercel.json`) with the same `/api` proxy to Render as Netlify.
+
 ### Security
+- The sign-in rate limit now counts only failed attempts on login, password and email changes; it no longer counts page loads, which could lock out everyone on a shared clinic network.
 - A doctor could give themselves access to any patient's record by booking them an appointment, or book patients onto another doctor's calendar. Doctors now book only on their own calendar, and only patients they already treat.
 - A lab report could be linked to another patient's visit and appear in that patient's record; the visit must now belong to the same patient.
 - `GET /doctors/:id` no longer shows doctor email and phone to non-admins, matching the doctor list.
@@ -29,7 +35,10 @@ All notable changes to MedraLink. Detailed notes per date live in `docs/date-*/u
 - Notification rows now work with the keyboard and the dismiss button shows on touch screens.
 - Several English strings were not translated to Bangla.
 - The audit trail "All Roles" filter wrapped onto two lines and was clipped.
+- A wrong current password on the account settings page signed the user out.
 
+
+## 2026-10-30
 
 ### Added
 - Authentic Bangladeshi healthcare visual asset library (9 high-resolution images across `/images/hero/`, `/images/doctors/`, `/images/patients/`, and `/images/hospitals/`).
