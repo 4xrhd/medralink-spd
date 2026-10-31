@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "build": {
+    "env": {
+      "VITE_DEMO_MODE": "false"
+    }
+  },
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://medralink-api.onrender.com/api/:path*" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}
