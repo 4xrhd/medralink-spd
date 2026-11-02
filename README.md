@@ -199,30 +199,27 @@ sudo certbot --nginx -d emr.yourdomain.com
 
 ## 💻 Local Development Quickstart
 
-### Option 1: Unified NPM Scripts (Root)
+Run everything with `make` from the repository folder. Local runs always use a SQLite file
+(`server/data/dev.sqlite`, seeded with the demo accounts on first start), even when `server/.env`
+points at a hosted PostgreSQL database, so development never touches live data.
+
 ```bash
-cd prototype
-
-# Install all server & client dependencies
-npm run install:all
-
-# Seed database with initial clinical records
-npm run seed
-
-# Run both backend server and client concurrently
-npm run dev
+make setup      # first time: install server and client dependencies
+make dev        # API on http://localhost:5000, app on http://localhost:5173 (Ctrl+C stops both)
 ```
 
-### Option 2: Individual Services
-```bash
-# Terminal 1: Backend API (Port 5000)
-cd prototype/server
-npm run dev
+| Command | What it does |
+| :--- | :--- |
+| `make dev` | API and web app together; demo accounts on the sign-in page |
+| `make server` / `make client` | Only the API / only the web app |
+| `make test` | Server (Jest) and client (Vitest) tests |
+| `make coverage` | Server tests with the coverage report |
+| `make check` | Type-check server and client |
+| `make build` | Production build |
+| `make reset-db` | Fresh demo data next start (the old database is kept as a `.bak` copy) |
 
-# Terminal 2: Frontend Client (Port 5173)
-cd prototype/client
-npm run dev
-```
+If a port is taken, choose others: `make dev API_PORT=5050 WEB_PORT=5174`. Turn the demo
+account buttons off with `DEMO=false`, or use another database file with `DB=data/other.sqlite`.
 
 ### 🗺️ Emergency Hospital Search (OpenStreetMap, free)
 

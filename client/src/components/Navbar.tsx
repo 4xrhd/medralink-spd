@@ -155,7 +155,6 @@ export const Navbar: React.FC = () => {
         ? [
             { to: '/patient', label: 'My record', match: (p) => p === '/patient' },
             { to: user.patientId ? `/patient/timeline/${user.patientId}` : '/patient', label: 'Timeline', match: (p) => p.startsWith('/patient/timeline') },
-            { to: '/hospitals', label: 'Hospitals', match: (p) => p === '/hospitals' },
           ]
         : [
             { to: '/admin', label: 'Overview', match: (p) => p === '/admin' },
@@ -247,6 +246,21 @@ export const Navbar: React.FC = () => {
         {/* Right Section: Actions & Profiles */}
         <div className={`flex shrink-0 items-center gap-2 sm:gap-3 ${isAuthPage ? 'max-sm:ml-auto' : user ? 'max-md:ml-auto' : 'max-lg:ml-auto'}`}>
           <span aria-hidden="true" className={`h-6 w-px bg-hair ${isAuthPage ? 'hidden sm:block' : user ? 'hidden md:block' : 'hidden lg:block'}`} />
+          {/* Emergency hospital finder: public, so it is in the header for every visitor and role */}
+          <Link
+            to="/hospitals"
+            aria-current={location.pathname === '/hospitals' ? 'page' : undefined}
+            aria-label={tr('Find an emergency hospital')}
+            title={tr('Find an emergency hospital')}
+            className={`inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-sm font-semibold transition-[background-color,color,transform] duration-150 active:scale-95 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-critical focus-visible:ring-offset-2 ${
+              location.pathname === '/hospitals'
+                ? 'border-critical bg-critical text-white'
+                : 'border-critical/40 text-critical hover:bg-rose-50'
+            }`}
+          >
+            <Icon.Ambulance size={17} />
+            <span className="hidden sm:inline" aria-hidden="true">{tr('Emergency')}</span>
+          </Link>
           <LanguageToggle className="hidden sm:inline-flex" />
           {user ? (
             <>

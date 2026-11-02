@@ -23,6 +23,8 @@ export const bn: Record<string, string> = {
   'My record': 'আমার রেকর্ড',
   'Timeline': 'টাইমলাইন',
   'Hospitals': 'হাসপাতাল',
+  'Emergency': 'জরুরি',
+  'Find an emergency hospital': 'জরুরি হাসপাতাল খুঁজুন',
   'Overview': 'সারসংক্ষেপ',
   'Audit trail': 'অডিট লগ',
   'Dashboard': 'ড্যাশবোর্ড',
