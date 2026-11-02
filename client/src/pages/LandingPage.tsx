@@ -653,9 +653,8 @@ export const LandingPage: React.FC = () => {
             ))}
           </div>
 
-          <div className="mt-12 flex flex-col gap-2 border-t border-hair pt-6 text-xs text-ink-400 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-12 border-t border-hair pt-6 text-xs text-ink-400">
             <p>© 2026 MedraLink. University of Information Technology &amp; Sciences (UITS).</p>
-            <p>{tr("Built for CSE 416, Software Project Design and Development.")}</p>
           </div>
         </div>
       </footer>

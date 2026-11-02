@@ -153,7 +153,6 @@ export const bn: Record<string, string> = {
   'Create an account': 'অ্যাকাউন্ট খুলুন',
   'Find care': 'চিকিৎসা খুঁজুন',
   'Hospitals near you': 'কাছের হাসপাতাল',
-  'Built for CSE 416, Software Project Design and Development.': 'CSE 416, সফটওয়্যার প্রজেক্ট ডিজাইন অ্যান্ড ডেভেলপমেন্টের জন্য তৈরি।',
 
   // Sign in
   'Successfully authenticated': 'সফলভাবে সাইন ইন হয়েছে',
