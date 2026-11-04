@@ -2,6 +2,28 @@
 
 All notable changes to MedraLink. Detailed notes per date live in `docs/date-*/update-log.md`.
 
+## 2026-11-05
+
+### Added
+- Help chat for signed-out visitors: a "Need help?" button in the bottom-right corner opens a small chat with 8 common questions (what MedraLink is, emergencies, finding a hospital, creating an account, cost, record privacy, prescription QR checks, forgotten password). Visitors can also type a question; it is matched by English or Bangla keywords. Answers are fixed text in the page, so nothing typed leaves the browser. The chat follows the site language (English or Bangla) and hides after sign-in.
+- ICD-10 picker on New consultation: 80 common diagnoses for Bangladesh practice (dengue, typhoid, TB, asthma, COPD, UTI, CKD, IHD, stroke, thyroid, PCOS, GERD, back pain and more) in `client/src/data/icd10.ts`. Eight are one-tap chips; the search box now finds the rest by code (`A90`, `N390`) or by words in the name, and Enter adds the best match. Text with no match is still saved as a custom diagnosis, and picked or custom diagnoses now show as chips so they can be removed.
+- Search suggestions on every search box (shared `SuggestInput`, keyboard friendly: arrow keys, Enter, Escape): hospital finder area box suggests 64 Bangladesh districts and Dhaka or Chattogram areas, typed in English or Bangla; New consultation suggests ICD-10 diagnoses and about 60 common medicine brands with their generic and strength (picking one fills an empty dosage); the admin audit search suggests every audit action with a plain description. Patient search on the doctor dashboard already showed live results. Lists live in `client/src/data/`.
+- Patient test report upload: patients can upload their own test reports (PDF, JPG, PNG or WebP, up to 10 MB) from the new "Test reports" card on their timeline. Their doctors see the same card on the patient's timeline and can open any report at any time. Files are checked by type and content, served only after the usual record access check, and every open is written to the audit log. In production the files go to a private Supabase Storage bucket (`lab-reports`) because Render's free disk is wiped on restart; set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` on Render. Locally they stay in `server/uploads/`.
+
+### Changed
+- Landing page trust strip (BMDC-verified doctors, Encrypted in transit, QR-checked prescriptions, One lifelong record): each icon sits in a small tinted tile, labels are larger and darker, the four items form an even 2 by 2 grid (one column on very narrow phones), and QR-checked prescriptions uses a QR code icon instead of a capsule.
+
+## 2026-11-03
+
+### Added
+- Red "Emergency" button in the header for every visitor and role (signed out, patient, doctor, admin); it opens the emergency hospital finder (`/hospitals`). It replaces the patient-only "Hospitals" link.
+- Self-contained `Makefile` for local development: `make setup`, `make dev` (API and web app on a local SQLite database with demo accounts), `make test`, `make check`, `make build`, `make reset-db`. Local runs never use the hosted database.
+
+## 2026-11-02
+
+### Changed
+- Removed the course credit line from the landing page footer.
+
 ## 2026-10-31
 
 ### Added

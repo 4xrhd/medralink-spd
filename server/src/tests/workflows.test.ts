@@ -170,10 +170,27 @@ describe('Clinical workflows across roles', () => {
       expect(admin.status).toBe(200);
     });
 
-    it('forbids patients from uploading', async () => {
+    it('lets a patient upload a report to their own record, and their doctor open it', async () => {
+      const res = await request(app).post('/api/v1/lab-reports/upload').set(auth(patientToken))
+        .field('patientId', 'pat-1').field('testName', 'Thyroid Panel').field('category', 'Biochemistry')
+        .attach('file', PDF_BYTES, { filename: 'thyroid.pdf', contentType: 'application/pdf' });
+      expect(res.status).toBe(201);
+      const file = await request(app).get(`/api/v1/lab-reports/${res.body.data.id}/file`).set(auth(doctorToken));
+      expect(file.status).toBe(200);
+      expect(file.headers['content-type']).toMatch(/pdf/);
+    });
+
+    it('forbids patients from uploading to another patient', async () => {
+      const res = await request(app).post('/api/v1/lab-reports/upload').set(auth(patientToken))
+        .field('patientId', 'pat-2').field('testName', 'CBC').field('category', 'Hematology')
+        .attach('file', PDF_BYTES, { filename: 'cbc.pdf', contentType: 'application/pdf' });
+      expect(res.status).toBe(403);
+    });
+
+    it('requires a file when a patient uploads', async () => {
       const res = await request(app).post('/api/v1/lab-reports/upload').set(auth(patientToken))
         .field('patientId', 'pat-1').field('testName', 'CBC').field('category', 'Hematology');
-      expect(res.status).toBe(403);
+      expect(res.status).toBe(400);
     });
   });
 

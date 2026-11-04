@@ -9,6 +9,6 @@ router.use(authenticateJWT);
 
 router.get('/', listLabReports);
 router.get('/:id/file', downloadLabReportFile);
-router.post('/upload', requireRole(['DOCTOR', 'ADMIN']), uploadMiddleware.single('file'), validate(rules.labUpload), uploadLabReport);
+router.post('/upload', requireRole(['PATIENT', 'DOCTOR', 'ADMIN']), uploadMiddleware.single('file'), validate(rules.labUpload), uploadLabReport);
 
 export default router;

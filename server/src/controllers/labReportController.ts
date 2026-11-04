@@ -7,11 +7,7 @@ import crypto from 'crypto';
 import { execute, query, queryOne } from '../db/database.js';
 import { recordAuditEvent } from '../services/auditService.js';
 import { canAccessPatient } from '../services/accessService.js';
-
-const uploadDir = path.resolve(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+import { readStoredFile, storeUpload, uploadDir } from '../services/fileStorage.js';
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -87,6 +83,10 @@ export async function uploadLabReport(req: Request, res: Response) {
     if (!patientId || !testName || !category) {
       return res.status(400).json({ success: false, message: 'Patient ID, Test Name, and Category are required.' });
     }
+    // A patient's upload is the report itself, so it must carry a file
+    if (req.user?.role === 'PATIENT' && !file) {
+      return res.status(400).json({ success: false, message: 'Choose a PDF or image file to upload.' });
+    }
 
     const patient = await queryOne('SELECT id, patient_uid FROM patients WHERE id = ? OR patient_uid = ?', [patientId, patientId]);
     if (!patient) {
@@ -105,6 +105,7 @@ export async function uploadLabReport(req: Request, res: Response) {
       }
     }
 
+    const storedPath = file ? await storeUpload(file.path, file.mimetype) : null;
     const labId = `lab-${crypto.randomUUID()}`;
     const now = new Date().toISOString().split('T')[0];
 
@@ -117,7 +118,7 @@ export async function uploadLabReport(req: Request, res: Response) {
         patient.id,
         testName,
         category,
-        file ? file.path : null,
+        storedPath,
         file ? labFileUrl(labId) : null,
         file ? file.originalname : null,
         file ? file.size : null,
@@ -167,9 +168,8 @@ export async function downloadLabReportFile(req: Request, res: Response) {
     if (!(await canAccessPatient(req, report.patient_id))) {
       return res.status(403).json({ success: false, message: 'Access denied.' });
     }
-    // Only files inside the upload folder are ever sent
-    const filePath = report.file_path ? path.resolve(uploadDir, path.basename(report.file_path)) : null;
-    if (!filePath || !fs.existsSync(filePath)) {
+    const stored = await readStoredFile(report.file_path);
+    if (!stored) {
       return res.status(404).json({ success: false, message: 'No file is attached to this report.' });
     }
 
@@ -188,7 +188,7 @@ export async function downloadLabReportFile(req: Request, res: Response) {
     res.setHeader('Cache-Control', 'private, no-store');
     res.type(report.mime_type || 'application/octet-stream');
     res.setHeader('Content-Disposition', `inline; filename="${(report.file_name || 'report').replace(/["\\\r\n]/g, '')}"`);
-    return res.sendFile(filePath);
+    return stored.kind === 'disk' ? res.sendFile(stored.path) : res.send(stored.data);
   } catch (error: unknown) {
     console.error('Error sending lab report file:', error);
     return res.status(500).json({ success: false, message: 'Failed to open the lab report file.' });

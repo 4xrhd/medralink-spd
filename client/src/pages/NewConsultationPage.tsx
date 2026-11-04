@@ -8,15 +8,14 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api, { getApiErrorMessage, isCancelled } from '../services/api.js';
 import { ageFromDob } from '../utils/dates.js';
 import { Badge, Button, ButtonLink, Card, Icon, Input, PageHeader } from '../ui/primitives.js';
+import { ICD10_CODES, QUICK_ICD10, searchIcd10 } from '../data/icd10.js';
+import { MEDICINES } from '../data/medicines.js';
+import { SuggestInput } from '../components/SuggestInput.js';
 
-const COMMON_ICD10 = [
-  { code: 'I10', title: 'Essential (Primary) Hypertension' },
-  { code: 'E11', title: 'Type 2 Diabetes Mellitus' },
-  { code: 'J06', title: 'Acute Upper Respiratory Infection' },
-  { code: 'E78', title: 'Hyperlipidemia' },
-  { code: 'R51', title: 'Headache' },
-  { code: 'K29', title: 'Gastritis' },
-];
+const ICD10_SUGGESTIONS = ICD10_CODES.map((c) => ({ value: c.title, hint: c.code }));
+// "Paracetamol 500mg" -> "500mg", used to prefill an empty dosage
+const strengthOf = (hint = '') => hint.match(/\d[\d.]*\s?(mg|mcg|ml|IU|%)(\/\d*\s?ml)?/i)?.[0] ?? '';
+
 
 const PRESET_LABS = ['CBC', 'Lipid Profile', 'ECG', 'HbA1c', 'Serum Creatinine', 'Chest X-Ray'];
 
@@ -146,23 +145,41 @@ export const NewConsultationPage: React.FC = () => {
     return () => controller.abort();
   }, [selectedPatientId]);
 
+  const sameDiagnosis = (d: { icd10Code: string; diagnosisTitle: string }, code: string, title: string) =>
+    d.icd10Code === code && (code !== 'CUSTOM' || d.diagnosisTitle === title);
+
   const toggleDiagnosis = (code: string, title: string) => {
-    const exists = diagnoses.some((d) => d.icd10Code === code);
+    const exists = diagnoses.some((d) => sameDiagnosis(d, code, title));
     if (exists) {
-      setDiagnoses(diagnoses.filter((d) => d.icd10Code !== code));
+      setDiagnoses(diagnoses.filter((d) => !sameDiagnosis(d, code, title)));
     } else {
       setDiagnoses([...diagnoses, { icd10Code: code, diagnosisTitle: title, severity: 'MODERATE' }]);
     }
   };
 
-  const addCustomDiagnosis = () => {
-    if (!customIcd.trim()) return;
-    setDiagnoses([
-      ...diagnoses,
-      { icd10Code: 'CUSTOM', diagnosisTitle: customIcd.trim(), severity: 'MODERATE' }
-    ]);
+  const icdMatches = searchIcd10(customIcd);
+
+  const pickIcd = (code: string, title: string) => {
+    if (!diagnoses.some((d) => sameDiagnosis(d, code, title))) toggleDiagnosis(code, title);
     setCustomIcd('');
   };
+
+  // Enter or Add takes the best ICD-10 match; free text is kept as a custom diagnosis
+  const addCustomDiagnosis = () => {
+    const text = customIcd.trim();
+    if (!text) return;
+    const best = icdMatches[0];
+    if (best) pickIcd(best.code, best.title);
+    else pickIcd('CUSTOM', text);
+  };
+
+  // Quick chips first, then anything picked through search
+  const diagnosisChips = [
+    ...QUICK_ICD10,
+    ...diagnoses
+      .filter((d) => !QUICK_ICD10.some((q) => q.code === d.icd10Code))
+      .map((d) => ({ code: d.icd10Code, title: d.diagnosisTitle })),
+  ];
 
   const addPrescriptionRow = () => {
     setPrescriptionItems([
@@ -183,6 +200,15 @@ export const NewConsultationPage: React.FC = () => {
   const updatePrescriptionRow = (id: number, field: string, value: string) => {
     setPrescriptionItems(
       prescriptionItems.map((item) => (item.id === id ? { ...item, [field]: value } : item))
+    );
+  };
+
+  // Picking a known brand also fills an empty dosage with its strength
+  const pickMedicine = (id: number, name: string, hint?: string) => {
+    setPrescriptionItems(
+      prescriptionItems.map((item) =>
+        item.id === id ? { ...item, medicationName: name, dosage: item.dosage || strengthOf(hint) } : item,
+      ),
     );
   };
 
@@ -488,11 +514,11 @@ export const NewConsultationPage: React.FC = () => {
               <fieldset>
                 <legend className={fieldLabel}>{tr("ICD-10 Diagnosis Codification")}</legend>
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {COMMON_ICD10.map((item) => {
-                    const on = diagnoses.some((d) => d.icd10Code === item.code);
+                  {diagnosisChips.map((item) => {
+                    const on = diagnoses.some((d) => sameDiagnosis(d, item.code, item.title));
                     return (
                       <button
-                        key={item.code}
+                        key={item.code + item.title}
                         type="button"
                         aria-pressed={on}
                         onClick={() => toggleDiagnosis(item.code, item.title)}
@@ -501,18 +527,20 @@ export const NewConsultationPage: React.FC = () => {
                         }`}
                       >
                         {on && <Icon.Check size={12} />}
-                        <span className="font-mono">{item.code}</span> {tr(item.title)}
+                        {item.code !== 'CUSTOM' && <span className="font-mono">{item.code}</span>} {tr(item.title)}
                       </button>
                     );
                   })}
                 </div>
 
                 <div className="mt-3 flex gap-2">
-                  <Input
+                  <SuggestInput
                     inputSize="sm"
                     aria-label={tr("Search or add custom ICD-10 diagnosis")}
                     value={customIcd}
-                    onChange={(e) => setCustomIcd(e.target.value)}
+                    onChange={setCustomIcd}
+                    suggestions={ICD10_SUGGESTIONS}
+                    onSelect={(item) => pickIcd(item.hint ?? 'CUSTOM', item.value)}
                     onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCustomDiagnosis())}
                     placeholder={tr("Search or add custom ICD-10 diagnosis")}
                     leftIcon={<Icon.Search size={14} />}
@@ -521,6 +549,9 @@ export const NewConsultationPage: React.FC = () => {
                     {tr("Add")}
                   </Button>
                 </div>
+                {customIcd.trim() && icdMatches.length === 0 && (
+                  <p className="mt-2 text-xs text-ink-600">{tr("No ICD-10 match. Add saves it as a custom diagnosis.")}</p>
+                )}
               </fieldset>
             </div>
           </Card>
@@ -563,7 +594,15 @@ export const NewConsultationPage: React.FC = () => {
                         </div>
                         <div className="col-span-2 md:col-span-1">
                           <span className={mobileLabel} aria-hidden="true">{tr("Medicine Name")}</span>
-                          <Input inputSize="sm" aria-label={tr("Medicine Name")} value={item.medicationName} onChange={(e) => updatePrescriptionRow(item.id, 'medicationName', e.target.value)} placeholder={tr("e.g. Tab. Amlocard")} />
+                          <SuggestInput
+                            inputSize="sm"
+                            aria-label={tr("Medicine Name")}
+                            value={item.medicationName}
+                            onChange={(v) => updatePrescriptionRow(item.id, 'medicationName', v)}
+                            suggestions={MEDICINES}
+                            onSelect={(m) => pickMedicine(item.id, m.value, m.hint)}
+                            placeholder={tr("e.g. Tab. Amlocard")}
+                          />
                         </div>
                         <div>
                           <span className={mobileLabel} aria-hidden="true">{tr("Dosage")}</span>

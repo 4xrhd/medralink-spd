@@ -10,6 +10,8 @@ import { useDebounce } from '../hooks/useDebounce.js';
 import { AdminUsersPanel, AdminSettingsPanel } from '../components/AdminPanels.js';
 import { Badge, Button, Card, Icon, Input, MetricCard, PageHeader, Skeleton } from '../ui/primitives.js';
 import { DataTable, TBody, THead, Td, Th, Tr } from '../ui/table.js';
+import { SuggestInput } from '../components/SuggestInput.js';
+import { AUDIT_ACTIONS } from '../data/auditActions.js';
 
 const AUDIT_PAGE_SIZE = 50;
 
@@ -298,11 +300,12 @@ export const AdminDashboard: React.FC = () => {
           {/* Filters: stacked on phones, one row on wide screens */}
           <div className="grid gap-2 border-b border-hair px-4 py-3 sm:px-5 md:grid-cols-2 xl:flex xl:flex-wrap xl:items-center">
             <div className="xl:w-72">
-              <Input
+              <SuggestInput
                 inputSize="sm"
                 aria-label={tr("Search audit entries")}
                 value={auditSearch}
-                onChange={(event) => setAuditSearch(event.target.value)}
+                onChange={setAuditSearch}
+                suggestions={AUDIT_ACTIONS}
                 placeholder={tr("Search action, resource, or actor…")}
                 leftIcon={<Icon.Search size={14} />}
                 rightElement={

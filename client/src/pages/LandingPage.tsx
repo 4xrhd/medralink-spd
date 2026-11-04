@@ -160,24 +160,21 @@ export const LandingPage: React.FC = () => {
             )}
 
             
-            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-hair pt-6 text-sm text-ink-600">
-              <div className="flex items-center gap-2 font-medium">
-                <Icon.ShieldPlus size={16} className="text-primary-700 shrink-0" />
-                <span>{tr("BMDC-verified doctors")}</span>
-              </div>
-              <div className="flex items-center gap-2 font-medium">
-                <Icon.Lock size={16} className="text-primary-700 shrink-0" />
-                <span>{tr("Encrypted in transit")}</span>
-              </div>
-              <div className="flex items-center gap-2 font-medium">
-                <Icon.Capsule size={16} className="text-primary-700 shrink-0" />
-                <span>{tr("QR-checked prescriptions")}</span>
-              </div>
-              <div className="flex items-center gap-2 font-medium">
-                <Icon.HeartPulse size={16} className="text-primary-700 shrink-0" />
-                <span>{tr("One lifelong record")}</span>
-              </div>
-            </div>
+            <ul className="mt-10 grid grid-cols-1 gap-x-6 gap-y-3.5 border-t border-hair pt-6 min-[420px]:grid-cols-2">
+              {([
+                [Icon.ShieldPlus, 'BMDC-verified doctors'],
+                [Icon.Lock, 'Encrypted in transit'],
+                [Icon.QrCode, 'QR-checked prescriptions'],
+                [Icon.HeartPulse, 'One lifelong record'],
+              ] as const).map(([TrustIcon, label]) => (
+                <li key={label} className="flex items-center gap-2.5 text-[0.9375rem] font-medium text-ink-900">
+                  <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary-50 text-primary-700 ring-1 ring-primary-100">
+                    <TrustIcon size={17} />
+                  </span>
+                  {tr(label)}
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* Floating Live Consultation Workstation Preview */}

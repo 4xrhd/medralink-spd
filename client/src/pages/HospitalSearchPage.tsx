@@ -6,6 +6,8 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import { Badge, Button, buttonClasses, Card, Icon, Input, PageHeader, Skeleton } from '../ui/primitives.js';
 import { cn } from '../utils/cn.js';
 import { HospitalMap } from '../components/HospitalMap.js';
+import { SuggestInput } from '../components/SuggestInput.js';
+import { PLACES } from '../data/places.js';
 import { SPECIALTIES, type SpecialtyValue } from '../constants/specialties.js';
 import { filterBySpecialty, findHospitalsNear, geocodeAddress, type HospitalResult, type LatLng } from '../services/osmHospitals.js';
 
@@ -185,10 +187,11 @@ export const HospitalSearchPage: React.FC = () => {
                 {tr("City, area or address")}
               </label>
               <div className="flex gap-2">
-                <Input
+                <SuggestInput
                   id="hospital-manual-location"
                   value={manualAddress}
-                  onChange={(e) => setManualAddress(e.target.value)}
+                  onChange={setManualAddress}
+                  suggestions={PLACES}
                   placeholder={tr("City, area or address (e.g. Dhanmondi, Dhaka)")}
                   aria-describedby={addressError ? 'hospital-address-error' : 'hospital-location-status'}
                   error={Boolean(addressError)}

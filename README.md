@@ -16,6 +16,7 @@
 
 ### Key Architectural Highlights
 - **High-Performance 3-Tier Architecture:** React 18 TypeScript SPA (Vite + Tailwind CSS) with Express.js REST API and 3NF-normalized PostgreSQL/SQLite persistence.
+- **Help Chat (signed-out visitors):** A small English and Bangla chat with 8 common questions and keyword matching for typed questions; answers are built into the page, so nothing a visitor types is sent anywhere.
 - **Emergency Hospital Locator:** Free OpenStreetMap search (no API key, no billing) with GPS or typed-address location, a specialization filter, interactive numbered markers, turn-by-turn navigation, and toll-free emergency hotline dispatch (16263).
 - **Single-Service Cloud Deployable:** The Express server automatically compiles and statically serves the SPA client in production with HTML5 history pushState fallback, enabling single-container deployments on Render, Railway, Fly.io, or VPS instances.
 - **Regulatory-Grade Security:** Granular Role-Based Access Control (RBAC), Helmet CSP hardening, Gzip/Brotli compression, Morgan request logging, rate limiting (auth + general API), parameterized SQL execution, and an immutable SHA-256 cryptographic audit trail.
@@ -32,7 +33,7 @@ Every account below is created by the seed script (`server/src/db/seed.ts`). The
 | **Admin** | System Administrator | `ADMIN` | `admin@medralink.com` | `admin123` | Verify doctor BMDC licences, suspend or reactivate users, system settings, tamper-evident audit trail. |
 | **Doctor** | Dr. Ahmed Tariq (Cardiology, NICVD) | `DOC-2001` | `dr.ahmed@medralink.com` | `doctor123` | Patient search, consultations, ICD-10 diagnoses, e-prescriptions, PDF export. Treats Rahim Ahmed. |
 | **Doctor** | Dr. Farzana Rahman (General Medicine, DMCH) | `DOC-2002` | `dr.farzana@medralink.com` | `doctor123` | Same as above. Treats Sara Akter. |
-| **Patient** | Rahim Ahmed | `P-1001` | `rahim@gmail.com` | `patient123` | Health timeline, prescriptions, vitals, lab reports, nearby hospital search. Has a penicillin allergy and hypertension on record. |
+| **Patient** | Rahim Ahmed | `P-1001` | `rahim@gmail.com` | `patient123` | Health timeline, prescriptions, vitals, lab reports (can upload test reports as PDF or image), nearby hospital search. Has a penicillin allergy and hypertension on record. |
 | **Patient** | Sara Akter | `P-1002` | `sara@gmail.com` | `patient123` | Same as above. Has type 2 diabetes on record. |
 | **Patient** | Karim Hasan | `P-1003` | `karim@gmail.com` | `patient123` | A patient with no visits yet; useful for testing a first consultation. |
 
@@ -221,6 +222,15 @@ make dev        # API on http://localhost:5000, app on http://localhost:5173 (Ct
 If a port is taken, choose others: `make dev API_PORT=5050 WEB_PORT=5174`. Turn the demo
 account buttons off with `DEMO=false`, or use another database file with `DB=data/other.sqlite`.
 
+### 💬 Help Chat (signed out)
+
+Visitors who are not signed in see a **Need help?** button in the bottom-right corner of every page.
+
+- **8 common questions** as tappable buttons: what MedraLink is, emergencies (999 and 16263), finding a hospital, creating an account, cost, who can see a record, prescription QR checks, and forgotten passwords. Some answers link to the right page.
+- **Typed questions** are matched by English and Bangla keywords; anything else gets a short "I can only answer common questions" reply.
+- **English and Bangla:** the chat follows the site language switch.
+- **Private:** there is no server or AI model behind it. Questions and answers live in `client/src/components/chat/chatAnswers.ts`, so nothing typed leaves the browser. Edit that file to change the questions; Bangla text goes in `client/src/i18n/bn.ts`.
+
 ### 🗺️ Emergency Hospital Search (OpenStreetMap, free)
 
 The `/hospitals` locator needs **no API key and no payment**:
@@ -281,7 +291,8 @@ All endpoints are versioned under `/api/v1`:
 - `POST /api/v1/consultations`: Submit complete atomic consultation visit (vitals + diagnosis + prescription).
 - `GET /api/v1/prescriptions/:id`: Fetch prescription details and items.
 - `GET /api/v1/prescriptions/:id/pdf`: Stream official PDF prescription document.
-- `POST /api/v1/lab-reports`: Upload diagnostic lab report attachment.
+- `POST /api/v1/lab-reports/upload`: Upload a test report (PDF or image). Patients upload to their own record; doctors to assigned patients. Production files go to a private Supabase Storage bucket (set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` on Render).
+- `GET /api/v1/lab-reports/:id/file`: Open a report file after the record access check (audited).
 
 ### Administration & Governance
 - `GET /api/v1/admin/doctors`: List all registered physicians and verification statuses.
@@ -297,7 +308,7 @@ All endpoints are versioned under `/api/v1`:
 - `/admin`: Administrative governance console, BMDC physician verification, and audit trail ledger inspector.
 - `/account`: Profile and password settings for every role.
 - `/forgot-password`, `/reset-password`: Password reset flow.
-- `/hospitals`: Emergency nearby hospital locator with GPS auto-detection, interactive Google Map, facility cards, one-touch dialing, and turn-by-turn navigation.
+- `/hospitals`: Emergency nearby hospital locator (public, no sign-in) with GPS or typed-area search, an OpenStreetMap map, facility cards, one-touch dialing, and turn-by-turn navigation. Reached from the red Emergency button in the header on every page.
 
 ---
 

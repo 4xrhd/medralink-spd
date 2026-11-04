@@ -68,10 +68,10 @@ export function getApiErrorMessage(err: unknown, fallback: string): string {
 }
 
 /** Fetches a protected PDF through the API client and saves it under the given file name. */
-export async function downloadPdf(path: string, filename: string): Promise<void> {
-  let res;
+async function fetchProtectedBlob(path: string): Promise<Blob> {
   try {
-    res = await api.get<Blob>(path, { responseType: 'blob' });
+    const res = await api.get<Blob>(path, { responseType: 'blob' });
+    return res.data;
   } catch (err) {
     // Error bodies arrive as a Blob here; turn them back into JSON so the real reason is shown
     const response = (err as { response?: { data?: unknown } })?.response;
@@ -84,7 +84,27 @@ export async function downloadPdf(path: string, filename: string): Promise<void>
     }
     throw err;
   }
-  const url = URL.createObjectURL(res.data);
+}
+
+/**
+ * Opens a protected PDF or image in a new tab. The tab is opened before the request so the
+ * browser's pop-up blocker still counts it as part of the click.
+ */
+export async function openProtectedFile(path: string): Promise<void> {
+  const tab = window.open('', '_blank');
+  try {
+    const url = URL.createObjectURL(await fetchProtectedBlob(path));
+    if (tab) tab.location.href = url;
+    else window.location.assign(url);
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  } catch (err) {
+    tab?.close();
+    throw err;
+  }
+}
+
+export async function downloadPdf(path: string, filename: string): Promise<void> {
+  const url = URL.createObjectURL(await fetchProtectedBlob(path));
   try {
     const link = document.createElement('a');
     link.href = url;

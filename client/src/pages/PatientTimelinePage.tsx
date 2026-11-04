@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 import api, { getApiErrorMessage, isCancelled } from '../services/api.js';
 import { PdfDownloadButton } from '../components/PdfDownloadButton.js';
+import { TestReportsCard } from '../components/TestReportsCard.js';
 import { ageFromDob, formatServerDate } from '../utils/dates.js';
 import { Badge, Button, ButtonLink, Card, EmptyState, Icon, Skeleton, VitalPill } from '../ui/primitives.js';
 
@@ -422,22 +423,7 @@ export const PatientTimelinePage: React.FC = () => {
               </div>
             </Card>
 
-            <Card padding="sm" header={{ title: tr("Diagnostic Laboratory Archive"), icon: <Icon.Flask size={15} />, as: 'h3' }}>
-              {labReports.length > 0 ? (
-                <ul className="space-y-2">
-                  {labReports.map((lab: any) => (
-                    <li key={lab.id} className="rounded-md border border-hair bg-canvas/60 px-3 py-2.5 text-sm">
-                      <p className="font-semibold text-ink-900">{lab.test_name}</p>
-                      <p className="text-xs text-ink-600">
-                        {tr(lab.status || 'Completed')} · {formatServerDate(lab.visit_date || lab.test_date)}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-ink-600">{tr('No lab reports on record yet.')}</p>
-              )}
-            </Card>
+            <TestReportsCard patientId={patient?.id || id || ''} canUpload={user?.role === 'PATIENT'} />
           </aside>
         </div>
       </main>

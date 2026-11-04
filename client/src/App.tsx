@@ -8,6 +8,7 @@ import { Navbar } from './components/Navbar.js';
 import { ProtectedRoute } from './components/ProtectedRoute.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { PageLoader } from './components/PageLoader.js';
+import { HelpChat } from './components/chat/HelpChat.js';
 
 // Route-based code-splitting for optimal bundle distribution & fast first paint
 const LandingPage = lazy(() =>
@@ -115,6 +116,7 @@ export const App: React.FC = () => {
                   </Routes>
                 </Suspense>
               </main>
+              <HelpChat />
             </div>
           </BrowserRouter>
         </NotificationProvider>

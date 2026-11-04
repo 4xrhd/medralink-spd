@@ -30,3 +30,7 @@ services:
         generateValue: true
       - key: CORS_ORIGIN
         sync: false # the Netlify site URL, e.g. https://medralink.netlify.app
+      - key: SUPABASE_URL
+        sync: false # https://<project-ref>.supabase.co; uploaded report files go to Supabase Storage
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false # Supabase Dashboard > Project Settings > API keys > service_role (server only, never in the client)
